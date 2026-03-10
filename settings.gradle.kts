@@ -24,3 +24,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "Monja"
 include(":app")
+include(":data")

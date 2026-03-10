@@ -9,11 +9,8 @@ plugins {
 
 android {
     namespace = "com.masdika.monja"
-    compileSdk {
-        version = release(36) {
-            minorApiLevel = 1
-        }
-    }
+
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.masdika.monja"
@@ -47,6 +44,9 @@ android {
 }
 
 dependencies {
+    // ===================== DATA LAYER ======================
+    implementation(project(":data"))
+
     // ================== CORE & LIFECYCLE ===================
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -71,18 +71,6 @@ dependencies {
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
-
-    // ======= NETWORKING & DATABASE (SUPABASE + KTOR) =======
-    // Serialization (Used by Supabase & Ktor for parsing JSON)
-    implementation(libs.kotlinx.serialization.json)
-
-    // ================== KTOR HTTP Client ===================
-    implementation(libs.ktor.client.core)
-    implementation(libs.ktor.client.okhttp)
-
-    // ====================== SUPABASE =======================
-    implementation(platform(libs.supabase.bom))
-    implementation(libs.supabase.postgrest)
 
     // ======================= TESTING =======================
     // Unit Test (Local)
