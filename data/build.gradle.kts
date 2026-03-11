@@ -17,7 +17,11 @@ if (localPropertiesFile.exists()) {
 android {
     namespace = "com.masdika.monja.data"
 
-    compileSdk = 34
+    compileSdk {
+        version = release(36) {
+            minorApiLevel = 1
+        }
+    }
 
     defaultConfig {
         minSdk = 28
