@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.util.Properties
 
 plugins {
@@ -9,9 +10,11 @@ plugins {
 }
 
 val localProperties = Properties()
-val localPropertiesFile = rootProject.file("local.properties")
+val localPropertiesFile: File = rootProject.file("local.properties")
 if (localPropertiesFile.exists()) {
-    localProperties.load(localPropertiesFile.inputStream())
+    localPropertiesFile.inputStream().use { stream ->
+        localProperties.load(stream)
+    }
 }
 
 android {
@@ -27,8 +30,8 @@ android {
         minSdk = 28
         consumerProguardFiles("consumer-rules.pro")
 
-        val supabaseUrl = localProperties.getProperty("supabase.url") ?: ""
-        val supabaseKey = localProperties.getProperty("supabase.key") ?: ""
+        val supabaseUrl: String = localProperties.getProperty("supabase.url") ?: ""
+        val supabaseKey: String = localProperties.getProperty("supabase.key") ?: ""
 
         buildConfigField("String", "SUPABASE_URL", "\"$supabaseUrl\"")
         buildConfigField("String", "SUPABASE_KEY", "\"$supabaseKey\"")
@@ -39,8 +42,10 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    kotlinOptions {
-        jvmTarget = "17"
+    kotlin {
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_17)
+        }
     }
 
     buildFeatures {
@@ -54,6 +59,7 @@ dependencies {
     implementation(libs.ktor.client.okhttp)
     implementation(platform(libs.supabase.bom))
     implementation(libs.supabase.postgrest)
+    implementation(libs.supabase.realtime)
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
     implementation(libs.androidx.core.ktx)

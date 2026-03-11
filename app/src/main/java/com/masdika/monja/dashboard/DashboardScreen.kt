@@ -8,8 +8,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -23,14 +21,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Devices.PIXEL_9
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.masdika.monja.data.model.Device
 import com.masdika.monja.ui.theme.MonjaTheme
 
 @Composable
 fun DashboardScreen(
-    viewModel: DashboardViewModel = hiltViewModel()
+    viewModel: DashboardViewModel
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -38,7 +35,6 @@ fun DashboardScreen(
         DashboardContent(
             devices = state.devices,
             isDataLoading = state.dataLoading,
-            onRefresh = viewModel::fetchDevices,
             modifier = Modifier.padding(innerPadding)
         )
     }
@@ -48,7 +44,6 @@ fun DashboardScreen(
 fun DashboardContent(
     devices: List<Device>,
     isDataLoading: Boolean,
-    onRefresh: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -56,7 +51,7 @@ fun DashboardContent(
             .fillMaxSize()
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.Top
     ) {
         if (isDataLoading) {
             CircularProgressIndicator(Modifier.size(40.dp))
@@ -90,15 +85,6 @@ fun DashboardContent(
                 }
             }
         }
-        Spacer(modifier = Modifier.height(15.dp))
-        Button(
-            onClick = onRefresh,
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp),
-            enabled = !isDataLoading
-        ) {
-            Text("Refresh")
-        }
     }
 }
 
@@ -116,7 +102,6 @@ private fun DashboardContentPreview() {
         Scaffold(Modifier.fillMaxSize()) {
             DashboardContent(
                 devices = devices,
-                onRefresh = {},
                 isDataLoading = false,
                 modifier = Modifier.padding(it)
             )
