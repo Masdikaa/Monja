@@ -1,5 +1,6 @@
 package com.masdika.monja.dashboard
 
+import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -22,6 +23,7 @@ import androidx.compose.ui.tooling.preview.Devices.PIXEL_9
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.masdika.monja.dashboard.component.TopAppBar
 import com.masdika.monja.data.model.Device
 import com.masdika.monja.ui.theme.MonjaTheme
 
@@ -31,7 +33,16 @@ fun DashboardScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
-    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                devices = state.devices,
+                selectedDevice = state.selectedDevice,
+                onDeviceSelected = { device -> viewModel.selectDevice(device) }
+            )
+        },
+        modifier = Modifier.fillMaxSize()
+    ) { innerPadding ->
         DashboardContent(
             devices = state.devices,
             isDataLoading = state.dataLoading,
@@ -49,7 +60,7 @@ fun DashboardContent(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(horizontal = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
@@ -88,7 +99,8 @@ fun DashboardContent(
     }
 }
 
-@Preview(device = PIXEL_9)
+@Preview(device = PIXEL_9, showSystemUi = true)
+@Preview(device = PIXEL_9, showSystemUi = true, uiMode = UI_MODE_NIGHT_YES)
 @Composable
 private fun DashboardContentPreview() {
     MonjaTheme {
@@ -97,14 +109,17 @@ private fun DashboardContentPreview() {
                 macAddress = "AH:JK:O7:OH:X4",
                 isOnline = true,
                 lastSeen = "LastSeen"
+            ),
+            Device(
+                macAddress = "8H:81:O7:OH:T4",
+                isOnline = false,
+                lastSeen = "LastSeen"
             )
         )
-        Scaffold(Modifier.fillMaxSize()) {
-            DashboardContent(
-                devices = devices,
-                isDataLoading = false,
-                modifier = Modifier.padding(it)
-            )
-        }
+        DashboardContent(
+            devices = devices,
+            isDataLoading = false,
+            modifier = Modifier.fillMaxSize()
+        )
     }
 }
