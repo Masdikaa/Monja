@@ -1,0 +1,64 @@
+package com.masdika.monja.data.repository
+
+import android.util.Log
+import com.masdika.monja.data.entity.VitalsEntity
+import com.masdika.monja.data.model.Vitals
+import com.masdika.monja.data.repository.interfaces.VitalsRepository
+import io.github.jan.supabase.SupabaseClient
+import io.github.jan.supabase.postgrest.postgrest
+import io.github.jan.supabase.postgrest.query.Order
+import io.github.jan.supabase.postgrest.query.filter.FilterOperator
+import io.github.jan.supabase.realtime.PostgresAction
+import io.github.jan.supabase.realtime.channel
+import io.github.jan.supabase.realtime.postgresChangeFlow
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.launch
+import javax.inject.Inject
+
+class VitalRepositoryImpl @Inject constructor(
+    private val supabase: SupabaseClient
+) : VitalsRepository {
+
+    override suspend fun getAvailableVitals(macAddress: String): Vitals? {
+        return try {
+            val entity = supabase.postgrest["vitals_log"]
+                .select {
+                    filter { eq("mac_address", macAddress) }
+                    order("created_at", order = Order.DESCENDING)
+                    limit(1)
+                }
+                .decodeSingleOrNull<VitalsEntity>()
+
+            entity?.let {
+                Vitals(
+                    temperature = it.temperature,
+                    heartrate = it.heartrate,
+                    oxygenSaturation = it.oxygenSaturation
+                )
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+    override fun getVitalStream(macAddress: String): Flow<Vitals?> = channelFlow {
+        send(getAvailableVitals(macAddress))
+
+        launch(Dispatchers.IO) {
+            val channel = supabase.channel("vitals_channel_$macAddress")
+            val changeFlow = channel.postgresChangeFlow<PostgresAction>(schema = "public") {
+                table = "vitals_log"
+                filter("mac_address", FilterOperator.EQ, macAddress)
+            }
+            channel.subscribe()
+            changeFlow.collect { action ->
+                Log.i("REPOSITORY SUPABASE VITALS", "New Vitals: $macAddress - $action")
+                send(getAvailableVitals(macAddress))
+            }
+        }
+    }
+
+}

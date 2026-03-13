@@ -1,12 +1,16 @@
 package com.masdika.monja.data.di
 
-import com.masdika.monja.data.repository.DeviceRepository
 import com.masdika.monja.data.repository.DeviceRepositoryImpl
+import com.masdika.monja.data.repository.LocationRepositoryImpl
+import com.masdika.monja.data.repository.VitalRepositoryImpl
+import com.masdika.monja.data.repository.interfaces.DeviceRepository
+import com.masdika.monja.data.repository.interfaces.LocationRepository
+import com.masdika.monja.data.repository.interfaces.VitalsRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import jakarta.inject.Singleton
+import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -16,4 +20,16 @@ abstract class RepositoryModule {
     abstract fun bindDeviceRepository(
         deviceRepositoryImpl: DeviceRepositoryImpl
     ): DeviceRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindVitalRepository(
+        vitalRepositoryImpl: VitalRepositoryImpl
+    ): VitalsRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindLocationRepository(
+        locationRepositoryImpl: LocationRepositoryImpl
+    ): LocationRepository
 }

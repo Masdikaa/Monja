@@ -1,26 +1,29 @@
 package com.masdika.monja.data.repository
 
+import android.R.attr.action
+import android.util.Log
 import com.masdika.monja.data.entity.DeviceConnectivityEntity
 import com.masdika.monja.data.model.Device
+import com.masdika.monja.data.repository.interfaces.DeviceRepository
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.realtime.PostgresAction
 import io.github.jan.supabase.realtime.channel
 import io.github.jan.supabase.realtime.postgresChangeFlow
 import io.github.jan.supabase.realtime.realtime
-import jakarta.inject.Inject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
-
-interface DeviceRepository {
-    fun getDeviceStream(): Flow<List<Device>>
-}
+import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 class DeviceRepositoryImpl @Inject constructor(
     private val supabase: SupabaseClient
 ) : DeviceRepository {
 
-    private suspend fun getAvailableDevices(): List<Device> {
+    override suspend fun getAvailableDevices(): List<Device> {
         return try {
             val entities = supabase.postgrest["device_connectivity"]
                 .select()
@@ -39,19 +42,30 @@ class DeviceRepositoryImpl @Inject constructor(
         }
     }
 
-    override fun getDeviceStream(): Flow<List<Device>> = flow {
-        emit(getAvailableDevices()) // Emit initial device
+    override fun getDeviceStream(): Flow<List<Device>> = channelFlow {
+        send(getAvailableDevices())
 
-        val channel = supabase.channel("device_connectivity")
-        val changeFlow = channel.postgresChangeFlow<PostgresAction>(schema = "public") {
-            table = "device_connectivity"
+        launch(Dispatchers.IO) {
+            val channel = supabase.channel("device_connectivity")
+            val changeFlow = channel.postgresChangeFlow<PostgresAction>(schema = "public") {
+                table = "devices"
+            }
+
+            supabase.realtime.connect()
+            channel.subscribe()
+
+            changeFlow.collect {
+                Log.i("REPOSITORY SUPABASE DEVICE", "$action")
+                send(getAvailableDevices())
+            }
         }
 
-        supabase.realtime.connect()
-        channel.subscribe()
-
-        changeFlow.collect {
-            emit(getAvailableDevices())
+        launch(Dispatchers.IO) {
+            while (isActive) {
+                delay(1000)
+                send(getAvailableDevices())
+            }
         }
     }
+
 }
