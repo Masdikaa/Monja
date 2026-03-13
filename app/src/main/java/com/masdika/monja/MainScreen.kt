@@ -23,7 +23,7 @@ fun MainScreen() {
         NavHost(
             navController = navController,
             startDestination = DashboardRoute,
-            modifier = Modifier.padding(innerPadding)
+            modifier = Modifier.padding(bottom = innerPadding.calculateBottomPadding())
         ) {
             dashboardScreenRoute()
             historyScreenRoute()

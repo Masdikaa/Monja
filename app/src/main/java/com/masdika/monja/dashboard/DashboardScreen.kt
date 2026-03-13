@@ -23,7 +23,8 @@ import androidx.compose.ui.tooling.preview.Devices.PIXEL_9
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.masdika.monja.dashboard.component.TopAppBar
+import com.masdika.monja.component.MainTopAppBar
+import com.masdika.monja.dashboard.component.TopAppBarAction
 import com.masdika.monja.data.model.Device
 import com.masdika.monja.data.model.Location
 import com.masdika.monja.data.model.Vitals
@@ -37,11 +38,15 @@ fun DashboardScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                devices = state.devices,
-                selectedDevice = state.selectedDevice,
-                onDeviceSelected = { device -> viewModel.selectDevice(device) }
-            )
+            MainTopAppBar(
+                title = "Dashboard"
+            ) {
+                TopAppBarAction(
+                    devices = state.devices,
+                    selectedDevice = state.selectedDevice,
+                    onDeviceSelected = { device -> viewModel.selectDevice(device) }
+                )
+            }
         },
         modifier = Modifier.fillMaxSize()
     ) { innerPadding ->
@@ -119,30 +124,43 @@ fun DashboardContent(
 @Composable
 private fun DashboardContentPreview() {
     MonjaTheme {
-        Scaffold(Modifier.fillMaxSize()) {
-            val devices = listOf(
-                Device(
-                    macAddress = "AH:JK:O7:OH:X4",
-                    isOnline = true,
-                    lastSeen = "LastSeen",
-                    createdAt = "2026-03-13 18:30:08.171222+00"
-                ),
-                Device(
-                    macAddress = "8H:81:O7:OH:T4",
-                    isOnline = false,
-                    lastSeen = "LastSeen",
-                    createdAt = "2026-03-13 19:30:08.171222+00"
-                )
+        val devices = listOf(
+            Device(
+                macAddress = "AH:JK:O7:OH:X4",
+                isOnline = true,
+                lastSeen = "LastSeen",
+                createdAt = "2026-03-13 18:30:08.171222+00"
+            ),
+            Device(
+                macAddress = "8H:81:O7:OH:T4",
+                isOnline = false,
+                lastSeen = "LastSeen",
+                createdAt = "2026-03-13 19:30:08.171222+00"
             )
-            val vitals = Vitals(
-                temperature = 33.9,
-                heartrate = 101,
-                oxygenSaturation = 90
-            )
-            val location = Location(
-                latitude = "-7.610600",
-                longitude = "111.443398"
-            )
+        )
+        val vitals = Vitals(
+            temperature = 33.9,
+            heartrate = 101,
+            oxygenSaturation = 90
+        )
+        val location = Location(
+            latitude = "-7.610600",
+            longitude = "111.443398"
+        )
+        Scaffold(
+            topBar = {
+                MainTopAppBar(
+                    title = "Dashboard"
+                ) {
+                    TopAppBarAction(
+                        devices = devices,
+                        selectedDevice = devices[0],
+                        onDeviceSelected = { }
+                    )
+                }
+            },
+            modifier = Modifier.fillMaxSize()
+        ) {
             DashboardContent(
                 devices = devices,
                 isDataLoading = false,
