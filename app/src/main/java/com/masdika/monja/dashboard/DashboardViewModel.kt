@@ -3,48 +3,52 @@ package com.masdika.monja.dashboard
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.masdika.monja.data.model.Device
-import com.masdika.monja.data.repository.DeviceRepository
+import com.masdika.monja.data.repository.interfaces.DeviceRepository
+import com.masdika.monja.data.repository.interfaces.LocationRepository
+import com.masdika.monja.data.repository.interfaces.VitalsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import jakarta.inject.Inject
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.time.Instant
-import java.time.format.DateTimeParseException
-import kotlin.time.ExperimentalTime
+import javax.inject.Inject
 
-@OptIn(ExperimentalTime::class)
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class DashboardViewModel @Inject constructor(
-    private val repository: DeviceRepository
+    private val deviceRepository: DeviceRepository,
+    private val vitalRepository: VitalsRepository,
+    private val locationRepository: LocationRepository,
 ) : ViewModel() {
     private val _state = MutableStateFlow(DashboardScreenState())
     val state = _state.asStateFlow()
 
     init {
         startObservingDevices()
+        startObservingVitals()
+        startObservingLocation()
     }
 
     private fun startObservingDevices() {
         _state.update { it.copy(dataLoading = true) }
 
         viewModelScope.launch {
-            repository.getDeviceStream()
+            deviceRepository.getDeviceStream()
                 .catch { e ->
                     e.printStackTrace()
                     _state.update { it.copy(dataLoading = false) }
                 }
                 .collect { devices ->
-                    val sortedDevice = devices.sortedWith(compareBy { device ->
-                        try {
-                            Instant.parse(device.lastSeen)
-                        } catch (e: DateTimeParseException) {
-                            e.printStackTrace()
-                            Instant.MAX
-                        }
-                    })
+                    val sortedDevice = devices.sortedWith(
+                        compareByDescending<Device> { it.isOnline }
+                            .thenByDescending { it.createdAt }
+                    )
 
                     _state.update { currentState ->
                         val selectedDevice = currentState.selectedDevice?.let { current ->
@@ -57,6 +61,57 @@ class DashboardViewModel @Inject constructor(
                         )
                     }
                 }
+        }
+    }
+
+    private fun startObservingVitals() {
+        _state.update { it.copy(dataLoading = true) }
+
+        viewModelScope.launch {
+            _state
+                .map { it.selectedDevice?.macAddress }
+                .distinctUntilChanged()
+                .flatMapLatest { macAddress ->
+                    if (macAddress == null) {
+                        flowOf(null)
+                    } else {
+                        vitalRepository.getVitalStream(macAddress)
+                    }
+                }
+                .catch { e ->
+                    e.printStackTrace()
+                }
+                .collect { vitalData ->
+                    _state.update {
+                        it.copy(vitals = vitalData)
+                    }
+                }
+        }
+    }
+
+    private fun startObservingLocation() {
+        _state.update { it.copy(dataLoading = true) }
+
+        viewModelScope.launch {
+            _state
+                .map { it.selectedDevice?.macAddress }
+                .distinctUntilChanged()
+                .flatMapLatest { macAddress ->
+                    if (macAddress == null) {
+                        flowOf(null)
+                    } else {
+                        locationRepository.getLocationStream(macAddress)
+                    }
+                }
+                .catch { e ->
+                    e.printStackTrace()
+                }
+                .collect { locationData ->
+                    _state.update {
+                        it.copy(location = locationData)
+                    }
+                }
+
         }
     }
 

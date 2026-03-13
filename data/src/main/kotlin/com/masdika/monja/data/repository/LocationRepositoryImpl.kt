@@ -54,7 +54,7 @@ class LocationRepositoryImpl @Inject constructor(
 
             channel.subscribe()
             changeFlow.collect { action ->
-                Log.i("REPOSITORY SUPABASE LOCATION", "New Vitals: $macAddress - $action")
+                Log.i("REPOSITORY SUPABASE LOCATION", "New Location: $macAddress - $action")
                 send(getAvailableLocation(macAddress))
             }
         }

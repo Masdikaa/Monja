@@ -25,6 +25,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.masdika.monja.dashboard.component.TopAppBar
 import com.masdika.monja.data.model.Device
+import com.masdika.monja.data.model.Location
+import com.masdika.monja.data.model.Vitals
 import com.masdika.monja.ui.theme.MonjaTheme
 
 @Composable
@@ -46,6 +48,8 @@ fun DashboardScreen(
         DashboardContent(
             devices = state.devices,
             isDataLoading = state.dataLoading,
+            vitals = state.vitals,
+            location = state.location,
             modifier = Modifier.padding(innerPadding)
         )
     }
@@ -54,6 +58,8 @@ fun DashboardScreen(
 @Composable
 fun DashboardContent(
     devices: List<Device>,
+    vitals: Vitals?,
+    location: Location?,
     isDataLoading: Boolean,
     modifier: Modifier = Modifier
 ) {
@@ -67,7 +73,7 @@ fun DashboardContent(
         if (isDataLoading) {
             CircularProgressIndicator(Modifier.size(40.dp))
         } else if (devices.isEmpty()) {
-            Text("Retrieving data or no device...")
+            Text("Empty Devices")
         } else {
             devices.forEach { device ->
                 Card(
@@ -95,6 +101,15 @@ fun DashboardContent(
                     }
                 }
             }
+
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Text(text = "Temperature\t\t= ${vitals?.temperature ?: "--"}")
+                Text(text = "Hear Rate\t\t\t\t\t= ${vitals?.heartrate ?: "--"}")
+                Text(text = "SpO2\t\t\t\t\t\t\t\t\t= ${vitals?.oxygenSaturation ?: "--"}")
+                Spacer(Modifier.height(10.dp))
+                Text(text = "Latitude\t\t\t\t\t\t= ${location?.latitude ?: "Searching for latitude"}")
+                Text(text = "Longitude\t\t\t\t\t= ${location?.longitude ?: "Searching for longitude"}")
+            }
         }
     }
 }
@@ -104,22 +119,39 @@ fun DashboardContent(
 @Composable
 private fun DashboardContentPreview() {
     MonjaTheme {
-        val devices = listOf(
-            Device(
-                macAddress = "AH:JK:O7:OH:X4",
-                isOnline = true,
-                lastSeen = "LastSeen"
-            ),
-            Device(
-                macAddress = "8H:81:O7:OH:T4",
-                isOnline = false,
-                lastSeen = "LastSeen"
+        Scaffold(Modifier.fillMaxSize()) {
+            val devices = listOf(
+                Device(
+                    macAddress = "AH:JK:O7:OH:X4",
+                    isOnline = true,
+                    lastSeen = "LastSeen",
+                    createdAt = "2026-03-13 18:30:08.171222+00"
+                ),
+                Device(
+                    macAddress = "8H:81:O7:OH:T4",
+                    isOnline = false,
+                    lastSeen = "LastSeen",
+                    createdAt = "2026-03-13 19:30:08.171222+00"
+                )
             )
-        )
-        DashboardContent(
-            devices = devices,
-            isDataLoading = false,
-            modifier = Modifier.fillMaxSize()
-        )
+            val vitals = Vitals(
+                temperature = 33.9,
+                heartrate = 101,
+                oxygenSaturation = 90
+            )
+            val location = Location(
+                latitude = "-7.610600",
+                longitude = "111.443398"
+            )
+            DashboardContent(
+                devices = devices,
+                isDataLoading = false,
+                vitals = vitals,
+                location = location,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(it)
+            )
+        }
     }
 }

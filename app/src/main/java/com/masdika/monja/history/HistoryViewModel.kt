@@ -1,12 +1,12 @@
 package com.masdika.monja.history
 
 import androidx.lifecycle.ViewModel
-import com.masdika.monja.data.repository.DeviceRepository
+import com.masdika.monja.data.repository.interfaces.DeviceRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import jakarta.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import javax.inject.Inject
 
 @HiltViewModel
 class HistoryViewModel @Inject constructor(

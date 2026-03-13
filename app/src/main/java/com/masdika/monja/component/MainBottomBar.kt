@@ -5,9 +5,11 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.navigation.NavController
+import androidx.navigation.NavDestination.Companion.hasRoute
+import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.masdika.monja.component.NavigationItem
 
 @Composable
 fun MainBottomBar(
@@ -18,13 +20,15 @@ fun MainBottomBar(
         NavigationItem.History
     )
 
-    val backStackEntry = navController.currentBackStackEntryAsState()
-    val currentRoute = backStackEntry.value?.destination?.route
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentDestination = navBackStackEntry?.destination
 
     NavigationBar {
         navigationItem.forEach { item ->
             NavigationBarItem(
-                selected = currentRoute == item.route.toString(),
+                selected = currentDestination?.hierarchy?.any {
+                    it.hasRoute(item.route::class)
+                } == true,
                 onClick = {
                     navController.navigate(item.route) {
                         navController.graph.startDestinationRoute?.let { route ->

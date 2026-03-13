@@ -7,5 +7,6 @@ import kotlinx.serialization.Serializable
 data class DeviceConnectivityEntity(
     @SerialName("mac_address") val macAddress: String,
     @SerialName("connection_status") val connectionStatus: String,
-    @SerialName("last_seen") val lastSeen: String? = null
+    @SerialName("last_seen") val lastSeen: String? = null,
+    @SerialName("created_at") val createdAt: String? = null
 )

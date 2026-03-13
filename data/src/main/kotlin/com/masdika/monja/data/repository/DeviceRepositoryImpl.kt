@@ -33,7 +33,8 @@ class DeviceRepositoryImpl @Inject constructor(
                 Device(
                     macAddress = entity.macAddress,
                     isOnline = entity.connectionStatus.equals("Online", ignoreCase = true),
-                    lastSeen = entity.lastSeen ?: "Unknown"
+                    lastSeen = entity.lastSeen ?: "Unknown",
+                    createdAt = entity.createdAt ?: ""
                 )
             }
         } catch (e: Exception) {
