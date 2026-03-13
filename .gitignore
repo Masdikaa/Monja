@@ -6,7 +6,7 @@
 local.properties
 
 # IDE files (Android Studio)
-/.idea/
+.idea/
 *.iml
 
 # Build artifacts and generated files
