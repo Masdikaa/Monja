@@ -1,4 +1,4 @@
-package com.masdika.monja.history
+package com.masdika.monja.ui.history
 
 import androidx.lifecycle.ViewModel
 import com.masdika.monja.data.repository.interfaces.DeviceRepository

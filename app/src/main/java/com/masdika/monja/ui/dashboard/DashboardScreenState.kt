@@ -1,4 +1,4 @@
-package com.masdika.monja.dashboard
+package com.masdika.monja.ui.dashboard
 
 import com.masdika.monja.data.model.Device
 import com.masdika.monja.data.model.Location

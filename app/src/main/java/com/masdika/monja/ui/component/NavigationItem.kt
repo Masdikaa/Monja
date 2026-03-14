@@ -1,11 +1,11 @@
-package com.masdika.monja.component
+package com.masdika.monja.ui.component
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.History
 import androidx.compose.ui.graphics.vector.ImageVector
-import com.masdika.monja.dashboard.DashboardRoute
-import com.masdika.monja.history.HistoryRoute
+import com.masdika.monja.ui.dashboard.DashboardRoute
+import com.masdika.monja.ui.history.HistoryRoute
 import kotlinx.serialization.Serializable
 
 sealed class NavigationItem(

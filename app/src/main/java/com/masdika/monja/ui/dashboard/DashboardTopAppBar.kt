@@ -1,4 +1,4 @@
-package com.masdika.monja.dashboard.component
+package com.masdika.monja.ui.dashboard
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box

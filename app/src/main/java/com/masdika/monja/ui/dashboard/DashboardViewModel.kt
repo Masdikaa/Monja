@@ -1,4 +1,4 @@
-package com.masdika.monja.dashboard
+package com.masdika.monja.ui.dashboard
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

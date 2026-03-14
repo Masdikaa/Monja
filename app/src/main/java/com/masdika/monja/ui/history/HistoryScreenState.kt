@@ -1,4 +1,4 @@
-package com.masdika.monja.history
+package com.masdika.monja.ui.history
 
 data class HistoryScreenState(
     val test: String = ""

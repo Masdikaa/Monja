@@ -1,4 +1,4 @@
-package com.masdika.monja.dashboard
+package com.masdika.monja.ui.history
 
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -7,18 +7,20 @@ import androidx.navigation.compose.composable
 import kotlinx.serialization.Serializable
 
 @Serializable
-data object DashboardRoute
+data object HistoryRoute
 
-fun NavController.navigateToDashboard() {
-    navigate(route = DashboardRoute)
+fun NavController.navigateToHistory() {
+    navigate(route = HistoryRoute) {
+        launchSingleTop = true
+    }
 }
 
-fun NavGraphBuilder.dashboardScreenRoute(
+fun NavGraphBuilder.historyScreenRoute(
     // TODO() Navigate screen function
 ) {
-    composable<DashboardRoute> {
-        val viewModel = hiltViewModel<DashboardViewModel>()
-        DashboardScreen(
+    composable<HistoryRoute> {
+        val viewModel = hiltViewModel<HistoryViewModel>()
+        HistoryScreen(
             viewModel = viewModel
         )
     }

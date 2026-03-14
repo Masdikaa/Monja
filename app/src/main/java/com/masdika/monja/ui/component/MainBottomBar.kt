@@ -1,4 +1,4 @@
-package com.masdika.monja.component
+package com.masdika.monja.ui.component
 
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar

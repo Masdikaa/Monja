@@ -1,4 +1,4 @@
-package com.masdika.monja.history
+package com.masdika.monja.ui.history
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,7 +14,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.masdika.monja.component.MainTopAppBar
+import com.masdika.monja.ui.component.MainTopAppBar
 
 @Composable
 fun HistoryScreen(
