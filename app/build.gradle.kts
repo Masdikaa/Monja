@@ -83,9 +83,15 @@ dependencies {
     ksp(libs.hilt.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
 
-    // NAVIGATION
+    // ===================== NAVIGATION ======================
     implementation(libs.androidx.navigation.compose)
     implementation(libs.kotlinx.serialization.json)
+
+    // ===================== BOTTOM BAR ======================
+    implementation(libs.compose.animated.navigationbar)
+
+    // ====================== MAP BOX ========================
+    implementation(libs.mapbox.android.ndk)
 
     // ======================= TESTING =======================
     // Unit Test (Local)

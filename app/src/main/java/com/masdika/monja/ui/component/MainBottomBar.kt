@@ -1,21 +1,23 @@
 package com.masdika.monja.ui.component
 
-import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.Text
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.compose.currentBackStackEntryAsState
+import com.example.bottombar.AnimatedBottomBar
+import com.example.bottombar.components.BottomBarItem
+import com.example.bottombar.model.IndicatorDirection
+import com.example.bottombar.model.IndicatorStyle
 
 @Composable
 fun MainBottomBar(
     navController: NavController
 ) {
-    val navigationItem = listOf(
+    val navigationItems = listOf(
         NavigationItem.Dashboard,
         NavigationItem.History
     )
@@ -23,25 +25,38 @@ fun MainBottomBar(
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
-    NavigationBar {
-        navigationItem.forEach { item ->
-            NavigationBarItem(
-                selected = currentDestination?.hierarchy?.any {
-                    it.hasRoute(item.route::class)
-                } == true,
+    val selectedIndex = navigationItems.indexOfFirst { item ->
+        currentDestination?.hierarchy?.any {
+            it.hasRoute(item.route::class)
+        } == true
+    }.takeIf { it >= 0 } ?: 0
+
+    AnimatedBottomBar(
+        selectedItem = selectedIndex,
+        itemSize = navigationItems.size,
+        containerColor = MaterialTheme.colorScheme.background,
+        indicatorStyle = IndicatorStyle.WORM,
+        indicatorDirection = IndicatorDirection.TOP
+    ) {
+        navigationItems.forEachIndexed { index, item ->
+            BottomBarItem(
+                selected = selectedIndex == index,
                 onClick = {
-                    navController.navigate(item.route) {
-                        navController.graph.startDestinationRoute?.let { route ->
-                            popUpTo(route) {
-                                saveState = true
+                    if (selectedIndex != index) {
+                        navController.navigate(item.route) {
+                            navController.graph.startDestinationRoute?.let { route ->
+                                popUpTo(route) {
+                                    saveState = true
+                                }
                             }
+                            launchSingleTop = true
+                            restoreState = true
                         }
-                        launchSingleTop = true
-                        restoreState = true
                     }
                 },
-                icon = { Icon(imageVector = item.icon, contentDescription = item.title) },
-                label = { Text(item.title) }
+                imageVector = item.icon,
+                label = item.title,
+                containerColor = Color.Transparent
             )
         }
     }

@@ -18,6 +18,8 @@ animation = "1.10.4"
 animationCore = "1.10.4"
 material3 = "1.4.0"
 navigation = "2.9.5"
+animatedNavigationBar = "1.0.2"
+mapbox = "11.19.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -48,6 +50,8 @@ androidx-compose-animation-core = { group = "androidx.compose.animation", name =
 androidx-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
 androidx-compose-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigation" }
+compose-animated-navigationbar = { module = "com.canopas.compose-animated-navigationbar:bottombar", version.ref = "animatedNavigationBar" }
+mapbox-android-ndk = { module = "com.mapbox.maps:android-ndk27", version.ref = "mapbox" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
