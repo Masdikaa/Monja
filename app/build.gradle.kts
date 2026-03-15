@@ -91,7 +91,8 @@ dependencies {
     implementation(libs.compose.animated.navigationbar)
 
     // ====================== MAP BOX ========================
-    implementation(libs.mapbox.android.ndk)
+    implementation(libs.mapbox.android)
+    implementation(libs.maps.compose.ndk27)
 
     // ======================= TESTING =======================
     // Unit Test (Local)
