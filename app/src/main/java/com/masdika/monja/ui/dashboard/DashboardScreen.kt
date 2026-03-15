@@ -4,18 +4,18 @@ import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Devices.PIXEL_9
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.compose.rememberNavController
 import com.masdika.monja.data.model.Device
 import com.masdika.monja.data.model.Location
 import com.masdika.monja.data.model.Vitals
+import com.masdika.monja.ui.component.MainBottomBar
 import com.masdika.monja.ui.component.MainTopAppBar
-import com.masdika.monja.ui.component.MapboxMap
 import com.masdika.monja.ui.theme.MonjaTheme
 import com.masdika.monja.util.RequestLocationPermission
 
@@ -40,7 +40,7 @@ fun DashboardScreen(
         modifier = Modifier.fillMaxSize()
     ) { innerPadding ->
         DashboardContent(
-            devices = state.devices,
+            selectedDevice = state.selectedDevice,
             isDataLoading = state.dataLoading,
             vitals = state.vitals,
             location = state.location,
@@ -51,7 +51,7 @@ fun DashboardScreen(
 
 @Composable
 fun DashboardContent(
-    devices: List<Device>,
+    selectedDevice: Device?,
     vitals: Vitals?,
     location: Location?,
     isDataLoading: Boolean,
@@ -59,10 +59,22 @@ fun DashboardContent(
 ) {
     RequestLocationPermission(
         onPermissionGranted = {
-            MapboxMap(modifier.fillMaxSize())
+            DashboardMap(
+                macAddress = selectedDevice?.macAddress ?: "",
+                isOnline = selectedDevice?.isOnline ?: false,
+                deviceLocation = location,
+                isGpsEnabled = true,
+                modifier = modifier.fillMaxSize()
+            )
         },
         onPermissionDenied = {
-            Text("Permission Denied")
+            DashboardMap(
+                macAddress = selectedDevice?.macAddress ?: "",
+                isOnline = selectedDevice?.isOnline ?: false,
+                deviceLocation = location,
+                isGpsEnabled = false,
+                modifier = modifier.fillMaxSize()
+            )
         }
     )
 }
@@ -72,6 +84,8 @@ fun DashboardContent(
 @Composable
 private fun DashboardContentPreview() {
     MonjaTheme {
+        val navController = rememberNavController()
+
         val devices = listOf(
             Device(
                 macAddress = "AH:JK:O7:OH:X4",
@@ -107,10 +121,13 @@ private fun DashboardContentPreview() {
                     )
                 }
             },
+            bottomBar = {
+                MainBottomBar(navController = navController)
+            },
             modifier = Modifier.fillMaxSize()
         ) {
             DashboardContent(
-                devices = devices,
+                selectedDevice = devices[0],
                 isDataLoading = false,
                 vitals = vitals,
                 location = location,
