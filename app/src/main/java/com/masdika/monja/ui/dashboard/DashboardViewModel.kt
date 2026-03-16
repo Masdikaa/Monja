@@ -8,6 +8,7 @@ import com.masdika.monja.data.repository.interfaces.LocationRepository
 import com.masdika.monja.data.repository.interfaces.VitalsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
@@ -36,13 +37,11 @@ class DashboardViewModel @Inject constructor(
     }
 
     private fun startObservingDevices() {
-        _state.update { it.copy(dataLoading = true) }
-
         viewModelScope.launch {
             deviceRepository.getDeviceStream()
                 .catch { e ->
                     e.printStackTrace()
-                    _state.update { it.copy(dataLoading = false) }
+                    _state.update { it.copy(deviceLoading = false) }
                 }
                 .collect { devices ->
                     val sortedDevice = devices.sortedWith(
@@ -54,10 +53,11 @@ class DashboardViewModel @Inject constructor(
                         val selectedDevice = currentState.selectedDevice?.let { current ->
                             sortedDevice.find { it.macAddress == current.macAddress }
                         } ?: sortedDevice.firstOrNull()
+
                         currentState.copy(
                             devices = sortedDevice,
                             selectedDevice = selectedDevice,
-                            dataLoading = false
+                            deviceLoading = false
                         )
                     }
                 }
@@ -65,8 +65,6 @@ class DashboardViewModel @Inject constructor(
     }
 
     private fun startObservingVitals() {
-        _state.update { it.copy(dataLoading = true) }
-
         viewModelScope.launch {
             _state
                 .map { it.selectedDevice?.macAddress }
@@ -75,23 +73,20 @@ class DashboardViewModel @Inject constructor(
                     if (macAddress == null) {
                         flowOf(null)
                     } else {
+                        _state.update { it.copy(vitalsLoading = true) }
                         vitalRepository.getVitalStream(macAddress)
                     }
                 }
-                .catch { e ->
-                    e.printStackTrace()
-                }
+                .catch { e -> e.printStackTrace() }
                 .collect { vitalData ->
                     _state.update {
-                        it.copy(vitals = vitalData)
+                        it.copy(vitals = vitalData, vitalsLoading = false)
                     }
                 }
         }
     }
 
     private fun startObservingLocation() {
-        _state.update { it.copy(dataLoading = true) }
-
         viewModelScope.launch {
             _state
                 .map { it.selectedDevice?.macAddress }
@@ -100,18 +95,21 @@ class DashboardViewModel @Inject constructor(
                     if (macAddress == null) {
                         flowOf(null)
                     } else {
+                        // OPEN GATE: Set locationLoading to true ONLY when the request starts
+                        _state.update { it.copy(locationLoading = true) }
+                        delay(2000) // Network delay simulate
                         locationRepository.getLocationStream(macAddress)
                     }
                 }
-                .catch { e ->
-                    e.printStackTrace()
-                }
+                .catch { e -> e.printStackTrace() }
                 .collect { locationData ->
                     _state.update {
-                        it.copy(location = locationData)
+                        it.copy(
+                            location = locationData,
+                            locationLoading = false
+                        )
                     }
                 }
-
         }
     }
 

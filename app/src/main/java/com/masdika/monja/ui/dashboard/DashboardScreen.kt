@@ -1,11 +1,16 @@
 package com.masdika.monja.ui.dashboard
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Devices.PIXEL_9
 import androidx.compose.ui.tooling.preview.Preview
@@ -41,7 +46,9 @@ fun DashboardScreen(
     ) { innerPadding ->
         DashboardContent(
             selectedDevice = state.selectedDevice,
-            isDataLoading = state.dataLoading,
+            deviceLoading = state.deviceLoading,
+            locationLoading = state.locationLoading,
+            vitalsLoading = state.vitalsLoading,
             vitals = state.vitals,
             location = state.location,
             modifier = Modifier.padding(innerPadding)
@@ -54,29 +61,48 @@ fun DashboardContent(
     selectedDevice: Device?,
     vitals: Vitals?,
     location: Location?,
-    isDataLoading: Boolean,
+    deviceLoading: Boolean,
+    locationLoading: Boolean,
+    vitalsLoading: Boolean,
     modifier: Modifier = Modifier
 ) {
-    RequestLocationPermission(
-        onPermissionGranted = {
-            DashboardMap(
-                macAddress = selectedDevice?.macAddress ?: "",
-                isOnline = selectedDevice?.isOnline ?: false,
-                deviceLocation = location,
-                isGpsEnabled = true,
-                modifier = modifier.fillMaxSize()
-            )
-        },
-        onPermissionDenied = {
-            DashboardMap(
-                macAddress = selectedDevice?.macAddress ?: "",
-                isOnline = selectedDevice?.isOnline ?: false,
-                deviceLocation = location,
-                isGpsEnabled = false,
-                modifier = modifier.fillMaxSize()
+    Column(
+        modifier = modifier.fillMaxSize()
+    ) {
+        if (deviceLoading) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
+        } else if (selectedDevice == null) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text("Tidak ada perangkat yang tersedia.")
+            }
+        } else {
+            // 2. Device is ready, render Map and Vitals
+            RequestLocationPermission(
+                onPermissionGranted = {
+                    DashboardMap(
+                        macAddress = selectedDevice.macAddress,
+                        isOnline = selectedDevice.isOnline,
+                        deviceLocation = location,
+                        isGpsEnabled = true,
+                        isLocationLoading = locationLoading,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                },
+                onPermissionDenied = {
+                    DashboardMap(
+                        macAddress = selectedDevice.macAddress,
+                        isOnline = selectedDevice.isOnline,
+                        deviceLocation = location,
+                        isGpsEnabled = false,
+                        isLocationLoading = locationLoading, // Oper to specific parameter
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
             )
         }
-    )
+    }
 }
 
 @Preview(device = PIXEL_9, showSystemUi = true)
@@ -128,7 +154,9 @@ private fun DashboardContentPreview() {
         ) {
             DashboardContent(
                 selectedDevice = devices[0],
-                isDataLoading = false,
+                deviceLoading = false,
+                locationLoading = true,
+                vitalsLoading = false,
                 vitals = vitals,
                 location = location,
                 modifier = Modifier

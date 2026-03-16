@@ -7,7 +7,9 @@ import com.masdika.monja.data.model.Vitals
 data class DashboardScreenState(
     val devices: List<Device> = emptyList(),
     val selectedDevice: Device? = null,
-    val dataLoading: Boolean = false,
+    val deviceLoading: Boolean = true,
+    val vitalsLoading: Boolean = false,
+    val locationLoading: Boolean = false,
     val vitals: Vitals? = null,
     val location: Location? = null
 )
