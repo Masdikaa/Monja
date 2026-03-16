@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
@@ -8,6 +9,17 @@ plugins {
     alias(libs.plugins.hilt.android)
     alias(libs.plugins.kotlin.serialization)
 }
+
+val localProperties = Properties()
+val localPropertiesFile: File = rootProject.file("local.properties")
+
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.inputStream().use { stream ->
+        localProperties.load(stream)
+    }
+}
+
+val mapboxPublicToken = localProperties.getProperty("MAPBOX_PUBLIC_TOKEN") ?: ""
 
 android {
     namespace = "com.masdika.monja"
@@ -24,6 +36,8 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
+
+        resValue("string", "mapbox_access_token", mapboxPublicToken)
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
