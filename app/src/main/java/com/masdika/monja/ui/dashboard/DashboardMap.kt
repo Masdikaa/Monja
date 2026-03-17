@@ -5,7 +5,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,6 +12,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.Layers
+import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -23,7 +26,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,11 +38,13 @@ import androidx.compose.ui.unit.dp
 import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraOptions
 import com.mapbox.maps.MapboxExperimental
+import com.mapbox.maps.Style
 import com.mapbox.maps.extension.compose.MapEffect
 import com.mapbox.maps.extension.compose.MapboxMap
 import com.mapbox.maps.extension.compose.animation.viewport.MapViewportState
 import com.mapbox.maps.extension.compose.animation.viewport.rememberMapViewportState
 import com.mapbox.maps.extension.compose.annotation.ViewAnnotation
+import com.mapbox.maps.extension.compose.style.MapStyle
 import com.mapbox.maps.plugin.animation.MapAnimationOptions
 import com.mapbox.maps.plugin.locationcomponent.OnIndicatorPositionChangedListener
 import com.mapbox.maps.plugin.locationcomponent.location
@@ -65,8 +70,16 @@ fun DashboardMap(
     val deviceLatitude = deviceLocation?.latitude?.toDoubleOrNull()
     val deviceLongitude = deviceLocation?.longitude?.toDoubleOrNull()
     val hasDeviceLocation = deviceLatitude != null && deviceLongitude != null
+    var isMapDarkMode by rememberSaveable { mutableStateOf(false) }
+    var isSatelliteMode by rememberSaveable { mutableStateOf(false) }
+    var userLocation by rememberSaveable { mutableStateOf<Point?>(null) }
+    var isInitialCameraSet by rememberSaveable { mutableStateOf(false) }
 
-    var userLocation by remember { mutableStateOf<Point?>(null) }
+    val currentMapStyle = when {
+        isSatelliteMode -> Style.SATELLITE
+        isMapDarkMode -> Style.DARK
+        else -> Style.MAPBOX_STREETS
+    }
 
     val mapViewportState = rememberMapViewportState {
         setCameraOptions {
@@ -84,6 +97,11 @@ fun DashboardMap(
         Log.i("MapFlow", "App Permission: $isGpsEnabled")
         Log.i("MapFlow", "User Location: ${if (userLocation != null) "AVAILABLE" else "NULL"}")
         Log.i("MapFlow", "Device Location (hasDeviceLocation): $hasDeviceLocation")
+
+        if (isInitialCameraSet) {
+            Log.i("MapFlow", "-> Action: Ignored. Initial camera already set.")
+            return@LaunchedEffect
+        }
 
         if (isLocationLoading) {
             Log.i("MapFlow", "-> Action: Detained. Awaiting Supabase Loading")
@@ -103,6 +121,7 @@ fun DashboardMap(
                     zoom = 8.5,
                     durationMs = 2000
                 )
+                isInitialCameraSet = true
             }
 
             isOnline && devicePoint != null -> {
@@ -113,6 +132,7 @@ fun DashboardMap(
                     zoom = 8.5,
                     durationMs = 2000
                 )
+                isInitialCameraSet = true
             }
 
             userLocation != null -> {
@@ -123,6 +143,7 @@ fun DashboardMap(
                     zoom = 8.5,
                     durationMs = 2000
                 )
+                isInitialCameraSet = true
             }
 
             else -> {
@@ -141,7 +162,7 @@ fun DashboardMap(
 
         if (isLocationLoading) {
             LinearProgressIndicator(
-                color = Color.Red,
+                color = MaterialTheme.colorScheme.primary,
                 trackColor = MaterialTheme.colorScheme.background,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -163,7 +184,8 @@ fun DashboardMap(
         ) {
             MapboxMap(
                 modifier = Modifier.fillMaxSize(),
-                mapViewportState = mapViewportState
+                mapViewportState = mapViewportState,
+                style = { MapStyle(style = currentMapStyle) }
             ) {
                 if (isGpsEnabled) {
                     MapEffect(Unit) { mapView ->
@@ -191,12 +213,47 @@ fun DashboardMap(
                 )
             }
 
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(5.dp),
+            Column(
+                verticalArrangement = Arrangement.spacedBy(5.dp),
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(end = 5.dp, bottom = 5.dp)
             ) {
+                IconButton(
+                    enabled = !isSatelliteMode,
+                    onClick = { isMapDarkMode = !isMapDarkMode },
+                    colors = IconButtonDefaults.iconButtonColors(
+                        containerColor = MaterialTheme.colorScheme.background,
+                        contentColor = MaterialTheme.colorScheme.onBackground,
+                        disabledContainerColor = Color.DarkGray.copy(0.6f),
+                        disabledContentColor = Color.LightGray.copy(0.8f)
+                    )
+                ) {
+                    Icon(
+                        imageVector = if (isMapDarkMode) Icons.Default.LightMode else Icons.Default.DarkMode,
+                        contentDescription = "Toggle Map Theme",
+                        modifier = Modifier
+                            .size(55.dp)
+                            .padding(8.dp)
+                    )
+                }
+
+                IconButton(
+                    onClick = { isSatelliteMode = !isSatelliteMode },
+                    colors = IconButtonDefaults.iconButtonColors(
+                        containerColor = if (isSatelliteMode) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.background,
+                        contentColor = if (isSatelliteMode) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onBackground
+                    )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Layers,
+                        contentDescription = "Toggle Satellite",
+                        modifier = Modifier
+                            .size(55.dp)
+                            .padding(8.dp)
+                    )
+                }
+
                 IconButton(
                     enabled = userLocation != null,
                     onClick = {
@@ -311,6 +368,7 @@ private fun animateCameraTo(
         cameraOptions = CameraOptions.Builder()
             .center(point)
             .zoom(zoom)
+            .pitch(0.0)
             .build(),
         animationOptions = MapAnimationOptions.mapAnimationOptions {
             duration(durationMs)
