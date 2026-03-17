@@ -51,7 +51,7 @@ androidx-material3 = { group = "androidx.compose.material3", name = "material3",
 androidx-compose-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigation" }
 compose-animated-navigationbar = { module = "com.canopas.compose-animated-navigationbar:bottombar", version.ref = "animatedNavigationBar" }
-mapbox-android = { module = "com.mapbox.maps:android", version.ref = "mapbox" }
+mapbox-android = { module = "com.mapbox.maps:android-ndk27", version.ref = "mapbox" }
 maps-compose-ndk27 = { module = "com.mapbox.extension:maps-compose-ndk27", version.ref = "mapbox" }
 
 [plugins]

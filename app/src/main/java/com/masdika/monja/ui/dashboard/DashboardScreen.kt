@@ -25,6 +25,7 @@ import com.masdika.monja.data.model.Location
 import com.masdika.monja.data.model.Vitals
 import com.masdika.monja.ui.component.MainBottomBar
 import com.masdika.monja.ui.component.MainTopAppBar
+import com.masdika.monja.ui.dashboard.map.DashboardMap
 import com.masdika.monja.ui.theme.MonjaTheme
 import com.masdika.monja.util.RequestLocationPermission
 
