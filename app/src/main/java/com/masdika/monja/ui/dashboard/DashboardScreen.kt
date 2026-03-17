@@ -1,18 +1,29 @@
 package com.masdika.monja.ui.dashboard
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CornerSize
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Devices.PIXEL_9
@@ -25,7 +36,9 @@ import com.masdika.monja.data.model.Location
 import com.masdika.monja.data.model.Vitals
 import com.masdika.monja.ui.component.MainBottomBar
 import com.masdika.monja.ui.component.MainTopAppBar
+import com.masdika.monja.ui.dashboard.bottomsheet.DashboardBottomSheet
 import com.masdika.monja.ui.dashboard.map.DashboardMap
+import com.masdika.monja.ui.icon.ArrowUpIcon
 import com.masdika.monja.ui.theme.MonjaTheme
 import com.masdika.monja.util.RequestLocationPermission
 
@@ -61,6 +74,7 @@ fun DashboardScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardContent(
     selectedDevice: Device?,
@@ -71,9 +85,10 @@ fun DashboardContent(
     vitalsLoading: Boolean,
     modifier: Modifier = Modifier
 ) {
-    Column(
-        modifier = modifier.fillMaxSize()
-    ) {
+    var showBottomSheet by remember { mutableStateOf(false) }
+    val sheetState = rememberModalBottomSheetState()
+
+    Column(modifier = modifier.fillMaxSize()) {
         if (deviceLoading) {
             LinearProgressIndicator(
                 color = MaterialTheme.colorScheme.primary,
@@ -87,26 +102,60 @@ fun DashboardContent(
                 Text("No Available Device.") // TODO() Implement Empty States
             }
         } else {
-            RequestLocationPermission(
-                onPermissionGranted = {
-                    DashboardMap(
-                        macAddress = selectedDevice.macAddress,
-                        isOnline = selectedDevice.isOnline,
-                        deviceLocation = location,
-                        isGpsEnabled = true,
-                        isLocationLoading = locationLoading,
-                    )
-                },
-                onPermissionDenied = {
-                    DashboardMap(
-                        macAddress = selectedDevice.macAddress,
-                        isOnline = selectedDevice.isOnline,
-                        deviceLocation = location,
-                        isGpsEnabled = false,
-                        isLocationLoading = locationLoading, // Oper to specific parameter
+            Box(
+                contentAlignment = Alignment.BottomCenter,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                RequestLocationPermission(
+                    onPermissionGranted = {
+                        DashboardMap(
+                            macAddress = selectedDevice.macAddress,
+                            isOnline = selectedDevice.isOnline,
+                            deviceLocation = location,
+                            isGpsEnabled = true,
+                            isLocationLoading = locationLoading,
+                        )
+                    },
+                    onPermissionDenied = {
+                        DashboardMap(
+                            macAddress = selectedDevice.macAddress,
+                            isOnline = selectedDevice.isOnline,
+                            deviceLocation = location,
+                            isGpsEnabled = false,
+                            isLocationLoading = locationLoading, // Oper to specific parameter
+                        )
+                    }
+                )
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .size(width = 120.dp, height = 25.dp)
+                        .background(
+                            shape = RoundedCornerShape(
+                                topStart = CornerSize(16.dp),
+                                topEnd = CornerSize(16.dp),
+                                bottomEnd = CornerSize(0),
+                                bottomStart = CornerSize(0)
+                            ),
+                            color = MaterialTheme.colorScheme.background
+                        )
+                        .clickable(onClick = { showBottomSheet = true })
+                ) {
+                    Icon(
+                        imageVector = ArrowUpIcon,
+                        contentDescription = "Arrow Up Icon",
+                        modifier = Modifier.size(20.dp)
                     )
                 }
-            )
+                if (showBottomSheet) {
+                    DashboardBottomSheet(
+                        sheetState = sheetState,
+                        vitals = vitals,
+                        isLoading = vitalsLoading,
+                        onDismissSheetState = { showBottomSheet = false }
+                    )
+                }
+            }
         }
     }
 }
