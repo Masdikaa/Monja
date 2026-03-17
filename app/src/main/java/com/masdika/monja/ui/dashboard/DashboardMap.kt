@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,6 +14,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -34,6 +37,7 @@ import com.mapbox.maps.CameraOptions
 import com.mapbox.maps.MapboxExperimental
 import com.mapbox.maps.extension.compose.MapEffect
 import com.mapbox.maps.extension.compose.MapboxMap
+import com.mapbox.maps.extension.compose.animation.viewport.MapViewportState
 import com.mapbox.maps.extension.compose.animation.viewport.rememberMapViewportState
 import com.mapbox.maps.extension.compose.annotation.ViewAnnotation
 import com.mapbox.maps.plugin.animation.MapAnimationOptions
@@ -42,6 +46,8 @@ import com.mapbox.maps.plugin.locationcomponent.location
 import com.mapbox.maps.viewannotation.geometry
 import com.mapbox.maps.viewannotation.viewAnnotationOptions
 import com.masdika.monja.data.model.Location
+import com.masdika.monja.ui.icon.GPSCenterIcon
+import com.masdika.monja.ui.icon.HikerIcon
 import com.masdika.monja.ui.icon.PinDropIcon
 import com.masdika.monja.ui.theme.MonjaTheme
 
@@ -69,6 +75,9 @@ fun DashboardMap(
         }
     }
 
+    val devicePoint =
+        if (hasDeviceLocation) Point.fromLngLat(deviceLongitude, deviceLatitude) else null
+
     LaunchedEffect(isLocationLoading, userLocation, hasDeviceLocation, isGpsEnabled) {
         Log.i("MapFlow", "--- LaunchedEffect Triggered ---")
         Log.i("MapFlow", "Loading Status: $isLocationLoading")
@@ -81,9 +90,6 @@ fun DashboardMap(
             return@LaunchedEffect
         }
 
-        val devicePoint =
-            if (hasDeviceLocation) Point.fromLngLat(deviceLongitude, deviceLatitude) else null
-
         when {
             isOnline && devicePoint != null && userLocation != null -> {
                 Log.i("MapFlow", "-> Action: Scenario A is executed (Zoom to Midpoint)")
@@ -91,25 +97,31 @@ fun DashboardMap(
                     (devicePoint.longitude() + userLocation!!.longitude()) / 2,
                     (devicePoint.latitude() + userLocation!!.latitude()) / 2
                 )
-                mapViewportState.flyTo(
-                    CameraOptions.Builder().center(midPoint).zoom(8.5).build(),
-                    MapAnimationOptions.mapAnimationOptions { duration(2000) }
+                animateCameraTo(
+                    viewPortState = mapViewportState,
+                    point = midPoint,
+                    zoom = 8.5,
+                    durationMs = 2000
                 )
             }
 
             isOnline && devicePoint != null -> {
                 Log.i("MapFlow", "-> Action: Scenario B is executed (Zoom to Device)")
-                mapViewportState.flyTo(
-                    CameraOptions.Builder().center(devicePoint).zoom(8.5).build(),
-                    MapAnimationOptions.mapAnimationOptions { duration(2000) }
+                animateCameraTo(
+                    viewPortState = mapViewportState,
+                    point = devicePoint,
+                    zoom = 8.5,
+                    durationMs = 2000
                 )
             }
 
             userLocation != null -> {
                 Log.i("MapFlow", "-> Action: Scenario C is executed (Zoom to User Location)")
-                mapViewportState.flyTo(
-                    CameraOptions.Builder().center(userLocation!!).zoom(8.5).build(),
-                    MapAnimationOptions.mapAnimationOptions { duration(2000) }
+                animateCameraTo(
+                    viewPortState = mapViewportState,
+                    point = userLocation,
+                    zoom = 8.5,
+                    durationMs = 2000
                 )
             }
 
@@ -119,35 +131,13 @@ fun DashboardMap(
         }
     }
 
-    Box(modifier = modifier) {
-        MapboxMap(
-            modifier = Modifier.fillMaxSize(),
-            mapViewportState = mapViewportState
-        ) {
-            if (isGpsEnabled) {
-                MapEffect(Unit) { mapView ->
-                    mapView.location.updateSettings {
-                        enabled = true
-                        pulsingEnabled = true
-                    }
-                    mapView.location.addOnIndicatorPositionChangedListener(object :
-                        OnIndicatorPositionChangedListener {
-                        override fun onIndicatorPositionChanged(point: Point) {
-                            userLocation = point
-                            mapView.location.removeOnIndicatorPositionChangedListener(this)
-                        }
-                    })
-                }
-            }
-
-            if (!isLocationLoading && isOnline && hasDeviceLocation) {
-                PinDropPoint(
-                    latitude = deviceLatitude,
-                    longitude = deviceLongitude,
-                    macAddress = macAddress
-                )
-            }
-        }
+    Column(
+        verticalArrangement = Arrangement.Top,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background),
+    ) {
 
         if (isLocationLoading) {
             LinearProgressIndicator(
@@ -155,60 +145,177 @@ fun DashboardMap(
                 trackColor = MaterialTheme.colorScheme.background,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(3.dp)
-                    .align(Alignment.TopCenter)
+                    .height(4.dp)
             )
         } else {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(3.dp)
+                    .height(4.dp)
                     .background(MaterialTheme.colorScheme.background)
             )
+        }
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+        ) {
+            MapboxMap(
+                modifier = Modifier.fillMaxSize(),
+                mapViewportState = mapViewportState
+            ) {
+                if (isGpsEnabled) {
+                    MapEffect(Unit) { mapView ->
+                        mapView.location.updateSettings {
+                            enabled = true
+                            pulsingEnabled = true
+                        }
+                        mapView.location.addOnIndicatorPositionChangedListener(object :
+                            OnIndicatorPositionChangedListener {
+                            override fun onIndicatorPositionChanged(point: Point) {
+                                userLocation = point
+                                mapView.location.removeOnIndicatorPositionChangedListener(this)
+                            }
+                        })
+                    }
+                }
+
+                ShowDeviceAnnotation(
+                    isLocationLoading = isLocationLoading,
+                    isOnline = isOnline,
+                    hasDeviceLocation = hasDeviceLocation,
+                    latitude = deviceLatitude,
+                    longitude = deviceLongitude,
+                    macAddress = macAddress
+                )
+            }
+
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(5.dp),
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(end = 5.dp, bottom = 5.dp)
+            ) {
+                IconButton(
+                    enabled = userLocation != null,
+                    onClick = {
+                        animateCameraTo(
+                            viewPortState = mapViewportState,
+                            point = userLocation,
+                            zoom = 11.0,
+                            durationMs = 1000
+                        )
+                    },
+                    colors = IconButtonDefaults.iconButtonColors(
+                        containerColor = MaterialTheme.colorScheme.background,
+                        contentColor = MaterialTheme.colorScheme.onBackground,
+                        disabledContainerColor = Color.DarkGray.copy(0.6f),
+                        disabledContentColor = Color.LightGray.copy(0.8f)
+                    )
+                ) {
+                    Icon(
+                        imageVector = GPSCenterIcon,
+                        contentDescription = "Center to Device",
+                        modifier = Modifier
+                            .size(55.dp)
+                            .padding(8.dp)
+                    )
+                }
+
+                IconButton(
+                    enabled = !isLocationLoading && isOnline && hasDeviceLocation,
+                    onClick = {
+                        animateCameraTo(
+                            viewPortState = mapViewportState,
+                            point = devicePoint,
+                            zoom = 11.0,
+                            durationMs = 1000
+                        )
+                    },
+                    colors = IconButtonDefaults.iconButtonColors(
+                        containerColor = MaterialTheme.colorScheme.background,
+                        contentColor = MaterialTheme.colorScheme.onBackground,
+                        disabledContainerColor = Color.DarkGray.copy(0.6f),
+                        disabledContentColor = Color.LightGray.copy(0.8f)
+                    )
+                ) {
+                    Icon(
+                        imageVector = HikerIcon,
+                        tint = MaterialTheme.colorScheme.onBackground,
+                        contentDescription = "Center to Device",
+                        modifier = Modifier
+                            .size(55.dp)
+                            .padding(8.dp)
+                    )
+                }
+            }
         }
     }
 }
 
 @Suppress("COMPOSE_APPLIER_CALL_MISMATCH")
 @Composable
-private fun PinDropPoint(
-    latitude: Double,
-    longitude: Double,
+private fun ShowDeviceAnnotation(
+    isLocationLoading: Boolean,
+    isOnline: Boolean,
+    hasDeviceLocation: Boolean,
+    latitude: Double?,
+    longitude: Double?,
     macAddress: String
 ) {
-    ViewAnnotation(
-        options = viewAnnotationOptions {
-            geometry(Point.fromLngLat(longitude, latitude))
-            allowOverlap(true)
-        }
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+    if (!isLocationLoading && isOnline && hasDeviceLocation) {
+        ViewAnnotation(
+            options = viewAnnotationOptions {
+                geometry(Point.fromLngLat(longitude!!, latitude!!))
+                allowOverlap(true)
+            }
         ) {
-            Icon(
-                imageVector = PinDropIcon,
-                contentDescription = "Pin Drop Icon",
-                tint = Color.Red,
-                modifier = Modifier.size(40.dp)
-            )
-            Spacer(Modifier.height(5.dp))
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier
-                    .background(MaterialTheme.colorScheme.primary.copy(0.3f))
-                    .padding(horizontal = 5.dp, vertical = 2.dp)
-                    .clip(shape = RoundedCornerShape(16)),
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
             ) {
-                Text(
-                    text = macAddress,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    fontWeight = FontWeight.SemiBold
+                Icon(
+                    imageVector = PinDropIcon,
+                    contentDescription = "Pin Drop Icon",
+                    tint = Color.Red,
+                    modifier = Modifier.size(40.dp)
                 )
+                Spacer(Modifier.height(5.dp))
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .background(MaterialTheme.colorScheme.primary.copy(0.3f))
+                        .padding(horizontal = 5.dp, vertical = 2.dp)
+                        .clip(shape = RoundedCornerShape(16)),
+                ) {
+                    Text(
+                        text = macAddress,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
             }
         }
     }
+}
+
+private fun animateCameraTo(
+    viewPortState: MapViewportState,
+    point: Point?,
+    zoom: Double,
+    durationMs: Long
+) {
+    viewPortState.flyTo(
+        cameraOptions = CameraOptions.Builder()
+            .center(point)
+            .zoom(zoom)
+            .build(),
+        animationOptions = MapAnimationOptions.mapAnimationOptions {
+            duration(durationMs)
+        }
+    )
 }
 
 @Preview
