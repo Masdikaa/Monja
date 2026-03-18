@@ -74,6 +74,7 @@ class DashboardViewModel @Inject constructor(
                         flowOf(null)
                     } else {
                         _state.update { it.copy(vitalsLoading = true) }
+                        delay(5000)
                         vitalRepository.getVitalStream(macAddress)
                     }
                 }
