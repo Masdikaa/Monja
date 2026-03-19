@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.masdika.monja.data.model.Device
 import com.masdika.monja.data.repository.interfaces.DeviceRepository
+import com.masdika.monja.data.repository.interfaces.HealthStatusRepository
 import com.masdika.monja.data.repository.interfaces.LocationRepository
 import com.masdika.monja.data.repository.interfaces.VitalsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -26,6 +27,7 @@ class DashboardViewModel @Inject constructor(
     private val deviceRepository: DeviceRepository,
     private val vitalRepository: VitalsRepository,
     private val locationRepository: LocationRepository,
+    private val healthStatusRepository: HealthStatusRepository,
 ) : ViewModel() {
     private val _state = MutableStateFlow(DashboardScreenState())
     val state = _state.asStateFlow()
@@ -34,6 +36,7 @@ class DashboardViewModel @Inject constructor(
         startObservingDevices()
         startObservingVitals()
         startObservingLocation()
+        startObservingHealthStatus()
     }
 
     private fun startObservingDevices() {
@@ -108,6 +111,32 @@ class DashboardViewModel @Inject constructor(
                         it.copy(
                             location = locationData,
                             locationLoading = false
+                        )
+                    }
+                }
+        }
+    }
+
+    private fun startObservingHealthStatus() {
+        viewModelScope.launch {
+            _state
+                .map { it.selectedDevice?.macAddress }
+                .distinctUntilChanged()
+                .flatMapLatest { macAddress ->
+                    if (macAddress == null) {
+                        flowOf(null)
+                    } else {
+                        _state.update { it.copy(healthStatusLoading = true) }
+                        delay(7000)
+                        healthStatusRepository.getHealthStatusesStream(macAddress)
+                    }
+                }
+                .catch { e -> e.printStackTrace() }
+                .collect { healthStatusData ->
+                    _state.update {
+                        it.copy(
+                            healthStatus = healthStatusData,
+                            healthStatusLoading = false
                         )
                     }
                 }

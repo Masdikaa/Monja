@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
 import com.masdika.monja.data.model.Device
+import com.masdika.monja.data.model.HealthStatus
 import com.masdika.monja.data.model.Location
 import com.masdika.monja.data.model.Vitals
 import com.masdika.monja.ui.component.MainBottomBar
@@ -64,11 +65,13 @@ fun DashboardScreen(
     ) { innerPadding ->
         DashboardContent(
             selectedDevice = state.selectedDevice,
+            vitals = state.vitals,
+            location = state.location,
+            healthStatus = state.healthStatus,
             deviceLoading = state.deviceLoading,
             locationLoading = state.locationLoading,
             vitalsLoading = state.vitalsLoading,
-            vitals = state.vitals,
-            location = state.location,
+            healthStatusLoading = state.healthStatusLoading,
             modifier = Modifier.padding(innerPadding)
         )
     }
@@ -80,9 +83,11 @@ fun DashboardContent(
     selectedDevice: Device?,
     vitals: Vitals?,
     location: Location?,
+    healthStatus: HealthStatus?,
     deviceLoading: Boolean,
     locationLoading: Boolean,
     vitalsLoading: Boolean,
+    healthStatusLoading: Boolean,
     modifier: Modifier = Modifier
 ) {
     var showBottomSheet by remember { mutableStateOf(false) }
@@ -151,7 +156,9 @@ fun DashboardContent(
                     DashboardBottomSheet(
                         sheetState = sheetState,
                         vitals = vitals,
-                        isLoading = vitalsLoading,
+                        healthStatus = healthStatus,
+                        isVitalsLoading = vitalsLoading,
+                        isHealthStatusLoading = healthStatusLoading,
                         onDismissSheetState = { showBottomSheet = false }
                     )
                 }
@@ -190,6 +197,7 @@ private fun DashboardContentPreview() {
             latitude = "-7.610600",
             longitude = "111.443398"
         )
+        val status = HealthStatus("Normal")
         Scaffold(
             topBar = {
                 MainTopAppBar(
@@ -214,6 +222,8 @@ private fun DashboardContentPreview() {
                 vitalsLoading = false,
                 vitals = vitals,
                 location = location,
+                healthStatus = status,
+                healthStatusLoading = false,
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(it)

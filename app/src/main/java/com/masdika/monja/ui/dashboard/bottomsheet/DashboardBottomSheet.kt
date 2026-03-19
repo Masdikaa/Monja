@@ -25,6 +25,7 @@ import androidx.compose.ui.tooling.preview.Devices.PIXEL_9
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.masdika.monja.data.model.HealthStatus
 import com.masdika.monja.data.model.Vitals
 import com.masdika.monja.ui.icon.BodyTemperatureIcon
 import com.masdika.monja.ui.icon.HealthStatusIcon
@@ -38,7 +39,9 @@ import com.masdika.monja.ui.theme.poppinsFont
 fun DashboardBottomSheet(
     sheetState: SheetState,
     vitals: Vitals?,
-    isLoading: Boolean,
+    healthStatus: HealthStatus?,
+    isVitalsLoading: Boolean,
+    isHealthStatusLoading: Boolean,
     onDismissSheetState: () -> Unit
 ) {
     ModalBottomSheet(
@@ -47,10 +50,10 @@ fun DashboardBottomSheet(
     ) {
         VitalCard(
             title = "Status",
-            value = "Hypothermia",
+            value = healthStatus?.status,
             imageIcon = HealthStatusIcon,
             colorStops = VitalColors.PurpleGradient,
-            isLoading = isLoading,
+            isLoading = isHealthStatusLoading,
             valueTextSize = 28.sp
         )
         Row(
@@ -96,7 +99,7 @@ fun DashboardBottomSheet(
                 value = vitals?.temperature,
                 imageIcon = BodyTemperatureIcon,
                 colorStops = VitalColors.PinkGradient,
-                isLoading = isLoading,
+                isLoading = isVitalsLoading,
                 unit = "°C"
             )
             VitalCard(
@@ -104,7 +107,7 @@ fun DashboardBottomSheet(
                 value = vitals?.heartrate,
                 imageIcon = HeartrateIcon,
                 colorStops = VitalColors.RedGradient,
-                isLoading = isLoading,
+                isLoading = isVitalsLoading,
                 unit = " BPM",
             )
             VitalCard(
@@ -112,7 +115,7 @@ fun DashboardBottomSheet(
                 value = vitals?.oxygenSaturation,
                 imageIcon = SpO2Icon,
                 colorStops = VitalColors.BlueGradient,
-                isLoading = isLoading,
+                isLoading = isVitalsLoading,
                 unit = "%",
             )
         }
@@ -130,10 +133,14 @@ private fun DashboardBottomSheetPreview() {
             heartrate = 87,
             oxygenSaturation = 99
         )
+        val status = HealthStatus("Severe")
+
         DashboardBottomSheet(
             sheetState = sheetState,
             vitals = vital,
-            isLoading = false,
+            healthStatus = status,
+            isHealthStatusLoading = false,
+            isVitalsLoading = false,
             onDismissSheetState = {}
         )
     }
