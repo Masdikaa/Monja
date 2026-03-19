@@ -1,6 +1,5 @@
 package com.masdika.monja.data.repository
 
-import android.R.attr.action
 import android.util.Log
 import com.masdika.monja.data.entity.DeviceConnectivityEntity
 import com.masdika.monja.data.model.Device
@@ -11,7 +10,9 @@ import io.github.jan.supabase.realtime.PostgresAction
 import io.github.jan.supabase.realtime.channel
 import io.github.jan.supabase.realtime.postgresChangeFlow
 import io.github.jan.supabase.realtime.realtime
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
@@ -46,27 +47,38 @@ class DeviceRepositoryImpl @Inject constructor(
     override fun getDeviceStream(): Flow<List<Device>> = channelFlow {
         send(getAvailableDevices())
 
-        launch(Dispatchers.IO) {
-            val channel = supabase.channel("device_connectivity")
-            val changeFlow = channel.postgresChangeFlow<PostgresAction>(schema = "public") {
-                table = "devices"
-            }
+        val channel = supabase.channel("device_connectivity")
+        val changeFlow = channel.postgresChangeFlow<PostgresAction>(schema = "public") {
+            table = "devices"
+        }
 
-            supabase.realtime.connect()
+        val realtimeJob = launch(Dispatchers.IO) {
             channel.subscribe()
-
-            changeFlow.collect {
-                Log.i("REPOSITORY SUPABASE DEVICE", "$action")
+            changeFlow.collect { action ->
+                Log.i("REPOSITORY SUPABASE DEVICE", "DEVICE: $action")
                 send(getAvailableDevices())
             }
         }
 
-        launch(Dispatchers.IO) {
+        val pollingJob = launch(Dispatchers.IO) {
             while (isActive) {
-                delay(1000)
+                delay(3000)
                 send(getAvailableDevices())
             }
         }
-    }
 
+        awaitClose {
+            realtimeJob.cancel()
+            pollingJob.cancel()
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    supabase.realtime.removeChannel(channel)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+            Log.i("REPOSITORY SUPABASE DEVICE", "Close realtime device realtime connection")
+        }
+
+    }
 }

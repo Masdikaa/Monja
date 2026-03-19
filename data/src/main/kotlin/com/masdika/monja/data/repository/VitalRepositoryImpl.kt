@@ -11,7 +11,10 @@ import io.github.jan.supabase.postgrest.query.filter.FilterOperator
 import io.github.jan.supabase.realtime.PostgresAction
 import io.github.jan.supabase.realtime.channel
 import io.github.jan.supabase.realtime.postgresChangeFlow
+import io.github.jan.supabase.realtime.realtime
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.launch
@@ -47,18 +50,34 @@ class VitalRepositoryImpl @Inject constructor(
     override fun getVitalStream(macAddress: String): Flow<Vitals?> = channelFlow {
         send(getAvailableVitals(macAddress))
 
-        launch(Dispatchers.IO) {
-            val channel = supabase.channel("vitals_channel_$macAddress")
-            val changeFlow = channel.postgresChangeFlow<PostgresAction>(schema = "public") {
-                table = "vitals_log"
-                filter("mac_address", FilterOperator.EQ, macAddress)
-            }
+        val channel = supabase.channel("vitals_channel_$macAddress")
+        val changeFlow = channel.postgresChangeFlow<PostgresAction>(schema = "public") {
+            table = "vitals_log"
+            filter("mac_address", FilterOperator.EQ, macAddress)
+        }
+
+        val realtimeJob = launch(Dispatchers.IO) {
             channel.subscribe()
             changeFlow.collect { action ->
                 Log.i("REPOSITORY SUPABASE VITALS", "New Vitals: $macAddress - $action")
                 send(getAvailableVitals(macAddress))
             }
         }
-    }
 
+        awaitClose {
+            realtimeJob.cancel()
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    supabase.realtime.removeChannel(channel)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+            Log.i(
+                "REPOSITORY SUPABASE VITALS",
+                "Close realtime connection for $macAddress vitals log"
+            )
+        }
+
+    }
 }
