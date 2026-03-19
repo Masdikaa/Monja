@@ -1,9 +1,11 @@
 package com.masdika.monja.data.di
 
 import com.masdika.monja.data.repository.DeviceRepositoryImpl
+import com.masdika.monja.data.repository.HealthStatusRepositoryImpl
 import com.masdika.monja.data.repository.LocationRepositoryImpl
 import com.masdika.monja.data.repository.VitalRepositoryImpl
 import com.masdika.monja.data.repository.interfaces.DeviceRepository
+import com.masdika.monja.data.repository.interfaces.HealthStatusRepository
 import com.masdika.monja.data.repository.interfaces.LocationRepository
 import com.masdika.monja.data.repository.interfaces.VitalsRepository
 import dagger.Binds
@@ -32,4 +34,10 @@ abstract class RepositoryModule {
     abstract fun bindLocationRepository(
         locationRepositoryImpl: LocationRepositoryImpl
     ): LocationRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindHealthStatusRepository(
+        healthStatusRepositoryImpl: HealthStatusRepositoryImpl
+    ): HealthStatusRepository
 }
