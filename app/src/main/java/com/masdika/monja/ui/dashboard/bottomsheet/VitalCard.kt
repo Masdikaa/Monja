@@ -30,6 +30,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -39,6 +40,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.masdika.monja.ui.icon.BodyTemperatureIcon
 import com.masdika.monja.ui.theme.MonjaTheme
+import com.masdika.monja.ui.theme.openSansFont
+import com.masdika.monja.ui.theme.poppinsFont
 
 @Composable
 fun VitalCard(
@@ -48,8 +51,10 @@ fun VitalCard(
     colorStops: Array<Pair<Float, Color>>,
     isLoading: Boolean,
     unit: String = "",
-    valueTextSize: TextUnit = 42.sp
+    valueTextSize: TextUnit = 32.sp
 ) {
+    val boxHeight = with(LocalDensity.current) { valueTextSize.toDp() }
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
@@ -65,7 +70,7 @@ fun VitalCard(
     ) {
         Box(
             contentAlignment = Alignment.Center,
-            modifier = Modifier.weight(0.4f)
+            modifier = Modifier.weight(0.25f)
         ) {
             Image(
                 imageVector = imageIcon,
@@ -73,30 +78,31 @@ fun VitalCard(
                 modifier = Modifier.size(70.dp)
             )
         }
-
         Column(
             verticalArrangement = Arrangement.Center,
             modifier = Modifier
-                .weight(0.8f)
+                .weight(0.75f)
                 .height(70.dp)
         ) {
             Text(
-                text = title.uppercase(),
+                text = title,
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
-                color = Color.Black,
+                fontFamily = openSansFont,
+                color = Color.White,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
 
             if (!isLoading) {
-                val displayUnit = if (unit.isNotEmpty()) "$unit" else ""
+                val displayUnit = unit.ifEmpty { "" }
 
                 Text(
                     text = "${value ?: "--"}$displayUnit",
                     style = MaterialTheme.typography.headlineLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black,
+                    fontWeight = FontWeight.SemiBold,
+                    fontFamily = poppinsFont,
+                    color = Color.White,
                     fontSize = valueTextSize,
                     textAlign = TextAlign.Center,
                     maxLines = 1,
@@ -107,7 +113,7 @@ fun VitalCard(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth(0.7f)
-                        .height(32.dp)
+                        .height(boxHeight)
                         .clip(RoundedCornerShape(8.dp))
                         .shimmerEffect()
                 )

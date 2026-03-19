@@ -24,6 +24,7 @@ import com.mapbox.maps.extension.compose.annotation.ViewAnnotation
 import com.mapbox.maps.viewannotation.geometry
 import com.mapbox.maps.viewannotation.viewAnnotationOptions
 import com.masdika.monja.ui.icon.PinDropIcon
+import com.masdika.monja.ui.theme.poppinsFont
 
 @Suppress("COMPOSE_APPLIER_CALL_MISMATCH")
 @Composable
@@ -64,7 +65,8 @@ fun ShowDeviceAnnotation(
                         text = macAddress,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onPrimary,
-                        fontWeight = FontWeight.SemiBold
+                        fontWeight = FontWeight.SemiBold,
+                        fontFamily = poppinsFont
                     )
                 }
             }

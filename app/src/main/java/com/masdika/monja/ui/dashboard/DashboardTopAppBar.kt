@@ -25,6 +25,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.masdika.monja.data.model.Device
+import com.masdika.monja.ui.theme.poppinsFont
 
 @Composable
 fun TopAppBarAction(
@@ -64,6 +65,7 @@ fun TopAppBarAction(
                             text = device.macAddress,
                             fontWeight = if (device.macAddress == selectedDevice?.macAddress)
                                 FontWeight.Bold else FontWeight.Normal,
+                            fontFamily = poppinsFont,
                             color = if(device.isOnline) Color.Green else MaterialTheme.colorScheme.onBackground
                         )
                     },
