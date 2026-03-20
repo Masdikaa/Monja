@@ -8,6 +8,7 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -38,7 +39,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.masdika.monja.ui.icon.BodyTemperatureIcon
+import com.masdika.monja.ui.icon.HealthStatusIcon
 import com.masdika.monja.ui.theme.MonjaTheme
 import com.masdika.monja.ui.theme.openSansFont
 import com.masdika.monja.ui.theme.poppinsFont
@@ -50,6 +51,8 @@ fun VitalCard(
     imageIcon: ImageVector,
     colorStops: Array<Pair<Float, Color>>,
     isLoading: Boolean,
+    isOnline: Boolean,
+    onClick: () -> Unit,
     unit: String = "",
     valueTextSize: TextUnit = 32.sp
 ) {
@@ -67,6 +70,9 @@ fun VitalCard(
             .background(
                 Brush.horizontalGradient(colorStops = colorStops)
             )
+            .clickable(
+                onClick = onClick
+            )
     ) {
         Box(
             contentAlignment = Alignment.Center,
@@ -75,7 +81,7 @@ fun VitalCard(
             Image(
                 imageVector = imageIcon,
                 contentDescription = null,
-                modifier = Modifier.size(70.dp)
+                modifier = Modifier.size(65.dp)
             )
         }
         Column(
@@ -96,9 +102,8 @@ fun VitalCard(
 
             if (!isLoading) {
                 val displayUnit = unit.ifEmpty { "" }
-
                 Text(
-                    text = "${value ?: "--"}$displayUnit",
+                    text = if (isOnline) "${value ?: "--"}$displayUnit" else "--",
                     style = MaterialTheme.typography.headlineLarge,
                     fontWeight = FontWeight.SemiBold,
                     fontFamily = poppinsFont,
@@ -153,17 +158,14 @@ fun Modifier.shimmerEffect(): Modifier = composed {
 @Composable
 private fun TemperatureCardPreview() {
     MonjaTheme {
-        val PinkGradient = arrayOf(
-            0.0f to Color(0xFFAA336A),
-            0.6f to Color(0xFFFB72A4),
-            1f to Color(0xFFFFA2BC)
-        )
         VitalCard(
             title = "Temperature",
             value = 32.0,
-            imageIcon = BodyTemperatureIcon,
-            colorStops = PinkGradient,
+            imageIcon = HealthStatusIcon,
+            colorStops = VitalColors.PurpleGradient,
             isLoading = false,
+            isOnline = false,
+            onClick = {},
             unit = "°C"
         )
     }

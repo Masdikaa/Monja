@@ -159,6 +159,7 @@ fun DashboardContent(
                         healthStatus = healthStatus,
                         isVitalsLoading = vitalsLoading,
                         isHealthStatusLoading = healthStatusLoading,
+                        isOnline = selectedDevice.isOnline,
                         onDismissSheetState = { showBottomSheet = false }
                     )
                 }

@@ -46,7 +46,7 @@ fun MapControlButtons(
                 containerColor = MaterialTheme.colorScheme.background,
                 contentColor = MaterialTheme.colorScheme.onBackground,
                 disabledContainerColor = Color.DarkGray.copy(0.6f),
-                disabledContentColor = Color.LightGray.copy(0.8f)
+                disabledContentColor = Color.LightGray.copy(0.6f)
             )
         ) {
             Icon(
@@ -103,12 +103,11 @@ fun MapControlButtons(
                 containerColor = MaterialTheme.colorScheme.background,
                 contentColor = MaterialTheme.colorScheme.onBackground,
                 disabledContainerColor = Color.DarkGray.copy(0.6f),
-                disabledContentColor = Color.LightGray.copy(0.8f)
+                disabledContentColor = Color.LightGray.copy(0.6f)
             )
         ) {
             Icon(
                 imageVector = HikerIcon,
-                tint = MaterialTheme.colorScheme.onBackground,
                 contentDescription = "Center to Device",
                 modifier = Modifier
                     .size(55.dp)

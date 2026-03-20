@@ -42,6 +42,7 @@ fun DashboardBottomSheet(
     healthStatus: HealthStatus?,
     isVitalsLoading: Boolean,
     isHealthStatusLoading: Boolean,
+    isOnline: Boolean,
     onDismissSheetState: () -> Unit
 ) {
     ModalBottomSheet(
@@ -54,6 +55,8 @@ fun DashboardBottomSheet(
             imageIcon = HealthStatusIcon,
             colorStops = VitalColors.PurpleGradient,
             isLoading = isHealthStatusLoading,
+            isOnline = isOnline,
+            onClick = {},
             valueTextSize = 28.sp
         )
         Row(
@@ -100,6 +103,8 @@ fun DashboardBottomSheet(
                 imageIcon = BodyTemperatureIcon,
                 colorStops = VitalColors.PinkGradient,
                 isLoading = isVitalsLoading,
+                isOnline = isOnline,
+                onClick = {},
                 unit = "°C"
             )
             VitalCard(
@@ -108,6 +113,8 @@ fun DashboardBottomSheet(
                 imageIcon = HeartrateIcon,
                 colorStops = VitalColors.RedGradient,
                 isLoading = isVitalsLoading,
+                isOnline = isOnline,
+                onClick = {},
                 unit = " BPM",
             )
             VitalCard(
@@ -116,6 +123,8 @@ fun DashboardBottomSheet(
                 imageIcon = SpO2Icon,
                 colorStops = VitalColors.BlueGradient,
                 isLoading = isVitalsLoading,
+                isOnline = isOnline,
+                onClick = {},
                 unit = "%",
             )
         }
@@ -141,6 +150,7 @@ private fun DashboardBottomSheetPreview() {
             healthStatus = status,
             isHealthStatusLoading = false,
             isVitalsLoading = false,
+            isOnline = true,
             onDismissSheetState = {}
         )
     }

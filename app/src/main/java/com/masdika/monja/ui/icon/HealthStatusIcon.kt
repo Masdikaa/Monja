@@ -3,8 +3,6 @@ package com.masdika.monja.ui.icon
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.graphics.vector.PathData
-import androidx.compose.ui.graphics.vector.group
 import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.unit.dp
 
@@ -17,644 +15,319 @@ val HealthStatusIcon: ImageVector
             name = "HealthStatusIcon",
             defaultWidth = 512.dp,
             defaultHeight = 512.dp,
-            viewportWidth = 130f,
-            viewportHeight = 130f
+            viewportWidth = 512f,
+            viewportHeight = 512f
         ).apply {
-            group(
-                clipPathData = PathData {
-                    moveTo(15f, 15f)
-                    horizontalLineToRelative(100f)
-                    verticalLineToRelative(100f)
-                    horizontalLineTo(15f)
-                    close()
-                }
-            ) {
-                path(fill = SolidColor(Color(0xFFD6F2FA))) {
-                    moveTo(78.2f, 29.21f)
-                    curveToRelative(7.27f, 3.28f, 14.54f, 8f, 19.77f, 14.92f)
-                    reflectiveCurveToRelative(8.41f, 16.13f, 5.88f, 23.58f)
-                    reflectiveCurveToRelative(-10.77f, 13.11f, -17.93f, 17.6f)
-                    reflectiveCurveToRelative(-13.29f, 7.81f, -20.47f, 12f)
-                    reflectiveCurveToRelative(-15.45f, 9.14f, -22.95f, 8.42f)
-                    reflectiveCurveToRelative(-14.27f, -7.2f, -16.4f, -14.83f)
-                    reflectiveCurveToRelative(0.4f, -16.39f, 0.9f, -23.9f)
-                    reflectiveCurveToRelative(-1.15f, -13.69f, -0.13f, -19.81f)
-                    arcToRelative(
-                        27f,
-                        27f,
-                        0f,
-                        isMoreThanHalf = false,
-                        isPositiveArc = true,
-                        10.1f,
-                        -16.32f
-                    )
-                    arcToRelative(
-                        33.72f,
-                        33.72f,
-                        0f,
-                        isMoreThanHalf = false,
-                        isPositiveArc = true,
-                        19.54f,
-                        -6.67f
-                    )
-                    curveToRelative(7.14f, -0.2f, 14.4f, 1.71f, 21.69f, 5.01f)
-                    close()
-                }
-                path(fill = SolidColor(Color(0xFFF3FDFF))) {
-                    moveTo(31.56f, 17.44f)
-                    arcTo(
-                        1.51f,
-                        1.51f,
-                        0f,
-                        isMoreThanHalf = false,
-                        isPositiveArc = false,
-                        30.5f,
-                        17f
-                    )
-                    arcToRelative(
-                        1.5f,
-                        1.5f,
-                        0f,
-                        isMoreThanHalf = false,
-                        isPositiveArc = false,
-                        -1.5f,
-                        1.5f
-                    )
-                    verticalLineToRelative(7f)
-                    arcToRelative(
-                        1.5f,
-                        1.5f,
-                        0f,
-                        isMoreThanHalf = false,
-                        isPositiveArc = false,
-                        3f,
-                        0f
-                    )
-                    verticalLineToRelative(-7f)
-                    arcToRelative(
-                        1.52f,
-                        1.52f,
-                        0f,
-                        isMoreThanHalf = false,
-                        isPositiveArc = false,
-                        -0.44f,
-                        -1.06f
-                    )
-                    close()
-                    moveTo(48.56f, 17.44f)
-                    arcTo(
-                        1.51f,
-                        1.51f,
-                        0f,
-                        isMoreThanHalf = false,
-                        isPositiveArc = false,
-                        47.5f,
-                        17f
-                    )
-                    arcToRelative(
-                        1.5f,
-                        1.5f,
-                        0f,
-                        isMoreThanHalf = false,
-                        isPositiveArc = false,
-                        -1.5f,
-                        1.5f
-                    )
-                    verticalLineToRelative(7f)
-                    arcToRelative(
-                        1.5f,
-                        1.5f,
-                        0f,
-                        isMoreThanHalf = false,
-                        isPositiveArc = false,
-                        3f,
-                        0f
-                    )
-                    verticalLineToRelative(-7f)
-                    arcToRelative(
-                        1.52f,
-                        1.52f,
-                        0f,
-                        isMoreThanHalf = false,
-                        isPositiveArc = false,
-                        -0.44f,
-                        -1.06f
-                    )
-                    close()
-                    moveTo(101f, 80f)
-                    arcToRelative(
-                        12f,
-                        12f,
-                        0f,
-                        isMoreThanHalf = true,
-                        isPositiveArc = false,
-                        12f,
-                        12f
-                    )
-                    arcToRelative(
-                        12f,
-                        12f,
-                        0f,
-                        isMoreThanHalf = false,
-                        isPositiveArc = false,
-                        -12f,
-                        -12f
-                    )
-                    close()
-                }
-                path(fill = SolidColor(Color(0xFFAA33E5))) {
-                    moveTo(104f, 78.32f)
-                    lineTo(104f, 68f)
-                    arcToRelative(
-                        17f,
-                        17f,
-                        0f,
-                        isMoreThanHalf = false,
-                        isPositiveArc = false,
-                        -34f,
-                        0f
-                    )
-                    verticalLineToRelative(27f)
-                    arcToRelative(
-                        14f,
-                        14f,
-                        0f,
-                        isMoreThanHalf = true,
-                        isPositiveArc = true,
-                        -28f,
-                        0f
-                    )
-                    lineTo(42f, 76.8f)
-                    arcTo(
-                        24.13f,
-                        24.13f,
-                        0f,
-                        isMoreThanHalf = false,
-                        isPositiveArc = false,
-                        63f,
-                        53f
-                    )
-                    lineTo(63f, 28f)
-                    arcToRelative(
-                        10f,
-                        10f,
-                        0f,
-                        isMoreThanHalf = false,
-                        isPositiveArc = false,
-                        -10f,
-                        -10f
-                    )
-                    horizontalLineToRelative(-2f)
-                    arcToRelative(
-                        3.43f,
-                        3.43f,
-                        0f,
-                        isMoreThanHalf = false,
-                        isPositiveArc = false,
-                        -1f,
-                        -2f
-                    )
-                    arcToRelative(
-                        3.51f,
-                        3.51f,
-                        0f,
-                        isMoreThanHalf = false,
-                        isPositiveArc = false,
-                        -6f,
-                        2.48f
-                    )
-                    verticalLineToRelative(7f)
-                    arcToRelative(
-                        3.5f,
-                        3.5f,
-                        0f,
-                        isMoreThanHalf = false,
-                        isPositiveArc = false,
-                        7f,
-                        0.5f
-                    )
-                    horizontalLineToRelative(2f)
-                    arcToRelative(2f, 2f, 0f, isMoreThanHalf = false, isPositiveArc = true, 2f, 2f)
-                    lineTo(55f, 53f)
-                    arcToRelative(
-                        16f,
-                        16f,
-                        0f,
-                        isMoreThanHalf = false,
-                        isPositiveArc = true,
-                        -32f,
-                        0f
-                    )
-                    lineTo(23f, 28f)
-                    arcToRelative(2f, 2f, 0f, isMoreThanHalf = false, isPositiveArc = true, 2f, -2f)
-                    horizontalLineToRelative(2f)
-                    arcToRelative(
-                        3.5f,
-                        3.5f,
-                        0f,
-                        isMoreThanHalf = false,
-                        isPositiveArc = false,
-                        7f,
-                        -0.5f
-                    )
-                    verticalLineToRelative(-7f)
-                    arcToRelative(
-                        3.5f,
-                        3.5f,
-                        0f,
-                        isMoreThanHalf = false,
-                        isPositiveArc = false,
-                        -7f,
-                        -0.5f
-                    )
-                    horizontalLineToRelative(-2f)
-                    arcToRelative(
-                        10f,
-                        10f,
-                        0f,
-                        isMoreThanHalf = false,
-                        isPositiveArc = false,
-                        -10f,
-                        10f
-                    )
-                    verticalLineToRelative(25f)
-                    arcToRelative(
-                        24.13f,
-                        24.13f,
-                        0f,
-                        isMoreThanHalf = false,
-                        isPositiveArc = false,
-                        21f,
-                        23.8f
-                    )
-                    lineTo(36f, 95f)
-                    arcToRelative(
-                        20f,
-                        20f,
-                        0f,
-                        isMoreThanHalf = true,
-                        isPositiveArc = false,
-                        40f,
-                        0f
-                    )
-                    lineTo(76f, 68f)
-                    arcToRelative(
-                        11f,
-                        11f,
-                        0f,
-                        isMoreThanHalf = false,
-                        isPositiveArc = true,
-                        22f,
-                        0f
-                    )
-                    verticalLineToRelative(10.3f)
-                    arcToRelative(
-                        14f,
-                        14f,
-                        0f,
-                        isMoreThanHalf = true,
-                        isPositiveArc = false,
-                        6f,
-                        0f
-                    )
-                    close()
-                    moveTo(49f, 25.51f)
-                    arcToRelative(
-                        1.5f,
-                        1.5f,
-                        0f,
-                        isMoreThanHalf = false,
-                        isPositiveArc = true,
-                        -3f,
-                        0f
-                    )
-                    verticalLineToRelative(-7f)
-                    arcTo(1.5f, 1.5f, 0f, isMoreThanHalf = false, isPositiveArc = true, 47.5f, 17f)
-                    arcToRelative(
-                        1.49f,
-                        1.49f,
-                        0f,
-                        isMoreThanHalf = false,
-                        isPositiveArc = true,
-                        1.5f,
-                        1.5f
-                    )
-                    close()
-                    moveTo(29f, 18.51f)
-                    arcTo(1.5f, 1.5f, 0f, isMoreThanHalf = false, isPositiveArc = true, 30.5f, 17f)
-                    arcToRelative(
-                        1.49f,
-                        1.49f,
-                        0f,
-                        isMoreThanHalf = false,
-                        isPositiveArc = true,
-                        1.5f,
-                        1.5f
-                    )
-                    verticalLineToRelative(7f)
-                    arcToRelative(
-                        1.5f,
-                        1.5f,
-                        0f,
-                        isMoreThanHalf = false,
-                        isPositiveArc = true,
-                        -3f,
-                        0f
-                    )
-                    close()
-                    moveTo(101f, 104f)
-                    arcToRelative(
-                        12f,
-                        12f,
-                        0f,
-                        isMoreThanHalf = true,
-                        isPositiveArc = true,
-                        12f,
-                        -12f
-                    )
-                    arcToRelative(
-                        12f,
-                        12f,
-                        0f,
-                        isMoreThanHalf = false,
-                        isPositiveArc = true,
-                        -12f,
-                        12f
-                    )
-                    close()
-                }
-                path(fill = SolidColor(Color(0xFFAA33E5))) {
-                    moveTo(101f, 83.68f)
-                    arcToRelative(
-                        8.32f,
-                        8.32f,
-                        0f,
-                        isMoreThanHalf = true,
-                        isPositiveArc = false,
-                        8.31f,
-                        8.32f
-                    )
-                    arcToRelative(
-                        8.32f,
-                        8.32f,
-                        0f,
-                        isMoreThanHalf = false,
-                        isPositiveArc = false,
-                        -8.31f,
-                        -8.32f
-                    )
-                    close()
-                    moveTo(101f, 97.31f)
-                    arcToRelative(
-                        5.32f,
-                        5.32f,
-                        0f,
-                        isMoreThanHalf = true,
-                        isPositiveArc = true,
-                        5.31f,
-                        -5.31f
-                    )
-                    arcToRelative(
-                        5.31f,
-                        5.31f,
-                        0f,
-                        isMoreThanHalf = false,
-                        isPositiveArc = true,
-                        -5.31f,
-                        5.31f
-                    )
-                    close()
-                    moveTo(29f, 98f)
-                    arcToRelative(1f, 1f, 0f, isMoreThanHalf = false, isPositiveArc = true, -1f, 1f)
-                    horizontalLineToRelative(-3f)
-                    verticalLineToRelative(3f)
-                    arcToRelative(1f, 1f, 0f, isMoreThanHalf = false, isPositiveArc = true, -2f, 0f)
-                    verticalLineToRelative(-3f)
-                    horizontalLineToRelative(-3f)
-                    arcToRelative(1f, 1f, 0f, isMoreThanHalf = true, isPositiveArc = true, 0f, -2f)
-                    horizontalLineToRelative(3f)
-                    verticalLineToRelative(-3f)
-                    arcToRelative(1f, 1f, 0f, isMoreThanHalf = false, isPositiveArc = true, 2f, 0f)
-                    verticalLineToRelative(3f)
-                    horizontalLineToRelative(3f)
-                    arcToRelative(1f, 1f, 0f, isMoreThanHalf = false, isPositiveArc = true, 1f, 1f)
-                    close()
-                    moveTo(49f, 40f)
-                    arcToRelative(1f, 1f, 0f, isMoreThanHalf = false, isPositiveArc = true, -1f, 1f)
-                    horizontalLineToRelative(-3f)
-                    verticalLineToRelative(3f)
-                    arcToRelative(1f, 1f, 0f, isMoreThanHalf = false, isPositiveArc = true, -2f, 0f)
-                    verticalLineToRelative(-3f)
-                    horizontalLineToRelative(-3f)
-                    arcToRelative(1f, 1f, 0f, isMoreThanHalf = false, isPositiveArc = true, 0f, -2f)
-                    horizontalLineToRelative(3f)
-                    verticalLineToRelative(-3f)
-                    arcToRelative(1f, 1f, 0f, isMoreThanHalf = false, isPositiveArc = true, 2f, 0f)
-                    verticalLineToRelative(3f)
-                    horizontalLineToRelative(3f)
-                    arcToRelative(1f, 1f, 0f, isMoreThanHalf = false, isPositiveArc = true, 1f, 1f)
-                    close()
-                }
-                path(fill = SolidColor(Color(0xFF0DB60D))) {
-                    moveTo(57f, 91f)
-                    moveToRelative(-4f, 0f)
-                    arcToRelative(4f, 4f, 0f, isMoreThanHalf = true, isPositiveArc = true, 8f, 0f)
-                    arcToRelative(4f, 4f, 0f, isMoreThanHalf = true, isPositiveArc = true, -8f, 0f)
-                }
-                path(fill = SolidColor(Color(0xFF0DB60D))) {
-                    moveTo(34f, 53f)
-                    moveToRelative(-4f, 0f)
-                    arcToRelative(4f, 4f, 0f, isMoreThanHalf = true, isPositiveArc = true, 8f, 0f)
-                    arcToRelative(4f, 4f, 0f, isMoreThanHalf = true, isPositiveArc = true, -8f, 0f)
-                }
-                path(fill = SolidColor(Color(0xFFAA33E5))) {
-                    moveTo(57.94f, 80.69f)
-                    moveToRelative(-1.19f, 0f)
-                    arcToRelative(
-                        1.19f,
-                        1.19f,
-                        0f,
-                        isMoreThanHalf = true,
-                        isPositiveArc = true,
-                        2.38f,
-                        0f
-                    )
-                    arcToRelative(
-                        1.19f,
-                        1.19f,
-                        0f,
-                        isMoreThanHalf = true,
-                        isPositiveArc = true,
-                        -2.38f,
-                        0f
-                    )
-                }
-                path(fill = SolidColor(Color(0xFFAA33E5))) {
-                    moveTo(69.94f, 44.19f)
-                    moveToRelative(-1.81f, 0f)
-                    arcToRelative(
-                        1.81f,
-                        1.81f,
-                        0f,
-                        isMoreThanHalf = true,
-                        isPositiveArc = true,
-                        3.62f,
-                        0f
-                    )
-                    arcToRelative(
-                        1.81f,
-                        1.81f,
-                        0f,
-                        isMoreThanHalf = true,
-                        isPositiveArc = true,
-                        -3.62f,
-                        0f
-                    )
-                }
-                path(fill = SolidColor(Color(0xFF0DB60D))) {
-                    moveTo(98.88f, 41.13f)
-                    moveToRelative(-2.88f, 0f)
-                    arcToRelative(
-                        2.88f,
-                        2.88f,
-                        0f,
-                        isMoreThanHalf = true,
-                        isPositiveArc = true,
-                        5.76f,
-                        0f
-                    )
-                    arcToRelative(
-                        2.88f,
-                        2.88f,
-                        0f,
-                        isMoreThanHalf = true,
-                        isPositiveArc = true,
-                        -5.76f,
-                        0f
-                    )
-                }
-                path(fill = SolidColor(Color(0xFFAA33E5))) {
-                    moveTo(99.81f, 29.06f)
-                    moveToRelative(-1.19f, 0f)
-                    arcToRelative(
-                        1.19f,
-                        1.19f,
-                        0f,
-                        isMoreThanHalf = true,
-                        isPositiveArc = true,
-                        2.38f,
-                        0f
-                    )
-                    arcToRelative(
-                        1.19f,
-                        1.19f,
-                        0f,
-                        isMoreThanHalf = true,
-                        isPositiveArc = true,
-                        -2.38f,
-                        0f
-                    )
-                }
-                path(fill = SolidColor(Color(0xFFAA33E5))) {
-                    moveTo(81f, 106.63f)
-                    moveToRelative(-1.75f, 0f)
-                    arcToRelative(
-                        1.75f,
-                        1.75f,
-                        0f,
-                        isMoreThanHalf = true,
-                        isPositiveArc = true,
-                        3.5f,
-                        0f
-                    )
-                    arcToRelative(
-                        1.75f,
-                        1.75f,
-                        0f,
-                        isMoreThanHalf = true,
-                        isPositiveArc = true,
-                        -3.5f,
-                        0f
-                    )
-                }
-                path(fill = SolidColor(Color(0xFFAA33E5))) {
-                    moveTo(22.13f, 81.75f)
-                    moveToRelative(-1.63f, 0f)
-                    arcToRelative(
-                        1.63f,
-                        1.63f,
-                        0f,
-                        isMoreThanHalf = true,
-                        isPositiveArc = true,
-                        3.26f,
-                        0f
-                    )
-                    arcToRelative(
-                        1.63f,
-                        1.63f,
-                        0f,
-                        isMoreThanHalf = true,
-                        isPositiveArc = true,
-                        -3.26f,
-                        0f
-                    )
-                }
-                path(fill = SolidColor(Color(0xFFAA33E5))) {
-                    moveTo(110.13f, 20.13f)
-                    moveToRelative(-1.63f, 0f)
-                    arcToRelative(
-                        1.63f,
-                        1.63f,
-                        0f,
-                        isMoreThanHalf = true,
-                        isPositiveArc = true,
-                        3.26f,
-                        0f
-                    )
-                    arcToRelative(
-                        1.63f,
-                        1.63f,
-                        0f,
-                        isMoreThanHalf = true,
-                        isPositiveArc = true,
-                        -3.26f,
-                        0f
-                    )
-                }
-                path(fill = SolidColor(Color(0xFFAA33E5))) {
-                    moveTo(91.67f, 71f)
-                    arcToRelative(1f, 1f, 0f, isMoreThanHalf = false, isPositiveArc = true, -1f, 1f)
-                    horizontalLineToRelative(-3f)
-                    verticalLineToRelative(3f)
-                    arcToRelative(1f, 1f, 0f, isMoreThanHalf = false, isPositiveArc = true, -2f, 0f)
-                    verticalLineToRelative(-3f)
-                    horizontalLineToRelative(-3f)
-                    arcToRelative(1f, 1f, 0f, isMoreThanHalf = true, isPositiveArc = true, 0f, -2f)
-                    horizontalLineToRelative(3f)
-                    verticalLineToRelative(-3f)
-                    arcToRelative(1f, 1f, 0f, isMoreThanHalf = false, isPositiveArc = true, 2f, 0f)
-                    verticalLineToRelative(3f)
-                    horizontalLineToRelative(3f)
-                    arcToRelative(1f, 1f, 0f, isMoreThanHalf = false, isPositiveArc = true, 1f, 1f)
-                    close()
-                }
-                path(fill = SolidColor(Color(0xFF0DB60D))) {
-                    moveTo(90f, 31f)
-                    arcToRelative(1f, 1f, 0f, isMoreThanHalf = false, isPositiveArc = true, -1f, 1f)
-                    horizontalLineToRelative(-4f)
-                    verticalLineToRelative(4f)
-                    arcToRelative(1f, 1f, 0f, isMoreThanHalf = false, isPositiveArc = true, -2f, 0f)
-                    verticalLineToRelative(-4f)
-                    horizontalLineToRelative(-4f)
-                    arcToRelative(1f, 1f, 0f, isMoreThanHalf = true, isPositiveArc = true, 0f, -2f)
-                    horizontalLineToRelative(4f)
-                    verticalLineToRelative(-4f)
-                    arcToRelative(1f, 1f, 0f, isMoreThanHalf = true, isPositiveArc = true, 2f, 0f)
-                    verticalLineToRelative(4f)
-                    horizontalLineToRelative(4f)
-                    arcToRelative(1f, 1f, 0f, isMoreThanHalf = false, isPositiveArc = true, 1f, 1f)
-                    close()
-                }
+            path(fill = SolidColor(Color(0xFF707487))) {
+                moveTo(359.21f, 57.5f)
+                horizontalLineToRelative(-73.18f)
+                verticalLineToRelative(12.03f)
+                curveToRelative(0f, 6.84f, -5.6f, 12.44f, -12.44f, 12.44f)
+                horizontalLineTo(124.89f)
+                curveToRelative(-6.84f, 0f, -12.44f, -5.6f, -12.44f, -12.44f)
+                verticalLineToRelative(-12.03f)
+                horizontalLineTo(39.27f)
+                curveToRelative(-15.43f, 0f, -27.98f, 12.55f, -27.98f, 27.98f)
+                verticalLineTo(484.02f)
+                curveToRelative(0f, 15.43f, 12.55f, 27.98f, 27.98f, 27.98f)
+                horizontalLineToRelative(319.94f)
+                curveToRelative(15.43f, 0f, 27.98f, -12.55f, 27.98f, -27.98f)
+                verticalLineTo(85.48f)
+                curveToRelative(0f, -15.43f, -12.55f, -27.98f, -27.98f, -27.98f)
+                close()
+            }
+            path(fill = SolidColor(Color(0xFF5B5D6E))) {
+                moveTo(31.9f, 484.02f)
+                verticalLineTo(85.48f)
+                curveToRelative(0f, -15.43f, 12.55f, -27.98f, 27.98f, -27.98f)
+                horizontalLineTo(39.27f)
+                curveToRelative(-15.43f, 0f, -27.98f, 12.55f, -27.98f, 27.98f)
+                verticalLineTo(484.02f)
+                curveToRelative(0f, 15.43f, 12.55f, 27.98f, 27.98f, 27.98f)
+                horizontalLineToRelative(20.6f)
+                curveTo(44.45f, 512f, 31.9f, 499.45f, 31.9f, 484.02f)
+                close()
+            }
+            path(fill = SolidColor(Color(0xFFE4EAF8))) {
+                moveTo(356.1f, 390.67f)
+                verticalLineTo(117.04f)
+                curveToRelative(0f, -3.23f, -2.78f, -5.85f, -6.2f, -5.85f)
+                horizontalLineTo(48.58f)
+                curveToRelative(-3.42f, 0f, -6.2f, 2.62f, -6.2f, 5.85f)
+                verticalLineToRelative(358.02f)
+                curveToRelative(0f, 3.23f, 2.78f, 5.85f, 6.2f, 5.85f)
+                horizontalLineToRelative(217.28f)
+                lineToRelative(90.24f, -90.24f)
+                close()
+            }
+            path(fill = SolidColor(Color(0xFFD8DCE5))) {
+                moveTo(62.99f, 475.06f)
+                verticalLineTo(117.04f)
+                curveToRelative(0f, -3.23f, 2.78f, -5.85f, 6.2f, -5.85f)
+                horizontalLineTo(48.58f)
+                curveToRelative(-3.42f, 0f, -6.2f, 2.62f, -6.2f, 5.85f)
+                verticalLineToRelative(358.02f)
+                curveToRelative(0f, 3.23f, 2.78f, 5.85f, 6.2f, 5.85f)
+                horizontalLineToRelative(20.6f)
+                curveToRelative(-3.42f, 0f, -6.2f, -2.62f, -6.2f, -5.85f)
+                close()
+            }
+            path(fill = SolidColor(Color(0xFF00C3FF))) {
+                moveTo(253.72f, 148.13f)
+                horizontalLineToRelative(-108.95f)
+                curveToRelative(-9.4f, 0f, -17.05f, -7.65f, -17.05f, -17.05f)
+                verticalLineTo(77.84f)
+                arcToRelative(
+                    7.73f,
+                    7.73f,
+                    0f,
+                    isMoreThanHalf = false,
+                    isPositiveArc = true,
+                    15.45f,
+                    0f
+                )
+                verticalLineToRelative(53.24f)
+                curveToRelative(0f, 0.88f, 0.71f, 1.6f, 1.6f, 1.6f)
+                horizontalLineToRelative(108.95f)
+                curveToRelative(0.88f, 0f, 1.6f, -0.72f, 1.6f, -1.6f)
+                verticalLineTo(77.84f)
+                arcToRelative(
+                    7.73f,
+                    7.73f,
+                    0f,
+                    isMoreThanHalf = false,
+                    isPositiveArc = true,
+                    15.45f,
+                    0f
+                )
+                verticalLineToRelative(53.24f)
+                curveToRelative(-0f, 9.4f, -7.65f, 17.05f, -17.05f, 17.05f)
+                close()
+            }
+            path(fill = SolidColor(Color(0xFFD8DCE5))) {
+                moveTo(223.86f, 32.72f)
+                verticalLineToRelative(-20.29f)
+                curveTo(223.86f, 5.6f, 218.27f, 0f, 211.43f, 0f)
+                horizontalLineToRelative(-24.37f)
+                curveToRelative(-6.84f, 0f, -12.44f, 5.6f, -12.44f, 12.44f)
+                verticalLineToRelative(20.29f)
+                lineToRelative(49.24f, 0f)
+                close()
+            }
+            path(fill = SolidColor(Color(0xFFC3C8D1))) {
+                moveTo(208.04f, 0f)
+                horizontalLineToRelative(-20.99f)
+                curveToRelative(-6.84f, 0f, -12.44f, 5.6f, -12.44f, 12.44f)
+                verticalLineToRelative(20.29f)
+                horizontalLineToRelative(20.99f)
+                verticalLineTo(12.44f)
+                curveTo(195.61f, 5.6f, 201.21f, 0f, 208.04f, 0f)
+                close()
+            }
+            path(fill = SolidColor(Color(0xFFE4EAF8))) {
+                moveTo(273.67f, 32.21f)
+                horizontalLineToRelative(-148.85f)
+                curveToRelative(-7.1f, 0f, -12.88f, 5.78f, -12.88f, 12.88f)
+                verticalLineTo(69.6f)
+                curveToRelative(0f, 7.1f, 5.78f, 12.88f, 12.88f, 12.88f)
+                horizontalLineToRelative(148.85f)
+                curveToRelative(7.1f, 0f, 12.88f, -5.78f, 12.88f, -12.88f)
+                verticalLineTo(45.09f)
+                curveToRelative(0f, -7.1f, -5.78f, -12.88f, -12.88f, -12.88f)
+                close()
+            }
+            path(fill = SolidColor(Color(0xFFD8DCE5))) {
+                moveTo(273.67f, 61.87f)
+                horizontalLineToRelative(-148.85f)
+                curveToRelative(-7.1f, 0f, -12.88f, -5.78f, -12.88f, -12.88f)
+                verticalLineTo(69.6f)
+                curveToRelative(0f, 7.1f, 5.78f, 12.88f, 12.88f, 12.88f)
+                horizontalLineToRelative(148.85f)
+                curveToRelative(7.1f, 0f, 12.88f, -5.78f, 12.88f, -12.88f)
+                verticalLineTo(49f)
+                curveToRelative(0f, 7.1f, -5.78f, 12.88f, -12.88f, 12.88f)
+                close()
+                moveTo(356.1f, 390.67f)
+                horizontalLineToRelative(-84.04f)
+                curveToRelative(-3.42f, 0f, -6.2f, 2.62f, -6.2f, 5.85f)
+                verticalLineToRelative(84.39f)
+                lineToRelative(90.24f, -90.24f)
+                close()
+            }
+            path(fill = SolidColor(Color(0xFFC3C8D1))) {
+                moveTo(286.46f, 396.52f)
+                curveToRelative(0f, -3.23f, 2.78f, -5.85f, 6.2f, -5.85f)
+                horizontalLineToRelative(-20.6f)
+                curveToRelative(-3.42f, 0f, -6.2f, 2.62f, -6.2f, 5.85f)
+                verticalLineToRelative(84.39f)
+                lineToRelative(20.6f, -20.6f)
+                verticalLineToRelative(-63.78f)
+                close()
+            }
+            path(fill = SolidColor(Color(0xFFFF6161))) {
+                moveTo(453.27f, 81.96f)
+                curveToRelative(-17.68f, 0.02f, -33.07f, 9.72f, -41.2f, 24.09f)
+                lineToRelative(-0f, -0f)
+                reflectiveCurveToRelative(-2.64f, 3.27f, -6.15f, 3.27f)
+                curveToRelative(-3.51f, 0f, -6.15f, -3.26f, -6.15f, -3.26f)
+                horizontalLineToRelative(-0.01f)
+                curveToRelative(-8.15f, -14.34f, -23.56f, -24.02f, -41.24f, -24f)
+                curveToRelative(-26.17f, 0.03f, -47.36f, 21.26f, -47.33f, 47.43f)
+                curveToRelative(0.07f, 68.36f, 75.35f, 108.2f, 91.75f, 116.07f)
+                curveToRelative(0.01f, 0f, 2.9f, 1.11f, 6.25f, 0f)
+                curveToRelative(16.36f, -7.89f, 91.59f, -47.88f, 91.52f, -116.26f)
+                curveToRelative(-0.03f, -26.17f, -21.26f, -47.36f, -47.43f, -47.33f)
+                close()
+            }
+            path(fill = SolidColor(Color(0xFFDD4343))) {
+                moveTo(331.79f, 129.49f)
+                curveToRelative(-0.02f, -22.64f, 15.84f, -41.57f, 37.06f, -46.29f)
+                arcToRelative(
+                    47.5f,
+                    47.5f,
+                    0f,
+                    isMoreThanHalf = false,
+                    isPositiveArc = false,
+                    -10.34f,
+                    -1.14f
+                )
+                curveToRelative(-26.17f, 0.03f, -47.36f, 21.26f, -47.33f, 47.43f)
+                curveToRelative(0.07f, 68.36f, 75.35f, 108.2f, 91.75f, 116.07f)
+                curveToRelative(0.01f, 0f, 2.9f, 1.11f, 6.25f, -0f)
+                curveToRelative(1.76f, -0.85f, 4.2f, -2.07f, 7.16f, -3.66f)
+                curveToRelative(-24.57f, -13.13f, -84.49f, -51.42f, -84.55f, -112.41f)
+                close()
+            }
+            path(fill = SolidColor(Color(0xFFFF6161))) {
+                moveTo(178.4f, 355.62f)
+                arcToRelative(
+                    7.73f,
+                    7.73f,
+                    0f,
+                    isMoreThanHalf = false,
+                    isPositiveArc = true,
+                    -7.48f,
+                    -5.78f
+                )
+                lineToRelative(-25.85f, -99.09f)
+                lineToRelative(-11.19f, 36.76f)
+                arcToRelative(
+                    7.73f,
+                    7.73f,
+                    0f,
+                    isMoreThanHalf = false,
+                    isPositiveArc = true,
+                    -7.39f,
+                    5.48f
+                )
+                horizontalLineTo(89.49f)
+                arcToRelative(
+                    7.73f,
+                    7.73f,
+                    0f,
+                    isMoreThanHalf = false,
+                    isPositiveArc = true,
+                    0f,
+                    -15.45f
+                )
+                horizontalLineToRelative(31.27f)
+                lineToRelative(17.49f, -57.46f)
+                curveToRelative(1.01f, -3.31f, 4.1f, -5.57f, 7.55f, -5.47f)
+                arcToRelative(
+                    7.73f,
+                    7.73f,
+                    0f,
+                    isMoreThanHalf = false,
+                    isPositiveArc = true,
+                    7.32f,
+                    5.77f
+                )
+                lineToRelative(26.52f, 101.68f)
+                lineToRelative(14.53f, -39.61f)
+                arcToRelative(
+                    7.73f,
+                    7.73f,
+                    0f,
+                    isMoreThanHalf = false,
+                    isPositiveArc = true,
+                    7.25f,
+                    -5.07f
+                )
+                horizontalLineToRelative(25.92f)
+                arcToRelative(
+                    7.72f,
+                    7.72f,
+                    0f,
+                    isMoreThanHalf = false,
+                    isPositiveArc = true,
+                    7.25f,
+                    5.04f
+                )
+                lineToRelative(2.93f, 7.91f)
+                lineToRelative(14.44f, -56.31f)
+                arcToRelative(
+                    7.73f,
+                    7.73f,
+                    0f,
+                    isMoreThanHalf = false,
+                    isPositiveArc = true,
+                    7.23f,
+                    -5.8f
+                )
+                arcToRelative(
+                    7.71f,
+                    7.71f,
+                    0f,
+                    isMoreThanHalf = false,
+                    isPositiveArc = true,
+                    7.6f,
+                    5.31f
+                )
+                lineToRelative(14.39f, 43.84f)
+                horizontalLineToRelative(28.22f)
+                arcToRelative(
+                    7.73f,
+                    7.73f,
+                    0f,
+                    isMoreThanHalf = false,
+                    isPositiveArc = true,
+                    0f,
+                    15.45f
+                )
+                horizontalLineToRelative(-33.82f)
+                arcToRelative(
+                    7.73f,
+                    7.73f,
+                    0f,
+                    isMoreThanHalf = false,
+                    isPositiveArc = true,
+                    -7.34f,
+                    -5.32f
+                )
+                lineToRelative(-7.88f, -24.01f)
+                lineToRelative(-14f, 54.63f)
+                arcToRelative(
+                    7.73f,
+                    7.73f,
+                    0f,
+                    isMoreThanHalf = false,
+                    isPositiveArc = true,
+                    -14.73f,
+                    0.76f
+                )
+                lineToRelative(-9.65f, -26.06f)
+                horizontalLineToRelative(-15.14f)
+                lineToRelative(-21.18f, 57.72f)
+                arcToRelative(
+                    7.73f,
+                    7.73f,
+                    0f,
+                    isMoreThanHalf = false,
+                    isPositiveArc = true,
+                    -7.25f,
+                    5.07f
+                )
+                close()
             }
         }.build()
 
