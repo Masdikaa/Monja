@@ -212,7 +212,7 @@ private fun DashboardContentPreview() {
                 }
             },
             bottomBar = {
-                MainBottomBar(navController = navController)
+                MainBottomBar(navController = navController, currentMacAddress = "")
             },
             modifier = Modifier.fillMaxSize()
         ) {

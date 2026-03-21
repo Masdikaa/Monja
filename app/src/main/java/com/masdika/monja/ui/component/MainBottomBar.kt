@@ -12,10 +12,13 @@ import com.example.bottombar.AnimatedBottomBar
 import com.example.bottombar.components.BottomBarItem
 import com.example.bottombar.model.IndicatorDirection
 import com.example.bottombar.model.IndicatorStyle
+import com.masdika.monja.ui.dashboard.DashboardRoute
+import com.masdika.monja.ui.history.HistoryRoute
 
 @Composable
 fun MainBottomBar(
-    navController: NavController
+    navController: NavController,
+    currentMacAddress: String
 ) {
     val navigationItems = listOf(
         NavigationItem.Dashboard,
@@ -43,7 +46,12 @@ fun MainBottomBar(
                 selected = selectedIndex == index,
                 onClick = {
                     if (selectedIndex != index) {
-                        navController.navigate(item.route) {
+                        val targetRoute: Any = when (item) {
+                            NavigationItem.History -> HistoryRoute(macAddress = currentMacAddress)
+                            NavigationItem.Dashboard -> DashboardRoute
+                        }
+
+                        navController.navigate(targetRoute) {
                             navController.graph.startDestinationRoute?.let { route ->
                                 popUpTo(route) {
                                     saveState = true
