@@ -1,6 +1,5 @@
 package com.masdika.monja.data.repository
 
-import android.R.attr.action
 import android.util.Log
 import com.masdika.monja.data.di.IoDispatcher
 import com.masdika.monja.data.entity.MedicalAlertEntity
@@ -40,14 +39,14 @@ class MedicalAlertsRepositoryImpl @Inject constructor(
                 entities.map { entity ->
                     MedicalAlert(
                         id = entity.id ?: 0,
-                        macAddress = entity.macAddress,
-                        oldStatus = entity.oldStatus,
-                        newStatus = entity.newStatus,
+                        macAddress = entity.macAddress ?: "Unknown MAC",
+                        oldStatus = entity.oldStatus ?: "Unknown",
+                        newStatus = entity.newStatus ?: "Unknown",
                         temperatureAtTime = entity.temperatureAtTime,
                         spo2AtTime = entity.spo2AtTime,
                         latitude = entity.latitude,
                         longitude = entity.longitude,
-                        createdAt = entity.createdAt ?: "",
+                        createdAt = entity.createdAt ?: ""
                     )
                 }
             } catch (e: Exception) {
@@ -63,14 +62,14 @@ class MedicalAlertsRepositoryImpl @Inject constructor(
 
             val channel = supabase.channel("medical_alert_channel_$macAddress")
             val changeFlow = channel.postgresChangeFlow<PostgresAction>(schema = "public") {
-                table = "medical_alert"
+                table = "medical_alerts"
                 filter("mac_address", FilterOperator.EQ, macAddress)
             }
 
             val realtimeJob = launch(ioDispatcher) {
                 channel.subscribe()
                 changeFlow.collect {
-                    Log.i("REPO_MEDICAL_ALERT", "New Alert: $macAddress - $action")
+                    Log.i("REPO_MEDICAL_ALERT", "New Alert: $macAddress")
                     send(getMedicalAlerts(macAddress))
                 }
             }

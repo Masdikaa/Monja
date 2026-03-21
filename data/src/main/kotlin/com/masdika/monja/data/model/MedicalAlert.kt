@@ -5,8 +5,8 @@ data class MedicalAlert(
     val macAddress: String,
     val oldStatus: String,
     val newStatus: String,
-    val temperatureAtTime: Double,
-    val spo2AtTime: Int,
+    val temperatureAtTime: Double?,
+    val spo2AtTime: Int?,
     val latitude: String?,
     val longitude: String?,
     val createdAt: String

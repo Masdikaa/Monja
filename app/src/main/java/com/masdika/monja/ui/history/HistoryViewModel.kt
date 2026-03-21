@@ -1,6 +1,5 @@
 package com.masdika.monja.ui.history
 
-import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -23,7 +22,6 @@ class HistoryViewModel @Inject constructor(
 
     init {
         val passedMacAddress = savedStateHandle.get<String>("macAddress") ?: ""
-        Log.e("CCTV_HISTORY", "2. HistoryViewModel receive MAC: '$passedMacAddress'")
         _state.update { it.copy(macAddress = passedMacAddress) }
 
         if (passedMacAddress.isNotEmpty()) {
