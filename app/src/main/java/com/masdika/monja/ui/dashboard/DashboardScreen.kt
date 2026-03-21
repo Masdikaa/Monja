@@ -35,6 +35,7 @@ import com.masdika.monja.data.model.Device
 import com.masdika.monja.data.model.HealthStatus
 import com.masdika.monja.data.model.Location
 import com.masdika.monja.data.model.Vitals
+import com.masdika.monja.data.utils.Result
 import com.masdika.monja.ui.component.MainBottomBar
 import com.masdika.monja.ui.component.MainTopAppBar
 import com.masdika.monja.ui.dashboard.bottomsheet.DashboardBottomSheet
@@ -49,13 +50,16 @@ fun DashboardScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
+    val devices = (state.deviceState as? Result.Success)?.data ?: emptyList()
+    val deviceLoading = state.deviceState is Result.Loading
+
     Scaffold(
         topBar = {
             MainTopAppBar(
                 title = "Dashboard"
             ) {
                 TopAppBarAction(
-                    devices = state.devices,
+                    devices = devices,
                     selectedDevice = state.selectedDevice,
                     onDeviceSelected = { device -> viewModel.selectDevice(device) }
                 )
@@ -65,13 +69,10 @@ fun DashboardScreen(
     ) { innerPadding ->
         DashboardContent(
             selectedDevice = state.selectedDevice,
-            vitals = state.vitals,
-            location = state.location,
-            healthStatus = state.healthStatus,
-            deviceLoading = state.deviceLoading,
-            locationLoading = state.locationLoading,
-            vitalsLoading = state.vitalsLoading,
-            healthStatusLoading = state.healthStatusLoading,
+            vitalsState = state.vitalsState,
+            locationState = state.locationState,
+            healthStatusState = state.healthStatusState,
+            deviceLoading = deviceLoading,
             modifier = Modifier.padding(innerPadding)
         )
     }
@@ -81,17 +82,26 @@ fun DashboardScreen(
 @Composable
 fun DashboardContent(
     selectedDevice: Device?,
-    vitals: Vitals?,
-    location: Location?,
-    healthStatus: HealthStatus?,
+    vitalsState: Result<Vitals?>,
+    locationState: Result<Location?>,
+    healthStatusState: Result<HealthStatus?>,
     deviceLoading: Boolean,
-    locationLoading: Boolean,
-    vitalsLoading: Boolean,
-    healthStatusLoading: Boolean,
     modifier: Modifier = Modifier
 ) {
     var showBottomSheet by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState()
+
+    val vitals = (vitalsState as? Result.Success)?.data
+    val vitalsLoading = vitalsState is Result.Loading
+    val vitalsError = (vitalsState as? Result.Error)?.message
+
+    val location = (locationState as? Result.Success)?.data
+    val locationLoading = locationState is Result.Loading
+    val locationError = (locationState as? Result.Error)?.message
+
+    val healthStatus = (healthStatusState as? Result.Success)?.data
+    val healthStatusLoading = healthStatusState is Result.Loading
+    val healthStatusError = (healthStatusState as? Result.Error)?.message
 
     Column(modifier = modifier.fillMaxSize()) {
         if (deviceLoading) {
@@ -218,13 +228,10 @@ private fun DashboardContentPreview() {
         ) {
             DashboardContent(
                 selectedDevice = devices[0],
+                vitalsState = Result.Success(vitals),
+                locationState = Result.Success(location),
+                healthStatusState = Result.Success(status),
                 deviceLoading = false,
-                locationLoading = true,
-                vitalsLoading = false,
-                vitals = vitals,
-                location = location,
-                healthStatus = status,
-                healthStatusLoading = false,
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(it)

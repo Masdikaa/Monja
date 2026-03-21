@@ -7,12 +7,12 @@ import com.masdika.monja.data.repository.interfaces.DeviceRepository
 import com.masdika.monja.data.repository.interfaces.HealthStatusRepository
 import com.masdika.monja.data.repository.interfaces.LocationRepository
 import com.masdika.monja.data.repository.interfaces.VitalsRepository
+import com.masdika.monja.data.utils.Result
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
@@ -42,26 +42,35 @@ class DashboardViewModel @Inject constructor(
     private fun startObservingDevices() {
         viewModelScope.launch {
             deviceRepository.getDeviceStream()
-                .catch { e ->
-                    e.printStackTrace()
-                    _state.update { it.copy(deviceLoading = false) }
-                }
-                .collect { devices ->
-                    val sortedDevice = devices.sortedWith(
-                        compareByDescending<Device> { it.isOnline }
-                            .thenByDescending { it.createdAt }
-                    )
-
+                .collect { result ->
                     _state.update { currentState ->
-                        val selectedDevice = currentState.selectedDevice?.let { current ->
-                            sortedDevice.find { it.macAddress == current.macAddress }
-                        } ?: sortedDevice.firstOrNull()
+                        when (result) {
+                            is Result.Success -> {
+                                val devices = result.data
+                                val sortedDevice = devices.sortedWith(
+                                    compareByDescending<Device> { it.isOnline }
+                                        .thenByDescending { it.createdAt }
+                                )
+                                val selectedDevice = currentState.selectedDevice?.let { current ->
+                                    sortedDevice.find { it.macAddress == current.macAddress }
+                                } ?: sortedDevice.firstOrNull()
 
-                        currentState.copy(
-                            devices = sortedDevice,
-                            selectedDevice = selectedDevice,
-                            deviceLoading = false
-                        )
+                                currentState.copy(
+                                    deviceState = Result.Success(sortedDevice),
+                                    selectedDevice = selectedDevice
+                                )
+                            }
+
+                            is Result.Loading -> {
+                                currentState.copy(deviceState = Result.Loading)
+                            }
+
+                            is Result.Error -> {
+                                currentState.copy(
+                                    deviceState = Result.Error(result.exception, result.message)
+                                )
+                            }
+                        }
                     }
                 }
         }
@@ -74,18 +83,17 @@ class DashboardViewModel @Inject constructor(
                 .distinctUntilChanged()
                 .flatMapLatest { macAddress ->
                     if (macAddress == null) {
-                        flowOf(null)
+                        flowOf(Result.Success(null))
                     } else {
-                        _state.update { it.copy(vitalsLoading = true) }
-                        delay(5000)
+                        // ========== Network Loading Simulation ==========
+                        _state.update { it.copy(vitalsState = Result.Loading) }
+                        delay(7000)
+                        // ========== Network Loading Simulation ==========
                         vitalRepository.getVitalStream(macAddress)
                     }
                 }
-                .catch { e -> e.printStackTrace() }
                 .collect { vitalData ->
-                    _state.update {
-                        it.copy(vitals = vitalData, vitalsLoading = false)
-                    }
+                    _state.update { it.copy(vitalsState = vitalData) }
                 }
         }
     }
@@ -97,22 +105,17 @@ class DashboardViewModel @Inject constructor(
                 .distinctUntilChanged()
                 .flatMapLatest { macAddress ->
                     if (macAddress == null) {
-                        flowOf(null)
+                        flowOf(Result.Success(null))
                     } else {
-                        // OPEN GATE: Set locationLoading to true ONLY when the request starts
-                        _state.update { it.copy(locationLoading = true) }
-                        delay(2000) // Network delay simulate
+                        // ========== Network Loading Simulation ==========
+                        _state.update { it.copy(locationState = Result.Loading) }
+                        delay(3000)
+                        // ========== Network Loading Simulation ==========
                         locationRepository.getLocationStream(macAddress)
                     }
                 }
-                .catch { e -> e.printStackTrace() }
                 .collect { locationData ->
-                    _state.update {
-                        it.copy(
-                            location = locationData,
-                            locationLoading = false
-                        )
-                    }
+                    _state.update { it.copy(locationState = locationData) }
                 }
         }
     }
@@ -124,21 +127,17 @@ class DashboardViewModel @Inject constructor(
                 .distinctUntilChanged()
                 .flatMapLatest { macAddress ->
                     if (macAddress == null) {
-                        flowOf(null)
+                        flowOf(Result.Success(null))
                     } else {
-                        _state.update { it.copy(healthStatusLoading = true) }
+                        // ========== Network Loading Simulation ==========
+                        _state.update { it.copy(healthStatusState = Result.Loading) }
                         delay(7000)
+                        // ========== Network Loading Simulation ==========
                         healthStatusRepository.getHealthStatusesStream(macAddress)
                     }
                 }
-                .catch { e -> e.printStackTrace() }
                 .collect { healthStatusData ->
-                    _state.update {
-                        it.copy(
-                            healthStatus = healthStatusData,
-                            healthStatusLoading = false
-                        )
-                    }
+                    _state.update { it.copy(healthStatusState = healthStatusData) }
                 }
         }
     }
