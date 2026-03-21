@@ -5,6 +5,7 @@ import com.masdika.monja.data.di.IoDispatcher
 import com.masdika.monja.data.entity.VitalsEntity
 import com.masdika.monja.data.model.Vitals
 import com.masdika.monja.data.repository.interfaces.VitalsRepository
+import com.masdika.monja.data.utils.Result
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.query.Order
@@ -51,8 +52,15 @@ class VitalRepositoryImpl @Inject constructor(
         }
     }
 
-    override fun getVitalStream(macAddress: String): Flow<Vitals?> = channelFlow {
-        send(getAvailableVitals(macAddress))
+    override fun getVitalStream(macAddress: String): Flow<Result<Vitals?>> = channelFlow {
+        send(Result.Loading)
+
+        try {
+            val initialVitalsData = getAvailableVitals(macAddress)
+            send(Result.Success(initialVitalsData))
+        } catch (e: Exception) {
+            send(Result.Error(e, "Failed initiating vitals data: ${e.message}"))
+        }
 
         val channel = supabase.channel("vitals_channel_$macAddress")
         val changeFlow = channel.postgresChangeFlow<PostgresAction>(schema = "public") {
@@ -64,7 +72,12 @@ class VitalRepositoryImpl @Inject constructor(
             channel.subscribe()
             changeFlow.collect { action ->
                 Log.i("REPOSITORY SUPABASE VITALS", "New Vitals: $macAddress - $action")
-                send(getAvailableVitals(macAddress))
+                try {
+                    val newVitalsData = getAvailableVitals(macAddress)
+                    send(Result.Success(newVitalsData))
+                } catch (e: Exception) {
+                    send(Result.Error(e, "Failed to update vitals data: ${e.message}"))
+                }
             }
         }
 

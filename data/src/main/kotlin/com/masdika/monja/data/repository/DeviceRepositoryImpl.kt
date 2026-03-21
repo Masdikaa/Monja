@@ -5,6 +5,7 @@ import com.masdika.monja.data.di.IoDispatcher
 import com.masdika.monja.data.entity.DeviceConnectivityEntity
 import com.masdika.monja.data.model.Device
 import com.masdika.monja.data.repository.interfaces.DeviceRepository
+import com.masdika.monja.data.utils.Result
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.realtime.PostgresAction
@@ -49,8 +50,15 @@ class DeviceRepositoryImpl @Inject constructor(
         }
     }
 
-    override fun getDeviceStream(): Flow<List<Device>> = channelFlow {
-        send(getAvailableDevices())
+    override fun getDeviceStream(): Flow<Result<List<Device>>> = channelFlow {
+        send(Result.Loading)
+
+        try {
+            val initialDeviceData = getAvailableDevices()
+            send(Result.Success(initialDeviceData))
+        } catch (e: Exception) {
+            send(Result.Error(e, "Failed initiating device data: ${e.message}"))
+        }
 
         val channel = supabase.channel("device_connectivity")
         val changeFlow = channel.postgresChangeFlow<PostgresAction>(schema = "public") {
@@ -61,14 +69,34 @@ class DeviceRepositoryImpl @Inject constructor(
             channel.subscribe()
             changeFlow.collect { action ->
                 Log.i("REPOSITORY SUPABASE DEVICE", "DEVICE: $action")
-                send(getAvailableDevices())
+                try {
+                    val newDeviceData = getAvailableDevices()
+                    send(Result.Success(newDeviceData))
+                } catch (e: Exception) {
+                    send(
+                        Result.Error(
+                            e,
+                            "Failed to update device data: ${e.message} - Realtime Job"
+                        )
+                    )
+                }
             }
         }
 
         val pollingJob = launch(ioDispatcher) {
             while (isActive) {
                 delay(3000)
-                send(getAvailableDevices())
+                try {
+                    val newDeviceData = getAvailableDevices()
+                    send(Result.Success(newDeviceData))
+                } catch (e: Exception) {
+                    send(
+                        Result.Error(
+                            e,
+                            "Failed to update device data: ${e.message} - Pooling Job"
+                        )
+                    )
+                }
             }
         }
 

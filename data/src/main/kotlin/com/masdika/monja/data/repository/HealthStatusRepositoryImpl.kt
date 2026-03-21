@@ -5,6 +5,7 @@ import com.masdika.monja.data.di.IoDispatcher
 import com.masdika.monja.data.entity.HealthStatusEntity
 import com.masdika.monja.data.model.HealthStatus
 import com.masdika.monja.data.repository.interfaces.HealthStatusRepository
+import com.masdika.monja.data.utils.Result
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.query.Order
@@ -49,8 +50,17 @@ class HealthStatusRepositoryImpl @Inject constructor(
         }
     }
 
-    override fun getHealthStatusesStream(macAddress: String): Flow<HealthStatus?> = channelFlow {
-        send(getAvailableHealthStatuses(macAddress))
+    override fun getHealthStatusesStream(
+        macAddress: String
+    ): Flow<Result<HealthStatus?>> = channelFlow {
+        send(Result.Loading)
+
+        try {
+            val initialHealthStatusData = getAvailableHealthStatuses(macAddress)
+            send(Result.Success(initialHealthStatusData))
+        } catch (e: Exception) {
+            send(Result.Error(e, "Failed initiating health status data: ${e.message}"))
+        }
 
         val channel = supabase.channel("health_status_channel_$macAddress")
         val changeFlow = channel.postgresChangeFlow<PostgresAction>(schema = "public") {
@@ -65,7 +75,12 @@ class HealthStatusRepositoryImpl @Inject constructor(
                     "REPOSITORY SUPABASE HEALTH STATUS",
                     "New Health Status: $macAddress - $action"
                 )
-                send(getAvailableHealthStatuses(macAddress))
+                try {
+                    val newHealthStatusData = getAvailableHealthStatuses(macAddress)
+                    Result.Success(newHealthStatusData)
+                } catch (e: Exception) {
+                    send(Result.Error(e, "Failed to update health status data: ${e.message}"))
+                }
             }
         }
 

@@ -5,6 +5,7 @@ import com.masdika.monja.data.di.IoDispatcher
 import com.masdika.monja.data.entity.LocationEntity
 import com.masdika.monja.data.model.Location
 import com.masdika.monja.data.repository.interfaces.LocationRepository
+import com.masdika.monja.data.utils.Result
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.query.Order
@@ -50,8 +51,16 @@ class LocationRepositoryImpl @Inject constructor(
         }
     }
 
-    override fun getLocationStream(macAddress: String): Flow<Location?> = channelFlow {
-        send(getAvailableLocation(macAddress))
+
+    override fun getLocationStream(macAddress: String): Flow<Result<Location?>> = channelFlow {
+        send(Result.Loading)
+
+        try {
+            val initialLocationData = getAvailableLocation(macAddress)
+            send(Result.Success(initialLocationData))
+        } catch (e: Exception) {
+            send(Result.Error(e, "Failed initiating location data: ${e.message}"))
+        }
 
         val channel = supabase.channel("location_channel_$macAddress")
         val changeFlow = channel.postgresChangeFlow<PostgresAction>(schema = "public") {
@@ -63,7 +72,12 @@ class LocationRepositoryImpl @Inject constructor(
             channel.subscribe()
             changeFlow.collect { action ->
                 Log.i("REPOSITORY SUPABASE LOCATION", "New Location: $macAddress - $action")
-                send(getAvailableLocation(macAddress))
+                try {
+                    val newLocationData = getAvailableLocation(macAddress)
+                    send(Result.Success(newLocationData))
+                } catch (e: Exception) {
+                    send(Result.Error(e, "Failed to update location data: ${e.message}"))
+                }
             }
         }
 
