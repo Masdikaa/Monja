@@ -12,6 +12,7 @@ import io.github.jan.supabase.postgrest.query.Order
 import io.github.jan.supabase.postgrest.query.filter.FilterOperator
 import io.github.jan.supabase.realtime.PostgresAction
 import io.github.jan.supabase.realtime.channel
+import io.github.jan.supabase.realtime.decodeRecord
 import io.github.jan.supabase.realtime.postgresChangeFlow
 import io.github.jan.supabase.realtime.realtime
 import kotlinx.coroutines.CoroutineDispatcher
@@ -40,9 +41,9 @@ class VitalRepositoryImpl @Inject constructor(
 
                 entity?.let {
                     Vitals(
-                        temperature = it.temperature,
-                        heartrate = it.heartrate,
-                        oxygenSaturation = it.oxygenSaturation
+                        temperature = it.temperature ?: 0.0,
+                        heartrate = it.heartrate ?: 0,
+                        oxygenSaturation = it.oxygenSaturation ?: 0
                     )
                 }
             } catch (e: Exception) {
@@ -72,9 +73,37 @@ class VitalRepositoryImpl @Inject constructor(
             channel.subscribe()
             changeFlow.collect { action ->
                 Log.i("REPOSITORY SUPABASE VITALS", "New Vitals: $macAddress - $action")
+
                 try {
-                    val newVitalsData = getAvailableVitals(macAddress)
-                    send(Result.Success(newVitalsData))
+                    when (action) {
+                        is PostgresAction.Insert -> {
+                            val entity = action.decodeRecord<VitalsEntity>()
+                            send(
+                                Result.Success(
+                                    Vitals(
+                                        temperature = entity.temperature ?: 0.0,
+                                        heartrate = entity.heartrate ?: 0,
+                                        oxygenSaturation = entity.oxygenSaturation ?: 0
+                                    )
+                                )
+                            )
+                        }
+
+                        is PostgresAction.Update -> {
+                            val entity = action.decodeRecord<VitalsEntity>()
+                            send(
+                                Result.Success(
+                                    Vitals(
+                                        temperature = entity.temperature ?: 0.0,
+                                        heartrate = entity.heartrate ?: 0,
+                                        oxygenSaturation = entity.oxygenSaturation ?: 0
+                                    )
+                                )
+                            )
+                        }
+
+                        else -> {}
+                    }
                 } catch (e: Exception) {
                     send(Result.Error(e, "Failed to update vitals data: ${e.message}"))
                 }

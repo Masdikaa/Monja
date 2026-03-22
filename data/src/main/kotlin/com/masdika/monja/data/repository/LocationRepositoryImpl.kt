@@ -12,6 +12,7 @@ import io.github.jan.supabase.postgrest.query.Order
 import io.github.jan.supabase.postgrest.query.filter.FilterOperator
 import io.github.jan.supabase.realtime.PostgresAction
 import io.github.jan.supabase.realtime.channel
+import io.github.jan.supabase.realtime.decodeRecord
 import io.github.jan.supabase.realtime.postgresChangeFlow
 import io.github.jan.supabase.realtime.realtime
 import kotlinx.coroutines.CoroutineDispatcher
@@ -40,8 +41,8 @@ class LocationRepositoryImpl @Inject constructor(
 
                 entity?.let {
                     Location(
-                        latitude = it.latitude,
-                        longitude = it.longitude
+                        latitude = it.latitude ?: "",
+                        longitude = it.longitude ?: ""
                     )
                 }
             } catch (e: Exception) {
@@ -73,8 +74,33 @@ class LocationRepositoryImpl @Inject constructor(
             changeFlow.collect { action ->
                 Log.i("REPOSITORY SUPABASE LOCATION", "New Location: $macAddress - $action")
                 try {
-                    val newLocationData = getAvailableLocation(macAddress)
-                    send(Result.Success(newLocationData))
+                    when (action) {
+                        is PostgresAction.Insert -> {
+                            val entity = action.decodeRecord<LocationEntity>()
+                            send(
+                                Result.Success(
+                                    Location(
+                                        latitude = entity.latitude ?: "",
+                                        longitude = entity.longitude ?: "",
+                                    )
+                                )
+                            )
+                        }
+
+                        is PostgresAction.Update -> {
+                            val entity = action.decodeRecord<LocationEntity>()
+                            send(
+                                Result.Success(
+                                    Location(
+                                        latitude = entity.latitude ?: "",
+                                        longitude = entity.longitude ?: "",
+                                    )
+                                )
+                            )
+                        }
+
+                        else -> {}
+                    }
                 } catch (e: Exception) {
                     send(Result.Error(e, "Failed to update location data: ${e.message}"))
                 }

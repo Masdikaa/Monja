@@ -7,8 +7,8 @@ import kotlinx.serialization.Serializable
 data class VitalsEntity(
     @SerialName("id") val id: Int? = null,
     @SerialName("mac_address") val macAddress: String,
-    @SerialName("temperature") val temperature: Double,
-    @SerialName("heartrate") val heartrate: Int,
-    @SerialName("oxygen_saturation") val oxygenSaturation: Int,
+    @SerialName("temperature") val temperature: Double?,
+    @SerialName("heartrate") val heartrate: Int?,
+    @SerialName("oxygen_saturation") val oxygenSaturation: Int?,
     @SerialName("created_at") val createdAt: String? = null
 )

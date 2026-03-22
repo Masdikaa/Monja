@@ -12,6 +12,7 @@ import io.github.jan.supabase.postgrest.query.Order
 import io.github.jan.supabase.postgrest.query.filter.FilterOperator
 import io.github.jan.supabase.realtime.PostgresAction
 import io.github.jan.supabase.realtime.channel
+import io.github.jan.supabase.realtime.decodeRecord
 import io.github.jan.supabase.realtime.postgresChangeFlow
 import io.github.jan.supabase.realtime.realtime
 import kotlinx.coroutines.CoroutineDispatcher
@@ -62,9 +63,12 @@ class MedicalAlertsRepositoryImpl @Inject constructor(
     ): Flow<Result<List<MedicalAlert>>> = channelFlow {
         send(Result.Loading)
 
+        val currentMedicalAlerts = mutableListOf<MedicalAlert>()
+
         try {
             val initialMedicalAlertsData = getMedicalAlerts(macAddress)
-            send(Result.Success(initialMedicalAlertsData))
+            currentMedicalAlerts.addAll(initialMedicalAlertsData)
+            send(Result.Success(currentMedicalAlerts.toList()))
         } catch (e: Exception) {
             send(Result.Error(e, "Failed initiating medical alerts data: ${e.message}"))
         }
@@ -77,11 +81,35 @@ class MedicalAlertsRepositoryImpl @Inject constructor(
 
         val realtimeJob = launch(ioDispatcher) {
             channel.subscribe()
-            changeFlow.collect {
+            changeFlow.collect { action ->
                 Log.i("REPO_MEDICAL_ALERT", "New Alert: $macAddress")
                 try {
-                    val newMedicalAlertsData = getMedicalAlerts(macAddress)
-                    send(Result.Success(newMedicalAlertsData))
+                    var isListUpdated = false
+                    when (action) {
+                        is PostgresAction.Insert -> {
+                            val entity = action.decodeRecord<MedicalAlertEntity>()
+
+                            val newMedicalAlerts = MedicalAlert(
+                                id = entity.id ?: 0,
+                                macAddress = entity.macAddress ?: "Unknown MAC",
+                                oldStatus = entity.oldStatus ?: "Unknown",
+                                newStatus = entity.newStatus ?: "Unknown",
+                                temperatureAtTime = entity.temperatureAtTime,
+                                spo2AtTime = entity.spo2AtTime,
+                                latitude = entity.latitude,
+                                longitude = entity.longitude,
+                                createdAt = entity.createdAt ?: ""
+                            )
+
+                            currentMedicalAlerts.add(0, newMedicalAlerts)
+                            isListUpdated = true
+                        }
+
+                        else -> {}
+                    }
+                    if (isListUpdated) {
+                        send(Result.Success(currentMedicalAlerts.toList()))
+                    }
                 } catch (e: Exception) {
                     send(Result.Error(e, "Failed to update medical alerts data: ${e.message}"))
                 }

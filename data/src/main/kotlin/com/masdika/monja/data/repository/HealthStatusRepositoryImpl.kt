@@ -12,6 +12,7 @@ import io.github.jan.supabase.postgrest.query.Order
 import io.github.jan.supabase.postgrest.query.filter.FilterOperator
 import io.github.jan.supabase.realtime.PostgresAction
 import io.github.jan.supabase.realtime.channel
+import io.github.jan.supabase.realtime.decodeRecord
 import io.github.jan.supabase.realtime.postgresChangeFlow
 import io.github.jan.supabase.realtime.realtime
 import kotlinx.coroutines.CoroutineDispatcher
@@ -76,8 +77,19 @@ class HealthStatusRepositoryImpl @Inject constructor(
                     "New Health Status: $macAddress - $action"
                 )
                 try {
-                    val newHealthStatusData = getAvailableHealthStatuses(macAddress)
-                    Result.Success(newHealthStatusData)
+                    when (action) {
+                        is PostgresAction.Insert -> {
+                            val entity = action.decodeRecord<HealthStatusEntity>()
+                            send(Result.Success(HealthStatus(entity.status)))
+                        }
+
+                        is PostgresAction.Update -> {
+                            val entity = action.decodeRecord<HealthStatusEntity>()
+                            send(Result.Success(HealthStatus(entity.status)))
+                        }
+
+                        else -> {}
+                    }
                 } catch (e: Exception) {
                     send(Result.Error(e, "Failed to update health status data: ${e.message}"))
                 }

@@ -45,7 +45,7 @@ class DeviceRepositoryImpl @Inject constructor(
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
-                emptyList()
+                throw e
             }
         }
     }
@@ -93,7 +93,7 @@ class DeviceRepositoryImpl @Inject constructor(
                     send(
                         Result.Error(
                             e,
-                            "Failed to update device data: ${e.message} - Pooling Job"
+                            "Failed to update device status: ${e.message} - Pooling Job"
                         )
                     )
                 }
