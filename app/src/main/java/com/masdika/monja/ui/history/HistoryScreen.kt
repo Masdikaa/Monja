@@ -37,6 +37,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.masdika.monja.data.model.MedicalAlert
+import com.masdika.monja.data.utils.Result
 import com.masdika.monja.ui.component.MainTopAppBar
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -65,7 +66,8 @@ fun HistoryScreen(
         modifier = Modifier.fillMaxSize()
     ) { innerPadding ->
         HistoryContent(
-            state = state,
+            statusState = state.statusState,
+            macAddress = state.macAddress,
             modifier = Modifier.padding(innerPadding)
         )
     }
@@ -73,7 +75,8 @@ fun HistoryScreen(
 
 @Composable
 fun HistoryContent(
-    state: HistoryScreenState,
+    statusState: Result<List<MedicalAlert?>>,
+    macAddress: String,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -81,46 +84,47 @@ fun HistoryContent(
             .fillMaxSize()
             .padding(horizontal = 16.dp)
     ) {
-        when {
-            // Loading State
-            state.historyLoading -> {
+        when (statusState) {
+            is Result.Loading -> {
                 CircularProgressIndicator(
                     color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.align(Alignment.Center)
                 )
             }
 
-            // Empty Mac Addres state
-            state.macAddress.isEmpty() -> {
-                EmptyStateMessage(
-                    icon = Icons.Default.Info,
-                    message = "Please select a device in the Dashboard first.",
-                    modifier = Modifier.align(Alignment.Center)
-                )
-            }
+            is Result.Success -> {
+                when {
+                    macAddress.isEmpty() -> {
+                        EmptyStateMessage(
+                            icon = Icons.Default.Info,
+                            message = "Please select a device in the Dashboard first.",
+                            modifier = Modifier.align(Alignment.Center)
+                        )
+                    }
 
-            // Empty alerts state
-            state.alerts.isEmpty() -> {
-                EmptyStateMessage(
-                    icon = Icons.Default.MonitorHeart,
-                    message = "No medical alerts found. The device is in a healthy state.",
-                    modifier = Modifier.align(Alignment.Center)
-                )
-            }
+                    statusState.data.isEmpty() -> {
+                        EmptyStateMessage(
+                            icon = Icons.Default.MonitorHeart,
+                            message = "No medical alerts found. The device is in a healthy state.",
+                            modifier = Modifier.align(Alignment.Center)
+                        )
+                    }
 
-            // Success State
-            else -> {
-                LazyColumn(
-                    contentPadding = PaddingValues(vertical = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    // Filter nulls just in case, though repo should return non-null list
-                    items(state.alerts.filterNotNull()) { alert ->
-                        MedicalAlertCard(alert = alert)
+                    else -> {
+                        LazyColumn(
+                            contentPadding = PaddingValues(vertical = 16.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp),
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            items(statusState.data.filterNotNull()) { alert ->
+                                MedicalAlertCard(alert = alert)
+                            }
+                        }
                     }
                 }
             }
+
+            is Result.Error -> TODO()
         }
     }
 }

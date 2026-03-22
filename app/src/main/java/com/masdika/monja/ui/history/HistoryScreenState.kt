@@ -1,9 +1,9 @@
 package com.masdika.monja.ui.history
 
 import com.masdika.monja.data.model.MedicalAlert
+import com.masdika.monja.data.utils.Result
 
 data class HistoryScreenState(
     val macAddress: String = "",
-    val alerts: List<MedicalAlert?> = emptyList(),
-    val historyLoading: Boolean = true
+    val statusState: Result<List<MedicalAlert?>> = Result.Loading,
 )

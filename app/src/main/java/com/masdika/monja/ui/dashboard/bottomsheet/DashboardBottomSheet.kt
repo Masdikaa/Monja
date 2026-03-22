@@ -44,26 +44,42 @@ fun DashboardBottomSheet(
     isOnline: Boolean,
     onDismissSheetState: () -> Unit
 ) {
-    val vitals = (vitalsState as? Result.Success)?.data
-    val isVitalsLoading = vitalsState is Result.Loading
-
-    val healthStatus = (healthStatusState as? Result.Success)?.data
-    val isHealthStatusLoading = healthStatusState is Result.Loading
-
     ModalBottomSheet(
         onDismissRequest = { onDismissSheetState() },
         sheetState = sheetState
     ) {
-        VitalCard(
-            title = "Status",
-            value = healthStatus?.status,
-            imageIcon = HealthStatusIcon,
-            colorStops = VitalColors.PurpleGradient,
-            isLoading = isHealthStatusLoading,
-            isOnline = isOnline,
-            onClick = {},
-            valueTextSize = 28.sp
-        )
+        when (healthStatusState) {
+            is Result.Loading -> {
+                VitalCard(
+                    title = "Status",
+                    value = null,
+                    imageIcon = HealthStatusIcon,
+                    colorStops = VitalColors.PurpleGradient,
+                    isLoading = true,
+                    isOnline = isOnline,
+                    onClick = {},
+                    valueTextSize = 28.sp
+                )
+            }
+
+            is Result.Success -> {
+                VitalCard(
+                    title = "Status",
+                    value = healthStatusState.data?.status,
+                    imageIcon = HealthStatusIcon,
+                    colorStops = VitalColors.PurpleGradient,
+                    isLoading = false,
+                    isOnline = isOnline,
+                    onClick = {},
+                    valueTextSize = 28.sp
+                )
+            }
+
+            is Result.Error -> {
+                // TODO() Implement Error State
+            }
+        }
+
         Row(
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically,
@@ -95,6 +111,7 @@ fun DashboardBottomSheet(
                     .weight(0.3f)
             )
         }
+
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -102,36 +119,77 @@ fun DashboardBottomSheet(
                 .fillMaxWidth()
                 .padding(bottom = 16.dp)
         ) {
-            VitalCard(
-                title = "Body Temperature",
-                value = vitals?.temperature,
-                imageIcon = BodyTemperatureIcon,
-                colorStops = VitalColors.PinkGradient,
-                isLoading = isVitalsLoading,
-                isOnline = isOnline,
-                onClick = {},
-                unit = "°C"
-            )
-            VitalCard(
-                title = "Heart Rate",
-                value = vitals?.heartrate,
-                imageIcon = HeartrateIcon,
-                colorStops = VitalColors.RedGradient,
-                isLoading = isVitalsLoading,
-                isOnline = isOnline,
-                onClick = {},
-                unit = " BPM",
-            )
-            VitalCard(
-                title = "Sp02",
-                value = vitals?.oxygenSaturation,
-                imageIcon = SpO2Icon,
-                colorStops = VitalColors.BlueGradient,
-                isLoading = isVitalsLoading,
-                isOnline = isOnline,
-                onClick = {},
-                unit = "%",
-            )
+            when (vitalsState) {
+                is Result.Loading -> {
+                    VitalCard(
+                        title = "Body Temperature",
+                        value = null,
+                        imageIcon = BodyTemperatureIcon,
+                        colorStops = VitalColors.PinkGradient,
+                        isLoading = true,
+                        isOnline = isOnline,
+                        onClick = {},
+                        unit = "°C"
+                    )
+                    VitalCard(
+                        title = "Heart Rate",
+                        value = null,
+                        imageIcon = HeartrateIcon,
+                        colorStops = VitalColors.RedGradient,
+                        isLoading = true,
+                        isOnline = isOnline,
+                        onClick = {},
+                        unit = " BPM",
+                    )
+                    VitalCard(
+                        title = "Sp02",
+                        value = null,
+                        imageIcon = SpO2Icon,
+                        colorStops = VitalColors.BlueGradient,
+                        isLoading = true,
+                        isOnline = isOnline,
+                        onClick = {},
+                        unit = "%",
+                    )
+                }
+
+                is Result.Success -> {
+                    VitalCard(
+                        title = "Body Temperature",
+                        value = vitalsState.data?.temperature,
+                        imageIcon = BodyTemperatureIcon,
+                        colorStops = VitalColors.PinkGradient,
+                        isLoading = false,
+                        isOnline = isOnline,
+                        onClick = {},
+                        unit = "°C"
+                    )
+                    VitalCard(
+                        title = "Heart Rate",
+                        value = vitalsState.data?.heartrate,
+                        imageIcon = HeartrateIcon,
+                        colorStops = VitalColors.RedGradient,
+                        isLoading = false,
+                        isOnline = isOnline,
+                        onClick = {},
+                        unit = " BPM",
+                    )
+                    VitalCard(
+                        title = "Sp02",
+                        value = vitalsState.data?.oxygenSaturation,
+                        imageIcon = SpO2Icon,
+                        colorStops = VitalColors.BlueGradient,
+                        isLoading = false,
+                        isOnline = isOnline,
+                        onClick = {},
+                        unit = "%",
+                    )
+                }
+
+                is Result.Error -> {
+                    // TODO() Implement Error State
+                }
+            }
         }
     }
 }

@@ -4,10 +4,10 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.masdika.monja.data.repository.interfaces.MedicalAlertsRepository
+import com.masdika.monja.data.utils.Result
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -22,31 +22,21 @@ class HistoryViewModel @Inject constructor(
 
     init {
         val passedMacAddress = savedStateHandle.get<String>("macAddress") ?: ""
-        _state.update { it.copy(macAddress = passedMacAddress) }
 
         if (passedMacAddress.isNotEmpty()) {
+            _state.update { it.copy(macAddress = passedMacAddress) }
             startObservingHistory(passedMacAddress)
         } else {
-            _state.update { it.copy(historyLoading = false) }
+            _state.update { it.copy(macAddress = "", statusState = Result.Loading) }
         }
-
     }
 
     private fun startObservingHistory(macAddress: String) {
         viewModelScope.launch {
-            _state.update { it.copy(historyLoading = true) }
-
             medicalAlertsRepository.getMedicalAlertsStream(macAddress)
-                .catch { e ->
-                    e.printStackTrace()
-                    _state.update { it.copy(historyLoading = false) }
-                }
-                .collect { alertList ->
+                .collect { result ->
                     _state.update {
-                        it.copy(
-                            alerts = alertList,
-                            historyLoading = false
-                        )
+                        it.copy(statusState = result)
                     }
                 }
         }
