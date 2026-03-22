@@ -33,6 +33,7 @@ import com.mapbox.maps.plugin.animation.MapAnimationOptions
 import com.mapbox.maps.plugin.locationcomponent.OnIndicatorPositionChangedListener
 import com.mapbox.maps.plugin.locationcomponent.location
 import com.masdika.monja.data.model.Location
+import com.masdika.monja.data.utils.Result
 import com.masdika.monja.ui.theme.MonjaTheme
 
 @OptIn(MapboxExperimental::class)
@@ -41,15 +42,18 @@ import com.masdika.monja.ui.theme.MonjaTheme
 fun DashboardMap(
     macAddress: String,
     isOnline: Boolean,
-    deviceLocation: Location?,
+    locationState: Result<Location?>,
     isGpsEnabled: Boolean,
-    isLocationLoading: Boolean,
     modifier: Modifier = Modifier
 ) {
+    val deviceLocation = (locationState as? Result.Success)?.data
+    val isLocationLoading = locationState is Result.Loading
+
     val deviceLatitude = deviceLocation?.latitude?.toDoubleOrNull()
     val deviceLongitude = deviceLocation?.longitude?.toDoubleOrNull()
     val hasDeviceLocation = deviceLatitude != null && deviceLongitude != null
-    val devicePoint = if (hasDeviceLocation) Point.fromLngLat(deviceLongitude, deviceLatitude) else null
+    val devicePoint =
+        if (hasDeviceLocation) Point.fromLngLat(deviceLongitude, deviceLatitude) else null
 
     var isMapDarkMode by rememberSaveable { mutableStateOf(false) }
     var isSatelliteMode by rememberSaveable { mutableStateOf(false) }
@@ -99,9 +103,11 @@ fun DashboardMap(
                     .height(4.dp)
             )
         } else {
-            Spacer(modifier = Modifier
-                .fillMaxWidth()
-                .height(4.dp))
+            Spacer(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(4.dp)
+            )
         }
 
         Box(
@@ -215,9 +221,8 @@ private fun DashboardMapPreview() {
         DashboardMap(
             macAddress = "TEST",
             isOnline = false,
-            deviceLocation = location,
+            locationState = Result.Success(location),
             isGpsEnabled = true,
-            isLocationLoading = true,
             modifier = Modifier.fillMaxSize()
         )
     }

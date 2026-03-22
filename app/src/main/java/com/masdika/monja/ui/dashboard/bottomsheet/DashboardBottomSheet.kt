@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.masdika.monja.data.model.HealthStatus
 import com.masdika.monja.data.model.Vitals
+import com.masdika.monja.data.utils.Result
 import com.masdika.monja.ui.icon.BodyTemperatureIcon
 import com.masdika.monja.ui.icon.HealthStatusIcon
 import com.masdika.monja.ui.icon.HeartrateIcon
@@ -38,13 +39,17 @@ import com.masdika.monja.ui.theme.poppinsFont
 @Composable
 fun DashboardBottomSheet(
     sheetState: SheetState,
-    vitals: Vitals?,
-    healthStatus: HealthStatus?,
-    isVitalsLoading: Boolean,
-    isHealthStatusLoading: Boolean,
+    vitalsState: Result<Vitals?>,
+    healthStatusState: Result<HealthStatus?>,
     isOnline: Boolean,
     onDismissSheetState: () -> Unit
 ) {
+    val vitals = (vitalsState as? Result.Success)?.data
+    val isVitalsLoading = vitalsState is Result.Loading
+
+    val healthStatus = (healthStatusState as? Result.Success)?.data
+    val isHealthStatusLoading = healthStatusState is Result.Loading
+
     ModalBottomSheet(
         onDismissRequest = { onDismissSheetState() },
         sheetState = sheetState
@@ -146,10 +151,8 @@ private fun DashboardBottomSheetPreview() {
 
         DashboardBottomSheet(
             sheetState = sheetState,
-            vitals = vital,
-            healthStatus = status,
-            isHealthStatusLoading = false,
-            isVitalsLoading = false,
+            vitalsState = Result.Success(vital),
+            healthStatusState = Result.Success(status),
             isOnline = true,
             onDismissSheetState = {}
         )

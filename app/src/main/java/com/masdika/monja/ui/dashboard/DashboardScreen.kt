@@ -91,18 +91,6 @@ fun DashboardContent(
     var showBottomSheet by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState()
 
-    val vitals = (vitalsState as? Result.Success)?.data
-    val vitalsLoading = vitalsState is Result.Loading
-    val vitalsError = (vitalsState as? Result.Error)?.message
-
-    val location = (locationState as? Result.Success)?.data
-    val locationLoading = locationState is Result.Loading
-    val locationError = (locationState as? Result.Error)?.message
-
-    val healthStatus = (healthStatusState as? Result.Success)?.data
-    val healthStatusLoading = healthStatusState is Result.Loading
-    val healthStatusError = (healthStatusState as? Result.Error)?.message
-
     Column(modifier = modifier.fillMaxSize()) {
         if (deviceLoading) {
             LinearProgressIndicator(
@@ -126,18 +114,16 @@ fun DashboardContent(
                         DashboardMap(
                             macAddress = selectedDevice.macAddress,
                             isOnline = selectedDevice.isOnline,
-                            deviceLocation = location,
+                            locationState = locationState,
                             isGpsEnabled = true,
-                            isLocationLoading = locationLoading,
                         )
                     },
                     onPermissionDenied = {
                         DashboardMap(
                             macAddress = selectedDevice.macAddress,
                             isOnline = selectedDevice.isOnline,
-                            deviceLocation = location,
+                            locationState = locationState,
                             isGpsEnabled = false,
-                            isLocationLoading = locationLoading, // Oper to specific parameter
                         )
                     }
                 )
@@ -165,10 +151,8 @@ fun DashboardContent(
                 if (showBottomSheet) {
                     DashboardBottomSheet(
                         sheetState = sheetState,
-                        vitals = vitals,
-                        healthStatus = healthStatus,
-                        isVitalsLoading = vitalsLoading,
-                        isHealthStatusLoading = healthStatusLoading,
+                        vitalsState = vitalsState,
+                        healthStatusState = healthStatusState,
                         isOnline = selectedDevice.isOnline,
                         onDismissSheetState = { showBottomSheet = false }
                     )
