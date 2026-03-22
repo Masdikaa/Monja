@@ -5,6 +5,7 @@ import com.masdika.monja.data.di.IoDispatcher
 import com.masdika.monja.data.entity.MedicalAlertEntity
 import com.masdika.monja.data.model.MedicalAlert
 import com.masdika.monja.data.repository.interfaces.MedicalAlertsRepository
+import com.masdika.monja.data.utils.Result
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.query.Order
@@ -51,42 +52,55 @@ class MedicalAlertsRepositoryImpl @Inject constructor(
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
-                emptyList()
+                throw e
             }
         }
     }
 
-    override fun getMedicalAlertsStream(macAddress: String): Flow<List<MedicalAlert>> =
-        channelFlow {
-            send(getMedicalAlerts(macAddress))
+    override fun getMedicalAlertsStream(
+        macAddress: String
+    ): Flow<Result<List<MedicalAlert>>> = channelFlow {
+        send(Result.Loading)
 
-            val channel = supabase.channel("medical_alert_channel_$macAddress")
-            val changeFlow = channel.postgresChangeFlow<PostgresAction>(schema = "public") {
-                table = "medical_alerts"
-                filter("mac_address", FilterOperator.EQ, macAddress)
-            }
+        try {
+            val initialMedicalAlertsData = getMedicalAlerts(macAddress)
+            send(Result.Success(initialMedicalAlertsData))
+        } catch (e: Exception) {
+            send(Result.Error(e, "Failed initiating medical alerts data: ${e.message}"))
+        }
 
-            val realtimeJob = launch(ioDispatcher) {
-                channel.subscribe()
-                changeFlow.collect {
-                    Log.i("REPO_MEDICAL_ALERT", "New Alert: $macAddress")
-                    send(getMedicalAlerts(macAddress))
+        val channel = supabase.channel("medical_alert_channel_$macAddress")
+        val changeFlow = channel.postgresChangeFlow<PostgresAction>(schema = "public") {
+            table = "medical_alerts"
+            filter("mac_address", FilterOperator.EQ, macAddress)
+        }
+
+        val realtimeJob = launch(ioDispatcher) {
+            channel.subscribe()
+            changeFlow.collect {
+                Log.i("REPO_MEDICAL_ALERT", "New Alert: $macAddress")
+                try {
+                    val newMedicalAlertsData = getMedicalAlerts(macAddress)
+                    send(Result.Success(newMedicalAlertsData))
+                } catch (e: Exception) {
+                    send(Result.Error(e, "Failed to update medical alerts data: ${e.message}"))
                 }
-            }
-
-            awaitClose {
-                realtimeJob.cancel()
-                CoroutineScope(ioDispatcher).launch {
-                    try {
-                        supabase.realtime.removeChannel(channel)
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                    }
-                }
-                Log.i(
-                    "REPO_MEDICAL_ALERT",
-                    "Close realtime connection for $macAddress medical alerts"
-                )
             }
         }
+
+        awaitClose {
+            realtimeJob.cancel()
+            CoroutineScope(ioDispatcher).launch {
+                try {
+                    supabase.realtime.removeChannel(channel)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+            Log.i(
+                "REPO_MEDICAL_ALERT",
+                "Close realtime connection for $macAddress medical alerts"
+            )
+        }
+    }
 }
