@@ -1,5 +1,6 @@
 package com.masdika.monja.ui.dashboard
 
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
@@ -12,10 +13,9 @@ fun NavController.navigateToDashboard() {
     navigate(route = DashboardRoute)
 }
 
-fun NavGraphBuilder.dashboardScreenRoute(
-    viewModel: DashboardViewModel
-) {
+fun NavGraphBuilder.dashboardScreenRoute() {
     composable<DashboardRoute> {
+        val viewModel = hiltViewModel<DashboardViewModel>()
         DashboardScreen(
             viewModel = viewModel
         )

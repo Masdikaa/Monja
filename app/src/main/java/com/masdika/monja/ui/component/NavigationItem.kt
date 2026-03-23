@@ -22,6 +22,6 @@ sealed class NavigationItem(
     data object History : NavigationItem(
         title = "History",
         icon = Icons.Default.History,
-        route = HistoryRoute()
+        route = HistoryRoute
     )
 }

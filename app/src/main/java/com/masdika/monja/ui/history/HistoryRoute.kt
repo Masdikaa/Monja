@@ -7,10 +7,10 @@ import androidx.navigation.compose.composable
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class HistoryRoute(val macAddress: String = "")
+data object HistoryRoute
 
-fun NavController.navigateToHistory(macAddress: String = "") {
-    navigate(route = HistoryRoute(macAddress = macAddress)) {
+fun NavController.navigateToHistory() {
+    navigate(route = HistoryRoute) {
         launchSingleTop = true
     }
 }

@@ -18,7 +18,6 @@ import com.masdika.monja.ui.history.HistoryRoute
 @Composable
 fun MainBottomBar(
     navController: NavController,
-    currentMacAddress: String
 ) {
     val navigationItems = listOf(
         NavigationItem.Dashboard,
@@ -47,7 +46,7 @@ fun MainBottomBar(
                 onClick = {
                     if (selectedIndex != index) {
                         val targetRoute: Any = when (item) {
-                            NavigationItem.History -> HistoryRoute(macAddress = currentMacAddress)
+                            NavigationItem.History -> HistoryRoute
                             NavigationItem.Dashboard -> DashboardRoute
                         }
 

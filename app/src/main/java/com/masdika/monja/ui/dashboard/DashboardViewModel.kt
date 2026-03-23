@@ -3,6 +3,7 @@ package com.masdika.monja.ui.dashboard
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.masdika.monja.data.model.Device
+import com.masdika.monja.data.repository.interfaces.ActiveDeviceRepository
 import com.masdika.monja.data.repository.interfaces.DeviceRepository
 import com.masdika.monja.data.repository.interfaces.HealthStatusRepository
 import com.masdika.monja.data.repository.interfaces.LocationRepository
@@ -16,7 +17,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -28,6 +28,7 @@ class DashboardViewModel @Inject constructor(
     private val vitalRepository: VitalsRepository,
     private val locationRepository: LocationRepository,
     private val healthStatusRepository: HealthStatusRepository,
+    private val activeDeviceRepository: ActiveDeviceRepository
 ) : ViewModel() {
     private val _state = MutableStateFlow(DashboardScreenState())
     val state = _state.asStateFlow()
@@ -51,9 +52,19 @@ class DashboardViewModel @Inject constructor(
                                     compareByDescending<Device> { it.isOnline }
                                         .thenByDescending { it.createdAt }
                                 )
-                                val selectedDevice = currentState.selectedDevice?.let { current ->
-                                    sortedDevice.find { it.macAddress == current.macAddress }
-                                } ?: sortedDevice.firstOrNull()
+                                val currentActiveMac = activeDeviceRepository.activeMacAddress.value
+
+                                val selectedDevice = if (currentActiveMac != null) {
+                                    sortedDevice.find { it.macAddress == currentActiveMac }
+                                } else {
+                                    sortedDevice.firstOrNull()
+                                }
+
+                                selectedDevice?.let {
+                                    if (currentActiveMac != it.macAddress) {
+                                        activeDeviceRepository.setActiveDevice(it.macAddress)
+                                    }
+                                }
 
                                 currentState.copy(
                                     deviceState = Result.Success(sortedDevice),
@@ -78,9 +89,7 @@ class DashboardViewModel @Inject constructor(
 
     private fun startObservingVitals() {
         viewModelScope.launch {
-            _state
-                .map { it.selectedDevice?.macAddress }
-                .distinctUntilChanged()
+            activeDeviceRepository.activeMacAddress
                 .flatMapLatest { macAddress ->
                     if (macAddress == null) {
                         flowOf(Result.Success(null))
@@ -100,9 +109,7 @@ class DashboardViewModel @Inject constructor(
 
     private fun startObservingLocation() {
         viewModelScope.launch {
-            _state
-                .map { it.selectedDevice?.macAddress }
-                .distinctUntilChanged()
+            activeDeviceRepository.activeMacAddress
                 .flatMapLatest { macAddress ->
                     if (macAddress == null) {
                         flowOf(Result.Success(null))
@@ -122,9 +129,7 @@ class DashboardViewModel @Inject constructor(
 
     private fun startObservingHealthStatus() {
         viewModelScope.launch {
-            _state
-                .map { it.selectedDevice?.macAddress }
-                .distinctUntilChanged()
+            activeDeviceRepository.activeMacAddress
                 .flatMapLatest { macAddress ->
                     if (macAddress == null) {
                         flowOf(Result.Success(null))
@@ -143,6 +148,7 @@ class DashboardViewModel @Inject constructor(
     }
 
     fun selectDevice(device: Device) {
+        activeDeviceRepository.setActiveDevice(device.macAddress)
         _state.update { it.copy(selectedDevice = device) }
     }
 }
