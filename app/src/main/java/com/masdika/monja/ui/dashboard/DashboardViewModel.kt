@@ -14,7 +14,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.update
@@ -96,7 +95,7 @@ class DashboardViewModel @Inject constructor(
                     } else {
                         // ========== Network Loading Simulation ==========
                         _state.update { it.copy(vitalsState = Result.Loading) }
-                        delay(7000)
+                        delay(3000)
                         // ========== Network Loading Simulation ==========
                         vitalRepository.getVitalStream(macAddress)
                     }
@@ -116,7 +115,7 @@ class DashboardViewModel @Inject constructor(
                     } else {
                         // ========== Network Loading Simulation ==========
                         _state.update { it.copy(locationState = Result.Loading) }
-                        delay(3000)
+                        delay(2000)
                         // ========== Network Loading Simulation ==========
                         locationRepository.getLocationStream(macAddress)
                     }
@@ -136,7 +135,7 @@ class DashboardViewModel @Inject constructor(
                     } else {
                         // ========== Network Loading Simulation ==========
                         _state.update { it.copy(healthStatusState = Result.Loading) }
-                        delay(7000)
+                        delay(3000)
                         // ========== Network Loading Simulation ==========
                         healthStatusRepository.getHealthStatusesStream(macAddress)
                     }

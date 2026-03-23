@@ -57,8 +57,12 @@ fun DashboardMap(
 
     var isMapDarkMode by rememberSaveable { mutableStateOf(false) }
     var isSatelliteMode by rememberSaveable { mutableStateOf(false) }
-    var userLocation by rememberSaveable { mutableStateOf<Point?>(null) }
-    var isInitialCameraSet by rememberSaveable { mutableStateOf(false) }
+
+    var userLat by rememberSaveable { mutableStateOf<Double?>(null) }
+    var userLng by rememberSaveable { mutableStateOf<Double?>(null) }
+    val userLocation = if (userLat != null && userLng != null) Point.fromLngLat(userLng!!, userLat!!) else null
+
+    var isInitialCameraSet by rememberSaveable(macAddress) { mutableStateOf(false) }
 
     val currentMapStyle = when {
         isSatelliteMode -> Style.SATELLITE_STREETS
@@ -129,7 +133,8 @@ fun DashboardMap(
                         mapView.location.addOnIndicatorPositionChangedListener(object :
                             OnIndicatorPositionChangedListener {
                             override fun onIndicatorPositionChanged(point: Point) {
-                                userLocation = point
+                                userLat = point.latitude()
+                                userLng = point.longitude()
                                 mapView.location.removeOnIndicatorPositionChangedListener(this)
                             }
                         })
