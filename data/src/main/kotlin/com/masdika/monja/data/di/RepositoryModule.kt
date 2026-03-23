@@ -1,10 +1,12 @@
 package com.masdika.monja.data.di
 
+import com.masdika.monja.data.repository.ActiveDeviceRepositoryImpl
 import com.masdika.monja.data.repository.DeviceRepositoryImpl
 import com.masdika.monja.data.repository.HealthStatusRepositoryImpl
 import com.masdika.monja.data.repository.LocationRepositoryImpl
 import com.masdika.monja.data.repository.MedicalAlertsRepositoryImpl
 import com.masdika.monja.data.repository.VitalRepositoryImpl
+import com.masdika.monja.data.repository.interfaces.ActiveDeviceRepository
 import com.masdika.monja.data.repository.interfaces.DeviceRepository
 import com.masdika.monja.data.repository.interfaces.HealthStatusRepository
 import com.masdika.monja.data.repository.interfaces.LocationRepository
@@ -48,4 +50,10 @@ abstract class RepositoryModule {
     abstract fun bindMedicalAlertsRepository(
         medicalAlertsRepositoryImpl: MedicalAlertsRepositoryImpl
     ): MedicalAlertsRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindActiveDeviceRepository(
+        activeDeviceRepositoryImpl: ActiveDeviceRepositoryImpl
+    ): ActiveDeviceRepository
 }
