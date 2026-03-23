@@ -67,11 +67,11 @@ fun VitalCard(
             .clip(
                 shape = RoundedCornerShape(20.dp)
             )
-            .background(
-                Brush.horizontalGradient(colorStops = colorStops)
-            )
             .clickable(
                 onClick = onClick
+            )
+            .background(
+                Brush.horizontalGradient(colorStops = colorStops)
             )
     ) {
         Box(

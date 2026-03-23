@@ -12,12 +12,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.WarningAmber
+import androidx.compose.material.icons.outlined.DeviceUnknown
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -91,71 +93,90 @@ fun DashboardContent(
     var showBottomSheet by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState()
 
+    val isVitalsError = vitalsState is Result.Error
+    val isLocationError = locationState is Result.Error
+    val isStatusError = healthStatusState is Result.Error
+    val hasAnyError = isVitalsError || isLocationError || isStatusError
+
     Column(modifier = modifier.fillMaxSize()) {
-        if (deviceLoading) {
-            LinearProgressIndicator(
-                color = MaterialTheme.colorScheme.primary,
-                trackColor = MaterialTheme.colorScheme.background,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(4.dp)
-            )
-        } else if (selectedDevice == null) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("No Available Device.") // TODO() Implement Empty States
-            }
-        } else {
-            Box(
-                contentAlignment = Alignment.BottomCenter,
-                modifier = Modifier.fillMaxSize()
-            ) {
-                RequestLocationPermission(
-                    onPermissionGranted = {
-                        DashboardMap(
-                            macAddress = selectedDevice.macAddress,
-                            isOnline = selectedDevice.isOnline,
-                            locationState = locationState,
-                            isGpsEnabled = true,
-                        )
-                    },
-                    onPermissionDenied = {
-                        DashboardMap(
-                            macAddress = selectedDevice.macAddress,
-                            isOnline = selectedDevice.isOnline,
-                            locationState = locationState,
-                            isGpsEnabled = false,
-                        )
-                    }
+        when {
+            hasAnyError -> {
+                DashboardEmptyState(
+                    title = "Connection Lost",
+                    icon = Icons.Default.WarningAmber,
+                    errorMessage = "Failed to load data, please check your internet connection and try again"
                 )
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .size(width = 120.dp, height = 25.dp)
-                        .background(
-                            shape = RoundedCornerShape(
-                                topStart = CornerSize(16.dp),
-                                topEnd = CornerSize(16.dp),
-                                bottomEnd = CornerSize(0),
-                                bottomStart = CornerSize(0)
-                            ),
-                            color = MaterialTheme.colorScheme.background
+            }
+
+            else -> {
+                if (deviceLoading) {
+                    LinearProgressIndicator(
+                        color = MaterialTheme.colorScheme.primary,
+                        trackColor = MaterialTheme.colorScheme.background,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(4.dp)
+                    )
+                } else if (selectedDevice == null) {
+                    DashboardEmptyState(
+                        title = "No available devices found!",
+                        icon = Icons.Outlined.DeviceUnknown,
+                        errorMessage = "Please check the devices internet access or battery and restart the app",
+                    )
+                } else {
+                    Box(
+                        contentAlignment = Alignment.BottomCenter,
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        RequestLocationPermission(
+                            onPermissionGranted = {
+                                DashboardMap(
+                                    macAddress = selectedDevice.macAddress,
+                                    isOnline = selectedDevice.isOnline,
+                                    locationState = locationState,
+                                    isGpsEnabled = true,
+                                )
+                            },
+                            onPermissionDenied = {
+                                DashboardMap(
+                                    macAddress = selectedDevice.macAddress,
+                                    isOnline = selectedDevice.isOnline,
+                                    locationState = locationState,
+                                    isGpsEnabled = false,
+                                )
+                            }
                         )
-                        .clickable(onClick = { showBottomSheet = true })
-                ) {
-                    Icon(
-                        imageVector = ArrowUpIcon,
-                        contentDescription = "Arrow Up Icon",
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-                if (showBottomSheet) {
-                    DashboardBottomSheet(
-                        sheetState = sheetState,
-                        vitalsState = vitalsState,
-                        healthStatusState = healthStatusState,
-                        isOnline = selectedDevice.isOnline,
-                        onDismissSheetState = { showBottomSheet = false }
-                    )
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier
+                                .size(width = 120.dp, height = 25.dp)
+                                .background(
+                                    shape = RoundedCornerShape(
+                                        topStart = CornerSize(16.dp),
+                                        topEnd = CornerSize(16.dp),
+                                        bottomEnd = CornerSize(0),
+                                        bottomStart = CornerSize(0)
+                                    ),
+                                    color = MaterialTheme.colorScheme.background
+                                )
+                                .clickable(onClick = { showBottomSheet = true })
+                        ) {
+                            Icon(
+                                imageVector = ArrowUpIcon,
+                                contentDescription = "Arrow Up Icon",
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                        if (showBottomSheet) {
+                            DashboardBottomSheet(
+                                sheetState = sheetState,
+                                vitalsState = vitalsState,
+                                healthStatusState = healthStatusState,
+                                isOnline = selectedDevice.isOnline,
+                                onDismissSheetState = { showBottomSheet = false }
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -212,7 +233,7 @@ private fun DashboardContentPreview() {
         ) {
             DashboardContent(
                 selectedDevice = devices[0],
-                vitalsState = Result.Success(vitals),
+                vitalsState = Result.Error(Exception("Error Preview")),
                 locationState = Result.Success(location),
                 healthStatusState = Result.Success(status),
                 deviceLoading = false,
