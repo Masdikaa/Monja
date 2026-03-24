@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -76,7 +78,16 @@ fun DashboardBottomSheet(
             }
 
             is Result.Error -> {
-                // TODO() Implement Error State
+                VitalCard(
+                    title = "Internal Error",
+                    value = healthStatusState.message,
+                    imageIcon = Icons.Default.Warning,
+                    colorStops = VitalColors.PurpleGradient,
+                    isLoading = false,
+                    isOnline = false,
+                    onClick = {},
+                    valueTextSize = 12.sp
+                )
             }
         }
 
@@ -187,7 +198,36 @@ fun DashboardBottomSheet(
                 }
 
                 is Result.Error -> {
-                    // TODO() Implement Error State
+                    VitalCard(
+                        title = "Internal Error",
+                        value = vitalsState.message,
+                        imageIcon = Icons.Default.Warning,
+                        colorStops = VitalColors.PinkGradient,
+                        isLoading = false,
+                        isOnline = false,
+                        onClick = {},
+                        valueTextSize = 12.sp
+                    )
+                    VitalCard(
+                        title = "Internal Error",
+                        value = vitalsState.message,
+                        imageIcon = Icons.Default.Warning,
+                        colorStops = VitalColors.RedGradient,
+                        isLoading = false,
+                        isOnline = false,
+                        onClick = {},
+                        valueTextSize = 12.sp
+                    )
+                    VitalCard(
+                        title = "Internal Error",
+                        value = vitalsState.message,
+                        imageIcon = Icons.Default.Warning,
+                        colorStops = VitalColors.BlueGradient,
+                        isLoading = false,
+                        isOnline = false,
+                        onClick = {},
+                        valueTextSize = 12.sp
+                    )
                 }
             }
         }

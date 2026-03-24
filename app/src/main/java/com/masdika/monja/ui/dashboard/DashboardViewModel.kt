@@ -11,11 +11,13 @@ import com.masdika.monja.data.repository.interfaces.VitalsRepository
 import com.masdika.monja.data.utils.Result
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -31,6 +33,8 @@ class DashboardViewModel @Inject constructor(
 ) : ViewModel() {
     private val _state = MutableStateFlow(DashboardScreenState())
     val state = _state.asStateFlow()
+    private val _event = Channel<DashboardScreenEvent>()
+    val event = _event.receiveAsFlow()
 
     init {
         startObservingDevices()
@@ -47,6 +51,10 @@ class DashboardViewModel @Inject constructor(
                         when (result) {
                             is Result.Success -> {
                                 val devices = result.data
+
+                                val shouldShowEmptyDeviceSnackbar =
+                                    devices.isEmpty() && !currentState.hasShownEmptyDeviceSnackbar
+
                                 val sortedDevice = devices.sortedWith(
                                     compareByDescending<Device> { it.isOnline }
                                         .thenByDescending { it.createdAt }
@@ -59,28 +67,64 @@ class DashboardViewModel @Inject constructor(
                                     sortedDevice.firstOrNull()
                                 }
 
+                                val previousOnlineState = currentState.previousDeviceOnlineState
+                                val shouldShowDeviceConnectionSnackbar =
+                                    selectedDevice != null && previousOnlineState != null && selectedDevice.isOnline != previousOnlineState
+
                                 selectedDevice?.let {
                                     if (currentActiveMac != it.macAddress) {
                                         activeDeviceRepository.setActiveDevice(it.macAddress)
                                     }
                                 }
 
+                                if (shouldShowEmptyDeviceSnackbar) {
+                                    _event.trySend(
+                                        DashboardScreenEvent.ShowEmptyDevicesSnackbar("No available devices found!")
+                                    )
+                                }
+
+                                if (shouldShowDeviceConnectionSnackbar) {
+                                    val statusText =
+                                        if (selectedDevice.isOnline) "Online" else "Offline"
+                                    _event.trySend(
+                                        DashboardScreenEvent.ShowDeviceConnectionSnackbar(
+                                            macAddress = selectedDevice.macAddress,
+                                            isOnline = selectedDevice.isOnline
+                                        )
+                                    )
+                                }
+
                                 currentState.copy(
                                     deviceState = Result.Success(sortedDevice),
-                                    selectedDevice = selectedDevice
+                                    selectedDevice = selectedDevice,
+                                    hasShownEmptyDeviceSnackbar = devices.isEmpty(),
+                                    previousDeviceOnlineState = selectedDevice?.isOnline
                                 )
                             }
 
                             is Result.Loading -> {
-                                currentState.copy(deviceState = Result.Loading)
+                                currentState.copy(
+                                    deviceState = Result.Loading,
+                                    previousDeviceOnlineState = currentState.previousDeviceOnlineState,
+                                    hasShownEmptyDeviceSnackbar = currentState.hasShownEmptyDeviceSnackbar
+                                )
                             }
 
                             is Result.Error -> {
                                 currentState.copy(
-                                    deviceState = Result.Error(result.exception, result.message)
+                                    deviceState = Result.Error(result.exception, result.message),
+                                    previousDeviceOnlineState = currentState.previousDeviceOnlineState,
+                                    hasShownEmptyDeviceSnackbar = currentState.hasShownEmptyDeviceSnackbar
                                 )
                             }
                         }
+                    }
+                    if (result is Result.Error) {
+                        _event.trySend(
+                            DashboardScreenEvent.ShowEmptyDevicesSnackbar(
+                                message = result.message ?: "Failed to load devices"
+                            )
+                        )
                     }
                 }
         }
@@ -102,6 +146,14 @@ class DashboardViewModel @Inject constructor(
                 }
                 .collect { vitalData ->
                     _state.update { it.copy(vitalsState = vitalData) }
+
+                    if (vitalData is Result.Error) {
+                        _event.trySend(
+                            DashboardScreenEvent.ShowEmptyDevicesSnackbar(
+                                message = vitalData.message ?: "Failed to load vitals data"
+                            )
+                        )
+                    }
                 }
         }
     }
@@ -122,6 +174,13 @@ class DashboardViewModel @Inject constructor(
                 }
                 .collect { locationData ->
                     _state.update { it.copy(locationState = locationData) }
+                    if (locationData is Result.Error) {
+                        _event.trySend(
+                            DashboardScreenEvent.ShowEmptyDevicesSnackbar(
+                                message = locationData.message ?: "Failed to load location"
+                            )
+                        )
+                    }
                 }
         }
     }
@@ -142,6 +201,13 @@ class DashboardViewModel @Inject constructor(
                 }
                 .collect { healthStatusData ->
                     _state.update { it.copy(healthStatusState = healthStatusData) }
+                    if (healthStatusData is Result.Error) {
+                        _event.trySend(
+                            DashboardScreenEvent.ShowEmptyDevicesSnackbar(
+                                message = healthStatusData.message ?: "Failed to load status"
+                            )
+                        )
+                    }
                 }
         }
     }

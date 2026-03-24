@@ -7,11 +7,15 @@ import com.masdika.monja.data.model.Vitals
 import com.masdika.monja.data.utils.Result
 
 data class DashboardScreenState(
+    // DEVICE
     val deviceState: Result<List<Device>> = Result.Loading,
     val selectedDevice: Device? = null,
 
-    // Vitals
+    // VITALS
     val vitalsState: Result<Vitals?> = Result.Loading,
     val locationState: Result<Location?> = Result.Loading,
     val healthStatusState: Result<HealthStatus?> = Result.Loading,
+
+    val hasShownEmptyDeviceSnackbar: Boolean = false,
+    val previousDeviceOnlineState: Boolean? = null
 )

@@ -10,18 +10,21 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.WarningAmber
-import androidx.compose.material.icons.outlined.DeviceUnknown
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -51,9 +54,29 @@ fun DashboardScreen(
     viewModel: DashboardViewModel
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-
+    val snackbarHostState = remember { SnackbarHostState() }
     val devices = (state.deviceState as? Result.Success)?.data ?: emptyList()
     val deviceLoading = state.deviceState is Result.Loading
+
+    LaunchedEffect(Unit) {
+        viewModel.event.collect { event ->
+            when (event) {
+                is DashboardScreenEvent.ShowEmptyDevicesSnackbar -> {
+                    snackbarHostState.showSnackbar(
+                        message = event.message,
+                        duration = SnackbarDuration.Long
+                    )
+                }
+
+                is DashboardScreenEvent.ShowDeviceConnectionSnackbar -> {
+                    snackbarHostState.showSnackbar(
+                        message = "${event.macAddress} is ${if (event.isOnline) "Online" else "Offline"}",
+                        duration = SnackbarDuration.Short
+                    )
+                }
+            }
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -64,6 +87,21 @@ fun DashboardScreen(
                     devices = devices,
                     selectedDevice = state.selectedDevice,
                     onDeviceSelected = { device -> viewModel.selectDevice(device) }
+                )
+            }
+        },
+        snackbarHost = {
+            SnackbarHost(
+                hostState = snackbarHostState,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .wrapContentSize(Alignment.TopCenter)
+                    .padding(top = 120.dp)
+            ) { message ->
+                Snackbar(
+                    snackbarData = message,
+                    containerColor = MaterialTheme.colorScheme.background,
+                    contentColor = MaterialTheme.colorScheme.onBackground
                 )
             }
         },
@@ -93,90 +131,69 @@ fun DashboardContent(
     var showBottomSheet by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState()
 
-    val isVitalsError = vitalsState is Result.Error
-    val isLocationError = locationState is Result.Error
-    val isStatusError = healthStatusState is Result.Error
-    val hasAnyError = isVitalsError || isLocationError || isStatusError
-
     Column(modifier = modifier.fillMaxSize()) {
-        when {
-            hasAnyError -> {
-                DashboardEmptyState(
-                    title = "Connection Lost",
-                    icon = Icons.Default.WarningAmber,
-                    errorMessage = "Failed to load data, please check your internet connection and try again"
-                )
-            }
+        if (deviceLoading) {
+            LinearProgressIndicator(
+                color = MaterialTheme.colorScheme.primary,
+                trackColor = MaterialTheme.colorScheme.background,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(4.dp)
+            )
+        }
 
-            else -> {
-                if (deviceLoading) {
-                    LinearProgressIndicator(
-                        color = MaterialTheme.colorScheme.primary,
-                        trackColor = MaterialTheme.colorScheme.background,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(4.dp)
+        Box(
+            contentAlignment = Alignment.BottomCenter,
+            modifier = Modifier.fillMaxSize()
+        ) {
+            RequestLocationPermission(
+                onPermissionGranted = {
+                    DashboardMap(
+                        macAddress = selectedDevice?.macAddress ?: "",
+                        isOnline = selectedDevice?.isOnline ?: false,
+                        locationState = locationState,
+                        isGpsEnabled = true,
                     )
-                } else if (selectedDevice == null) {
-                    DashboardEmptyState(
-                        title = "No available devices found!",
-                        icon = Icons.Outlined.DeviceUnknown,
-                        errorMessage = "Please check the devices internet access or battery and restart the app",
+                },
+                onPermissionDenied = {
+                    DashboardMap(
+                        macAddress = selectedDevice?.macAddress ?: "",
+                        isOnline = selectedDevice?.isOnline ?: false,
+                        locationState = locationState,
+                        isGpsEnabled = false,
                     )
-                } else {
-                    Box(
-                        contentAlignment = Alignment.BottomCenter,
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        RequestLocationPermission(
-                            onPermissionGranted = {
-                                DashboardMap(
-                                    macAddress = selectedDevice.macAddress,
-                                    isOnline = selectedDevice.isOnline,
-                                    locationState = locationState,
-                                    isGpsEnabled = true,
-                                )
-                            },
-                            onPermissionDenied = {
-                                DashboardMap(
-                                    macAddress = selectedDevice.macAddress,
-                                    isOnline = selectedDevice.isOnline,
-                                    locationState = locationState,
-                                    isGpsEnabled = false,
-                                )
-                            }
+                }
+            )
+            if (selectedDevice != null) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .size(width = 120.dp, height = 25.dp)
+                        .background(
+                            shape = RoundedCornerShape(
+                                topStart = CornerSize(16.dp),
+                                topEnd = CornerSize(16.dp),
+                                bottomEnd = CornerSize(0),
+                                bottomStart = CornerSize(0)
+                            ),
+                            color = MaterialTheme.colorScheme.background
                         )
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier
-                                .size(width = 120.dp, height = 25.dp)
-                                .background(
-                                    shape = RoundedCornerShape(
-                                        topStart = CornerSize(16.dp),
-                                        topEnd = CornerSize(16.dp),
-                                        bottomEnd = CornerSize(0),
-                                        bottomStart = CornerSize(0)
-                                    ),
-                                    color = MaterialTheme.colorScheme.background
-                                )
-                                .clickable(onClick = { showBottomSheet = true })
-                        ) {
-                            Icon(
-                                imageVector = ArrowUpIcon,
-                                contentDescription = "Arrow Up Icon",
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
-                        if (showBottomSheet) {
-                            DashboardBottomSheet(
-                                sheetState = sheetState,
-                                vitalsState = vitalsState,
-                                healthStatusState = healthStatusState,
-                                isOnline = selectedDevice.isOnline,
-                                onDismissSheetState = { showBottomSheet = false }
-                            )
-                        }
-                    }
+                        .clickable(onClick = { showBottomSheet = true })
+                ) {
+                    Icon(
+                        imageVector = ArrowUpIcon,
+                        contentDescription = "Arrow Up Icon",
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+                if (showBottomSheet) {
+                    DashboardBottomSheet(
+                        sheetState = sheetState,
+                        vitalsState = vitalsState,
+                        healthStatusState = healthStatusState,
+                        isOnline = selectedDevice.isOnline,
+                        onDismissSheetState = { showBottomSheet = false }
+                    )
                 }
             }
         }
@@ -233,7 +250,7 @@ private fun DashboardContentPreview() {
         ) {
             DashboardContent(
                 selectedDevice = devices[0],
-                vitalsState = Result.Error(Exception("Error Preview")),
+                vitalsState = Result.Success(vitals),
                 locationState = Result.Success(location),
                 healthStatusState = Result.Success(status),
                 deviceLoading = false,
