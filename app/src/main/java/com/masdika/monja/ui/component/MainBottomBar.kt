@@ -4,6 +4,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -38,7 +39,8 @@ fun MainBottomBar(
         itemSize = navigationItems.size,
         containerColor = MaterialTheme.colorScheme.background,
         indicatorStyle = IndicatorStyle.WORM,
-        indicatorDirection = IndicatorDirection.TOP
+        indicatorDirection = IndicatorDirection.TOP,
+        bottomBarHeight = 56.dp
     ) {
         navigationItems.forEachIndexed { index, item ->
             BottomBarItem(

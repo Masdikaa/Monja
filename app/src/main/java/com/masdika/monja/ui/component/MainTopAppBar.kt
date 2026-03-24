@@ -15,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.masdika.monja.ui.theme.poppinsFont
 
 @Composable
 fun MainTopAppBar(
@@ -26,7 +27,7 @@ fun MainTopAppBar(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .statusBarsPadding()
-            .height(64.dp)
+            .height(56.dp)
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.background)
             .padding(horizontal = 16.dp)
@@ -34,7 +35,8 @@ fun MainTopAppBar(
         Text(
             text = title,
             style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
+            fontFamily = poppinsFont
         )
         Row(
             verticalAlignment = Alignment.CenterVertically,

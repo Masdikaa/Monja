@@ -5,5 +5,5 @@ import com.masdika.monja.data.utils.Result
 
 data class HistoryScreenState(
     val macAddress: String = "",
-    val statusState: Result<List<MedicalAlert?>> = Result.Loading,
+    val statusState: Result<List<MedicalAlert>> = Result.Loading,
 )
