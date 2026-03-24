@@ -23,6 +23,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Devices.PIXEL_9
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -33,12 +34,14 @@ import com.masdika.monja.data.utils.Result
 import com.masdika.monja.ui.component.MainBottomBar
 import com.masdika.monja.ui.component.MainTopAppBar
 import com.masdika.monja.ui.theme.MonjaTheme
+import com.masdika.monja.util.openGoogleMaps
 
 @Composable
 fun HistoryScreen(
     viewModel: HistoryViewModel,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val context = LocalContext.current
 
     Scaffold(
         topBar = {
@@ -60,6 +63,13 @@ fun HistoryScreen(
         HistoryContent(
             statusState = state.statusState,
             macAddress = state.macAddress,
+            onOpenGoogleMaps = { latitude, longitude ->
+                openGoogleMaps(
+                    context,
+                    latitude,
+                    longitude
+                )
+            },
             modifier = Modifier.padding(innerPadding)
         )
     }
@@ -69,6 +79,7 @@ fun HistoryScreen(
 fun HistoryContent(
     macAddress: String,
     statusState: Result<List<MedicalAlert>>,
+    onOpenGoogleMaps: (latitude: String, longitude: String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -116,7 +127,7 @@ fun HistoryContent(
                             items(statusState.data) { status ->
                                 HistoryStatusCard(
                                     status = status,
-                                    onIntentToGoogleMap = {}
+                                    onIntentToGoogleMap = onOpenGoogleMaps
                                 )
                             }
                         }
@@ -200,6 +211,7 @@ private fun HistoryContentPreview() {
 //              statusState = Result.Loading,
                 statusState = Result.Success(medicalAlerts),
 //              statusState = Result.Error(Exception("Example Error"), message = "Error Happened"),
+                onOpenGoogleMaps = { _, _ -> },
                 modifier = Modifier.padding(it)
             )
         }

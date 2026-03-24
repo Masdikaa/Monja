@@ -32,7 +32,7 @@ import com.masdika.monja.util.dateFormat
 @Composable
 fun HistoryStatusCard(
     status: MedicalAlert,
-    onIntentToGoogleMap: () -> Unit
+    onIntentToGoogleMap: (latitude: String, longitude: String) -> Unit
 ) {
     val cardColor = when (status.newStatus) {
         "Severe" -> {
@@ -54,7 +54,11 @@ fun HistoryStatusCard(
             containerColor = cardColor,
             contentColor = Color.White
         ),
-        onClick = onIntentToGoogleMap
+        onClick = {
+            if (status.latitude != null && status.longitude != null) {
+                onIntentToGoogleMap(status.latitude!!, status.longitude!!)
+            }
+        }
     ) {
         Column(
             modifier = Modifier
@@ -179,7 +183,7 @@ private fun HistoryStatusCardPreview() {
         )
         HistoryStatusCard(
             status = medicalAlert,
-            onIntentToGoogleMap = {}
+            onIntentToGoogleMap = { _, _ -> }
         )
     }
 }
