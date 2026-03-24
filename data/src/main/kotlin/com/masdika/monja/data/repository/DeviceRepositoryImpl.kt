@@ -13,13 +13,14 @@ import io.github.jan.supabase.realtime.channel
 import io.github.jan.supabase.realtime.postgresChangeFlow
 import io.github.jan.supabase.realtime.realtime
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
@@ -27,6 +28,7 @@ class DeviceRepositoryImpl @Inject constructor(
     private val supabase: SupabaseClient,
     @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) : DeviceRepository {
+    private val cleanupMutex = Mutex()
 
     override suspend fun getAvailableDevices(): List<Device> {
         return withContext(ioDispatcher) {
@@ -100,18 +102,23 @@ class DeviceRepositoryImpl @Inject constructor(
             }
         }
 
+        cleanupMutex.lock()
+
         awaitClose {
             realtimeJob.cancel()
             pollingJob.cancel()
-            CoroutineScope(ioDispatcher).launch {
+            cleanupMutex.unlock()
+        }
+
+        launch(ioDispatcher) {
+            cleanupMutex.withLock {
                 try {
                     supabase.realtime.removeChannel(channel)
+                    Log.i("REPOSITORY SUPABASE DEVICE", "Close realtime device realtime connection")
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
             }
-            Log.i("REPOSITORY SUPABASE DEVICE", "Close realtime device realtime connection")
         }
-
     }
 }

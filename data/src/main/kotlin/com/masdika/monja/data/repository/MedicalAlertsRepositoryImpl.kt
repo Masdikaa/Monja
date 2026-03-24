@@ -16,11 +16,12 @@ import io.github.jan.supabase.realtime.decodeRecord
 import io.github.jan.supabase.realtime.postgresChangeFlow
 import io.github.jan.supabase.realtime.realtime
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
@@ -28,6 +29,8 @@ class MedicalAlertsRepositoryImpl @Inject constructor(
     private val supabase: SupabaseClient,
     @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) : MedicalAlertsRepository {
+    private val cleanupMutex = Mutex()
+
     override suspend fun getMedicalAlerts(macAddress: String): List<MedicalAlert> {
         return withContext(ioDispatcher) {
             try {
@@ -116,19 +119,25 @@ class MedicalAlertsRepositoryImpl @Inject constructor(
             }
         }
 
+        cleanupMutex.lock()
+
         awaitClose {
             realtimeJob.cancel()
-            CoroutineScope(ioDispatcher).launch {
+            cleanupMutex.unlock()
+        }
+
+        launch(ioDispatcher) {
+            cleanupMutex.withLock {
                 try {
                     supabase.realtime.removeChannel(channel)
+                    Log.i(
+                        "REPO_MEDICAL_ALERT",
+                        "Close realtime connection for $macAddress medical alerts"
+                    )
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
             }
-            Log.i(
-                "REPO_MEDICAL_ALERT",
-                "Close realtime connection for $macAddress medical alerts"
-            )
         }
     }
 }
