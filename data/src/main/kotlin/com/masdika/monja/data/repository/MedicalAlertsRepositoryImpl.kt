@@ -12,6 +12,7 @@ import io.github.jan.supabase.postgrest.query.Order
 import io.github.jan.supabase.postgrest.query.filter.FilterOperator
 import io.github.jan.supabase.realtime.PostgresAction
 import io.github.jan.supabase.realtime.channel
+import io.github.jan.supabase.realtime.decodeOldRecord
 import io.github.jan.supabase.realtime.decodeRecord
 import io.github.jan.supabase.realtime.postgresChangeFlow
 import io.github.jan.supabase.realtime.realtime
@@ -108,6 +109,35 @@ class MedicalAlertsRepositoryImpl @Inject constructor(
                             isListUpdated = true
                         }
 
+                        is PostgresAction.Update -> {
+                            val entity = action.decodeRecord<MedicalAlertEntity>()
+                            val updatedAlert = MedicalAlert(
+                                id = entity.id ?: 0,
+                                macAddress = entity.macAddress ?: "Unknown MAC",
+                                oldStatus = entity.oldStatus ?: "Unknown",
+                                newStatus = entity.newStatus ?: "Unknown",
+                                temperatureAtTime = entity.temperatureAtTime,
+                                spo2AtTime = entity.spo2AtTime,
+                                latitude = entity.latitude,
+                                longitude = entity.longitude,
+                                createdAt = entity.createdAt ?: ""
+                            )
+
+                            val index =
+                                currentMedicalAlerts.indexOfFirst { it.id == updatedAlert.id }
+                            if (index != -1) {
+                                currentMedicalAlerts[index] = updatedAlert
+                            }
+                            isListUpdated = true
+                        }
+
+                        is PostgresAction.Delete -> {
+                            val entity = action.decodeOldRecord<MedicalAlertEntity>()
+                            val deleteId = entity.id
+                            currentMedicalAlerts.removeAll { it.id == deleteId }
+                            isListUpdated = true
+                        }
+
                         else -> {}
                     }
                     if (isListUpdated) {
@@ -137,6 +167,22 @@ class MedicalAlertsRepositoryImpl @Inject constructor(
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
+            }
+        }
+    }
+
+    override suspend fun deleteMedicalAlerts(macAddress: String) {
+        return withContext(ioDispatcher) {
+            Log.i("MEDICAL_ALERT_DELETE", "Attempting to delete for mac address: $macAddress")
+            try {
+                supabase.postgrest["medical_alerts"]
+                    .delete {
+                        filter { eq("mac_address", macAddress) }
+                    }
+                Log.i("MEDICAL_ALERT_DELETE", "Delete Successful")
+            } catch (e: Exception) {
+                Log.i("MEDICAL_ALERT_DELETE", "Delete failed: ${e.message}")
+                throw e
             }
         }
     }
