@@ -28,7 +28,7 @@ import com.masdika.monja.data.model.Device
 import com.masdika.monja.ui.theme.poppinsFont
 
 @Composable
-fun TopAppBarAction(
+fun DashboardTopAppBarAction(
     devices: List<Device>,
     selectedDevice: Device?,
     onDeviceSelected: (Device) -> Unit
@@ -40,7 +40,7 @@ fun TopAppBarAction(
         Modifier
             .size(15.dp)
             .clip(shape = CircleShape)
-            .background(if (isOnline) Color(0xFF006D2C) else Color.Red)
+            .background(if (isOnline) Color(0xFF6CA651) else Color.Red)
     )
     Spacer(Modifier.width(5.dp))
     IconButton(
@@ -54,7 +54,12 @@ fun TopAppBarAction(
     ) {
         if (devices.isEmpty()) {
             DropdownMenuItem(
-                text = { Text("No devices available") },
+                text = {
+                    Text(
+                        text = "No devices available",
+                        fontFamily = poppinsFont
+                    )
+                },
                 onClick = { expanded = false }
             )
         } else {
@@ -66,7 +71,7 @@ fun TopAppBarAction(
                             fontWeight = if (device.macAddress == selectedDevice?.macAddress)
                                 FontWeight.Bold else FontWeight.Normal,
                             fontFamily = poppinsFont,
-                            color = if(device.isOnline) Color.Green else MaterialTheme.colorScheme.onBackground
+                            color = if (device.isOnline) Color(0xFF6CA651) else MaterialTheme.colorScheme.onBackground
                         )
                     },
                     onClick = {

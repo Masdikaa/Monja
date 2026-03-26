@@ -83,7 +83,7 @@ fun DashboardScreen(
             MainTopAppBar(
                 title = "Dashboard"
             ) {
-                TopAppBarAction(
+                DashboardTopAppBarAction(
                     devices = devices,
                     selectedDevice = state.selectedDevice,
                     onDeviceSelected = { device -> viewModel.selectDevice(device) }
@@ -236,7 +236,7 @@ private fun DashboardContentPreview() {
                 MainTopAppBar(
                     title = "Dashboard"
                 ) {
-                    TopAppBarAction(
+                    DashboardTopAppBarAction(
                         devices = devices,
                         selectedDevice = devices[0],
                         onDeviceSelected = { }

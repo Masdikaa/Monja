@@ -45,6 +45,10 @@ class DashboardViewModel @Inject constructor(
 
     private fun startObservingDevices() {
         viewModelScope.launch {
+            // ========== Network Loading Simulation ==========
+            _state.update { it.copy(deviceState = Result.Loading) }
+            delay(3000)
+            // ========== Network Loading Simulation ==========
             deviceRepository.getDeviceStream()
                 .collect { result ->
                     _state.update { currentState ->
@@ -84,8 +88,6 @@ class DashboardViewModel @Inject constructor(
                                 }
 
                                 if (shouldShowDeviceConnectionSnackbar) {
-                                    val statusText =
-                                        if (selectedDevice.isOnline) "Online" else "Offline"
                                     _event.trySend(
                                         DashboardScreenEvent.ShowDeviceConnectionSnackbar(
                                             macAddress = selectedDevice.macAddress,
@@ -167,7 +169,7 @@ class DashboardViewModel @Inject constructor(
                     } else {
                         // ========== Network Loading Simulation ==========
                         _state.update { it.copy(locationState = Result.Loading) }
-                        delay(2000)
+                        delay(4000)
                         // ========== Network Loading Simulation ==========
                         locationRepository.getLocationStream(macAddress)
                     }
@@ -194,7 +196,7 @@ class DashboardViewModel @Inject constructor(
                     } else {
                         // ========== Network Loading Simulation ==========
                         _state.update { it.copy(healthStatusState = Result.Loading) }
-                        delay(3000)
+                        delay(5000)
                         // ========== Network Loading Simulation ==========
                         healthStatusRepository.getHealthStatusesStream(macAddress)
                     }
