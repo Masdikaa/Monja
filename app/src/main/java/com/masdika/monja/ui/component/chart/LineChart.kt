@@ -58,52 +58,56 @@ fun LineChart(
                 end = paddingEnd,
                 bottom = paddingBottom
             )
-            .pointerInput(dataPoint, config, actualYMin, actualYMax) {
-                detectTapGestures { tapOffset ->
-                    if (dataPoint.isEmpty()) return@detectTapGestures
+            .then(
+                if (config.showTooltip) {
+                    Modifier.pointerInput(dataPoint, config, actualYMin, actualYMax) {
+                        detectTapGestures { tapOffset ->
+                            if (dataPoint.isEmpty()) return@detectTapGestures
 
-                    val canvasWidth = size.width
-                    val canvasHeight = size.height
+                            val canvasWidth = size.width
+                            val canvasHeight = size.height
 
-                    val minTime = dataPoint.minOfOrNull {
-                        it.timestamp.toEpochMilli()
-                    } ?: return@detectTapGestures
-                    val maxTime = dataPoint.maxOfOrNull {
-                        it.timestamp.toEpochMilli()
-                    } ?: return@detectTapGestures
+                            val minTime = dataPoint.minOfOrNull {
+                                it.timestamp.toEpochMilli()
+                            } ?: return@detectTapGestures
+                            val maxTime = dataPoint.maxOfOrNull {
+                                it.timestamp.toEpochMilli()
+                            } ?: return@detectTapGestures
 
-                    val timeRange = (maxTime - minTime).coerceAtLeast(1L)
-                    val valueRange = (actualYMax - actualYMin).coerceAtLeast(1.0).toFloat()
+                            val timeRange = (maxTime - minTime).coerceAtLeast(1L)
+                            val valueRange = (actualYMax - actualYMin).coerceAtLeast(1.0).toFloat()
 
-                    val touchTolerance = 24.dp.toPx()
-                    var pointFound = false
+                            val touchTolerance = 24.dp.toPx()
+                            var pointFound = false
 
-                    for (point in dataPoint) {
-                        val x =
-                            ((point.timestamp.toEpochMilli() - minTime).toFloat() / timeRange) * canvasWidth
-                        val y =
-                            canvasHeight - (((point.value.toFloat() - actualYMin.toFloat()) / valueRange) * canvasHeight)
-                        val pointOffset = Offset(x, y)
+                            for (point in dataPoint) {
+                                val x =
+                                    ((point.timestamp.toEpochMilli() - minTime).toFloat() / timeRange) * canvasWidth
+                                val y =
+                                    canvasHeight - (((point.value.toFloat() - actualYMin.toFloat()) / valueRange) * canvasHeight)
+                                val pointOffset = Offset(x, y)
 
-                        val distance = hypot(
-                            (tapOffset.x - pointOffset.x).toDouble(),
-                            (tapOffset.y - pointOffset.y).toDouble()
-                        )
+                                val distance = hypot(
+                                    (tapOffset.x - pointOffset.x).toDouble(),
+                                    (tapOffset.y - pointOffset.y).toDouble()
+                                )
 
-                        if (distance <= touchTolerance) {
-                            selectedDataPoint = point
-                            selectedPointOffset = pointOffset
-                            pointFound = true
-                            break
+                                if (distance <= touchTolerance) {
+                                    selectedDataPoint = point
+                                    selectedPointOffset = pointOffset
+                                    pointFound = true
+                                    break
+                                }
+                            }
+
+                            if (!pointFound) {
+                                selectedDataPoint = null
+                                selectedPointOffset = null
+                            }
                         }
                     }
-
-                    if (!pointFound) {
-                        selectedDataPoint = null
-                        selectedPointOffset = null
-                    }
-                }
-            }
+                } else Modifier
+            )
     ) {
         val canvasWidth = size.width
         val canvasHeight = size.height
@@ -152,16 +156,16 @@ fun LineChart(
                 actualYMax = actualYMax
             )
 
-            selectedPointOffset?.let { offset ->
+            if (config.showTooltip && selectedPointOffset != null) {
                 drawCircle(
                     color = config.lineColor.copy(alpha = 0.3f),
                     radius = 12.dp.toPx(),
-                    center = offset
+                    center = selectedPointOffset!!
                 )
             }
         }
 
-        if (selectedDataPoint != null && selectedPointOffset != null) {
+        if (config.showTooltip && selectedDataPoint != null && selectedPointOffset != null) {
             drawTooltip(
                 scope = this,
                 textMeasurer = textMeasurer,

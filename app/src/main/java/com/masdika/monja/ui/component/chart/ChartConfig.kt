@@ -17,5 +17,6 @@ data class ChartConfig(
     val backgroundColor: Color = Color.White,
     val indicatorColor: Color = Color.Gray,
     val tooltipBackgroundColor: Color = Color.DarkGray,
-    val tooltipTextColor: Color = Color.White
+    val tooltipTextColor: Color = Color.White,
+    val showTooltip: Boolean = true
 )
