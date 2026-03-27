@@ -3,6 +3,7 @@ package com.masdika.monja.ui.dashboard
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.masdika.monja.data.model.Device
+import com.masdika.monja.data.model.Vitals
 import com.masdika.monja.data.repository.interfaces.ActiveDeviceRepository
 import com.masdika.monja.data.repository.interfaces.DeviceRepository
 import com.masdika.monja.data.repository.interfaces.HealthStatusRepository
@@ -20,6 +21,8 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.Instant
+import java.time.temporal.ChronoUnit
 import javax.inject.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -137,24 +140,71 @@ class DashboardViewModel @Inject constructor(
             activeDeviceRepository.activeMacAddress
                 .flatMapLatest { macAddress ->
                     if (macAddress == null) {
-                        flowOf(Result.Success(null))
+                        flowOf(Result.Success(emptyList<Vitals>()))
                     } else {
                         // ========== Network Loading Simulation ==========
-                        _state.update { it.copy(vitalsState = Result.Loading) }
+                        _state.update {
+                            it.copy(
+                                vitalsState = Result.Loading,
+                                vitalsChartState = Result.Loading
+                            )
+                        }
                         delay(3000)
                         // ========== Network Loading Simulation ==========
                         vitalRepository.getVitalStream(macAddress)
                     }
                 }
                 .collect { vitalData ->
-                    _state.update { it.copy(vitalsState = vitalData) }
+                    when (vitalData) {
+                        is Result.Loading -> {
+                            _state.update {
+                                it.copy(
+                                    vitalsState = Result.Loading,
+                                    vitalsChartState = Result.Loading
+                                )
+                            }
+                        }
 
-                    if (vitalData is Result.Error) {
-                        _event.trySend(
-                            DashboardScreenEvent.ShowEmptyDevicesSnackbar(
-                                message = vitalData.message ?: "Failed to load vitals data"
+                        is Result.Success -> {
+                            val allVitals = vitalData.data
+                            val latestVital = allVitals.firstOrNull()
+
+                            val threeMinuteAgo = Instant.now().minus(3, ChronoUnit.MINUTES)
+                            val chartVitals = allVitals.filter {
+                                try {
+                                    Instant.parse(it.createdAt).isAfter(threeMinuteAgo)
+                                } catch (e: Exception) {
+                                    false
+                                }
+                            }.reversed()
+
+                            _state.update {
+                                it.copy(
+                                    vitalsState = Result.Success(latestVital),
+                                    vitalsChartState = Result.Success(chartVitals)
+                                )
+                            }
+                        }
+
+                        is Result.Error -> {
+                            _state.update {
+                                it.copy(
+                                    vitalsState = Result.Error(
+                                        vitalData.exception,
+                                        vitalData.message
+                                    ),
+                                    vitalsChartState = Result.Error(
+                                        vitalData.exception,
+                                        vitalData.message
+                                    )
+                                )
+                            }
+                            _event.trySend(
+                                DashboardScreenEvent.ShowEmptyDevicesSnackbar(
+                                    message = vitalData.message ?: "Failed to load vitals data"
+                                )
                             )
-                        )
+                        }
                     }
                 }
         }

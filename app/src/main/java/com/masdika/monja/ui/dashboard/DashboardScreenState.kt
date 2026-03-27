@@ -15,6 +15,7 @@ data class DashboardScreenState(
     val vitalsState: Result<Vitals?> = Result.Loading,
     val locationState: Result<Location?> = Result.Loading,
     val healthStatusState: Result<HealthStatus?> = Result.Loading,
+    val vitalsChartState: Result<List<Vitals>> = Result.Loading,
 
     val hasShownEmptyDeviceSnackbar: Boolean = false,
     val previousDeviceOnlineState: Boolean? = null

@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -39,6 +40,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.masdika.monja.ui.component.chart.ChartConfig
+import com.masdika.monja.ui.component.chart.DataPoint
+import com.masdika.monja.ui.component.chart.LineChart
 import com.masdika.monja.ui.icon.HealthStatusIcon
 import com.masdika.monja.ui.theme.MonjaTheme
 import com.masdika.monja.ui.theme.openSansFont
@@ -48,6 +52,7 @@ import com.masdika.monja.ui.theme.poppinsFont
 fun VitalCard(
     title: String,
     value: Any?,
+    chartData: List<DataPoint> = emptyList(),
     imageIcon: ImageVector,
     colorStops: Array<Pair<Float, Color>>,
     isLoading: Boolean,
@@ -58,70 +63,86 @@ fun VitalCard(
 ) {
     val boxHeight = with(LocalDensity.current) { valueTextSize.toDp() }
 
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
+    Box(
         modifier = Modifier
             .fillMaxWidth()
             .height(100.dp)
             .padding(horizontal = 16.dp)
-            .clip(
-                shape = RoundedCornerShape(20.dp)
-            )
-            .clickable(
-                onClick = onClick
-            )
-            .background(
-                Brush.horizontalGradient(colorStops = colorStops)
-            )
+            .clip(shape = RoundedCornerShape(20.dp))
+            .clickable(onClick = onClick)
+            .background(Brush.horizontalGradient(colorStops = colorStops))
     ) {
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier.weight(0.25f)
-        ) {
-            Image(
-                imageVector = imageIcon,
-                contentDescription = null,
-                modifier = Modifier.size(65.dp)
+
+        if (chartData.isNotEmpty() && !isLoading && isOnline) {
+            LineChart(
+                dataPoint = chartData,
+                config = ChartConfig(
+                    lineColor = Color.White.copy(0.3f),
+                    showIndicators = false,
+                    showDots = false,
+                    showXAxisLabels = false,
+                    showTooltip = false,
+                    backgroundColor = Color.Transparent,
+                    pointColor = Color.Transparent,
+                    indicatorColor = Color.Transparent
+                ),
+                modifier = Modifier.fillMaxSize()
             )
         }
-        Column(
-            verticalArrangement = Arrangement.Center,
-            modifier = Modifier
-                .weight(0.75f)
-                .height(70.dp)
-        ) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                fontFamily = openSansFont,
-                color = Color.White,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
 
-            if (!isLoading) {
-                val displayUnit = unit.ifEmpty { "" }
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.weight(0.25f)
+            ) {
+                Image(
+                    imageVector = imageIcon,
+                    contentDescription = null,
+                    modifier = Modifier.size(65.dp)
+                )
+            }
+            Column(
+                verticalArrangement = Arrangement.Center,
+                modifier = Modifier
+                    .weight(0.75f)
+                    .height(70.dp)
+            ) {
                 Text(
-                    text = if (isOnline) "${value ?: "--"}$displayUnit" else "--",
-                    style = MaterialTheme.typography.headlineLarge,
-                    fontWeight = FontWeight.SemiBold,
-                    fontFamily = poppinsFont,
+                    text = title,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = openSansFont,
                     color = Color.White,
-                    fontSize = valueTextSize,
-                    textAlign = TextAlign.Center,
                     maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
+                    overflow = TextOverflow.Ellipsis
                 )
-            } else {
-                Spacer(Modifier.height(8.dp))
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth(0.7f)
-                        .height(boxHeight)
-                        .clip(RoundedCornerShape(8.dp))
-                        .shimmerEffect()
-                )
+
+                if (!isLoading) {
+                    val displayUnit = unit.ifEmpty { "" }
+                    Text(
+                        text = if (isOnline) "${value ?: "--"}$displayUnit" else "--",
+                        style = MaterialTheme.typography.headlineLarge,
+                        fontWeight = FontWeight.SemiBold,
+                        fontFamily = poppinsFont,
+                        color = Color.White,
+                        fontSize = valueTextSize,
+                        textAlign = TextAlign.Center,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                } else {
+                    Spacer(Modifier.height(8.dp))
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth(0.7f)
+                            .height(boxHeight)
+                            .clip(RoundedCornerShape(8.dp))
+                            .shimmerEffect()
+                    )
+                }
             }
         }
     }
@@ -162,7 +183,7 @@ private fun TemperatureCardPreview() {
             title = "Temperature",
             value = 32.0,
             imageIcon = HealthStatusIcon,
-            colorStops = VitalColors.PurpleGradient,
+            colorStops = VitalColors.StatusGradient,
             isLoading = false,
             isOnline = false,
             onClick = {},

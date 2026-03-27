@@ -30,22 +30,36 @@ import androidx.compose.ui.unit.sp
 import com.masdika.monja.data.model.HealthStatus
 import com.masdika.monja.data.model.Vitals
 import com.masdika.monja.data.utils.Result
+import com.masdika.monja.ui.component.chart.DataPoint
 import com.masdika.monja.ui.icon.BodyTemperatureIcon
 import com.masdika.monja.ui.icon.HealthStatusIcon
 import com.masdika.monja.ui.icon.HeartrateIcon
 import com.masdika.monja.ui.icon.SpO2Icon
 import com.masdika.monja.ui.theme.MonjaTheme
 import com.masdika.monja.ui.theme.poppinsFont
+import java.time.Instant
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardBottomSheet(
     sheetState: SheetState,
     vitalsState: Result<Vitals?>,
+    vitalsChartData: Result<List<Vitals>>,
     healthStatusState: Result<HealthStatus?>,
     isOnline: Boolean,
     onDismissSheetState: () -> Unit
 ) {
+    val chartVitals = (vitalsChartData as? Result.Success)?.data ?: emptyList()
+    val temperatureChartData = chartVitals.map {
+        DataPoint(it.temperature, Instant.parse(it.createdAt))
+    }
+    val heartrateChartData = chartVitals.map {
+        DataPoint(it.heartrate.toDouble(), Instant.parse(it.createdAt))
+    }
+    val spo2ChartData = chartVitals.map {
+        DataPoint(it.oxygenSaturation.toDouble(), Instant.parse(it.createdAt))
+    }
+
     ModalBottomSheet(
         onDismissRequest = { onDismissSheetState() },
         sheetState = sheetState
@@ -56,7 +70,7 @@ fun DashboardBottomSheet(
                     title = "Status",
                     value = null,
                     imageIcon = HealthStatusIcon,
-                    colorStops = VitalColors.PurpleGradient,
+                    colorStops = VitalColors.StatusGradient,
                     isLoading = true,
                     isOnline = isOnline,
                     onClick = {},
@@ -69,7 +83,7 @@ fun DashboardBottomSheet(
                     title = "Status",
                     value = healthStatusState.data?.status,
                     imageIcon = HealthStatusIcon,
-                    colorStops = VitalColors.PurpleGradient,
+                    colorStops = VitalColors.StatusGradient,
                     isLoading = false,
                     isOnline = isOnline,
                     onClick = {},
@@ -82,7 +96,7 @@ fun DashboardBottomSheet(
                     title = "Internal Error",
                     value = healthStatusState.message,
                     imageIcon = Icons.Default.Warning,
-                    colorStops = VitalColors.PurpleGradient,
+                    colorStops = VitalColors.StatusGradient,
                     isLoading = false,
                     isOnline = false,
                     onClick = {},
@@ -136,7 +150,7 @@ fun DashboardBottomSheet(
                         title = "Body Temperature",
                         value = null,
                         imageIcon = BodyTemperatureIcon,
-                        colorStops = VitalColors.PinkGradient,
+                        colorStops = VitalColors.TemperatureGradient,
                         isLoading = true,
                         isOnline = isOnline,
                         onClick = {},
@@ -146,7 +160,7 @@ fun DashboardBottomSheet(
                         title = "Heart Rate",
                         value = null,
                         imageIcon = HeartrateIcon,
-                        colorStops = VitalColors.RedGradient,
+                        colorStops = VitalColors.HeartrateGradient,
                         isLoading = true,
                         isOnline = isOnline,
                         onClick = {},
@@ -156,7 +170,7 @@ fun DashboardBottomSheet(
                         title = "Sp02",
                         value = null,
                         imageIcon = SpO2Icon,
-                        colorStops = VitalColors.BlueGradient,
+                        colorStops = VitalColors.OxygenSaturationGradient,
                         isLoading = true,
                         isOnline = isOnline,
                         onClick = {},
@@ -168,8 +182,9 @@ fun DashboardBottomSheet(
                     VitalCard(
                         title = "Body Temperature",
                         value = vitalsState.data?.temperature,
+                        chartData = temperatureChartData,
                         imageIcon = BodyTemperatureIcon,
-                        colorStops = VitalColors.PinkGradient,
+                        colorStops = VitalColors.TemperatureGradient,
                         isLoading = false,
                         isOnline = isOnline,
                         onClick = {},
@@ -178,8 +193,9 @@ fun DashboardBottomSheet(
                     VitalCard(
                         title = "Heart Rate",
                         value = vitalsState.data?.heartrate,
+                        chartData = heartrateChartData,
                         imageIcon = HeartrateIcon,
-                        colorStops = VitalColors.RedGradient,
+                        colorStops = VitalColors.HeartrateGradient,
                         isLoading = false,
                         isOnline = isOnline,
                         onClick = {},
@@ -188,8 +204,9 @@ fun DashboardBottomSheet(
                     VitalCard(
                         title = "Sp02",
                         value = vitalsState.data?.oxygenSaturation,
+                        chartData = spo2ChartData,
                         imageIcon = SpO2Icon,
-                        colorStops = VitalColors.BlueGradient,
+                        colorStops = VitalColors.OxygenSaturationGradient,
                         isLoading = false,
                         isOnline = isOnline,
                         onClick = {},
@@ -202,7 +219,7 @@ fun DashboardBottomSheet(
                         title = "Internal Error",
                         value = vitalsState.message,
                         imageIcon = Icons.Default.Warning,
-                        colorStops = VitalColors.PinkGradient,
+                        colorStops = VitalColors.TemperatureGradient,
                         isLoading = false,
                         isOnline = false,
                         onClick = {},
@@ -212,7 +229,7 @@ fun DashboardBottomSheet(
                         title = "Internal Error",
                         value = vitalsState.message,
                         imageIcon = Icons.Default.Warning,
-                        colorStops = VitalColors.RedGradient,
+                        colorStops = VitalColors.HeartrateGradient,
                         isLoading = false,
                         isOnline = false,
                         onClick = {},
@@ -222,7 +239,7 @@ fun DashboardBottomSheet(
                         title = "Internal Error",
                         value = vitalsState.message,
                         imageIcon = Icons.Default.Warning,
-                        colorStops = VitalColors.BlueGradient,
+                        colorStops = VitalColors.OxygenSaturationGradient,
                         isLoading = false,
                         isOnline = false,
                         onClick = {},
@@ -243,7 +260,8 @@ private fun DashboardBottomSheetPreview() {
         val vital = Vitals(
             temperature = 32.7,
             heartrate = 87,
-            oxygenSaturation = 99
+            oxygenSaturation = 99,
+            createdAt = Instant.now().toString()
         )
         val status = HealthStatus("Severe")
 
@@ -252,7 +270,8 @@ private fun DashboardBottomSheetPreview() {
             vitalsState = Result.Success(vital),
             healthStatusState = Result.Success(status),
             isOnline = true,
-            onDismissSheetState = {}
+            onDismissSheetState = {},
+            vitalsChartData = Result.Success(emptyList()),
         )
     }
 }

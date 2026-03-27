@@ -110,6 +110,7 @@ fun DashboardScreen(
         DashboardContent(
             selectedDevice = state.selectedDevice,
             vitalsState = state.vitalsState,
+            vitalsChartData = state.vitalsChartState,
             locationState = state.locationState,
             healthStatusState = state.healthStatusState,
             deviceLoading = deviceLoading,
@@ -123,6 +124,7 @@ fun DashboardScreen(
 fun DashboardContent(
     selectedDevice: Device?,
     vitalsState: Result<Vitals?>,
+    vitalsChartData: Result<List<Vitals>>,
     locationState: Result<Location?>,
     healthStatusState: Result<HealthStatus?>,
     deviceLoading: Boolean,
@@ -164,37 +166,38 @@ fun DashboardContent(
                     )
                 }
             )
-            if (selectedDevice != null) {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .size(width = 120.dp, height = 25.dp)
-                        .background(
-                            shape = RoundedCornerShape(
-                                topStart = CornerSize(16.dp),
-                                topEnd = CornerSize(16.dp),
-                                bottomEnd = CornerSize(0),
-                                bottomStart = CornerSize(0)
-                            ),
-                            color = MaterialTheme.colorScheme.background
-                        )
-                        .clickable(onClick = { showBottomSheet = true })
-                ) {
-                    Icon(
-                        imageVector = ArrowUpIcon,
-                        contentDescription = "Arrow Up Icon",
-                        modifier = Modifier.size(20.dp)
+
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .size(width = 120.dp, height = 25.dp)
+                    .background(
+                        shape = RoundedCornerShape(
+                            topStart = CornerSize(16.dp),
+                            topEnd = CornerSize(16.dp),
+                            bottomEnd = CornerSize(0),
+                            bottomStart = CornerSize(0)
+                        ),
+                        color = MaterialTheme.colorScheme.background
                     )
-                }
-                if (showBottomSheet) {
-                    DashboardBottomSheet(
-                        sheetState = sheetState,
-                        vitalsState = vitalsState,
-                        healthStatusState = healthStatusState,
-                        isOnline = selectedDevice.isOnline,
-                        onDismissSheetState = { showBottomSheet = false }
-                    )
-                }
+                    .clickable(onClick = { showBottomSheet = true })
+            ) {
+                Icon(
+                    imageVector = ArrowUpIcon,
+                    contentDescription = "Arrow Up Icon",
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+
+            if (showBottomSheet) {
+                DashboardBottomSheet(
+                    sheetState = sheetState,
+                    vitalsState = vitalsState,
+                    vitalsChartData = vitalsChartData,
+                    healthStatusState = healthStatusState,
+                    isOnline = selectedDevice?.isOnline ?: false,
+                    onDismissSheetState = { showBottomSheet = false }
+                )
             }
         }
     }
@@ -224,7 +227,8 @@ private fun DashboardContentPreview() {
         val vitals = Vitals(
             temperature = 33.9,
             heartrate = 101,
-            oxygenSaturation = 90
+            oxygenSaturation = 90,
+            createdAt = "2026-03-13 19:30:08.171222+00"
         )
         val location = Location(
             latitude = "-7.610600",
@@ -251,6 +255,7 @@ private fun DashboardContentPreview() {
             DashboardContent(
                 selectedDevice = devices[0],
                 vitalsState = Result.Success(vitals),
+                vitalsChartData = Result.Success(emptyList()),
                 locationState = Result.Success(location),
                 healthStatusState = Result.Success(status),
                 deviceLoading = false,
