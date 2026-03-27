@@ -5,6 +5,6 @@ import com.masdika.monja.data.utils.Result
 import kotlinx.coroutines.flow.Flow
 
 interface VitalsRepository {
-    suspend fun getAvailableVitals(macAddress: String): Vitals?
-    fun getVitalStream(macAddress: String): Flow<Result<Vitals?>> // Return Result
+    suspend fun getAvailableVitals(macAddress: String, limit: Int = 100): List<Vitals>
+    fun getVitalStream(macAddress: String): Flow<Result<List<Vitals>>>
 }

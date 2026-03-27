@@ -4,4 +4,5 @@ data class Vitals(
     val temperature: Double,
     val heartrate: Int,
     val oxygenSaturation: Int,
+    val createdAt: String
 )

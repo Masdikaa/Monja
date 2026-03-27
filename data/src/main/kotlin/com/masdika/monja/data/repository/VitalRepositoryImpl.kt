@@ -31,22 +31,23 @@ class VitalRepositoryImpl @Inject constructor(
 ) : VitalsRepository {
     private val cleanupMutex = Mutex()
 
-    override suspend fun getAvailableVitals(macAddress: String): Vitals? {
+    override suspend fun getAvailableVitals(macAddress: String, limit: Int): List<Vitals> {
         return withContext(ioDispatcher) {
             try {
                 val entity = supabase.postgrest["vitals_log"]
                     .select {
                         filter { eq("mac_address", macAddress) }
                         order("created_at", order = Order.DESCENDING)
-                        limit(1)
+                        limit(limit.toLong())
                     }
-                    .decodeSingleOrNull<VitalsEntity>()
+                    .decodeList<VitalsEntity>()
 
-                entity?.let {
+                entity.map {
                     Vitals(
                         temperature = it.temperature ?: 0.0,
                         heartrate = it.heartrate ?: 0,
-                        oxygenSaturation = it.oxygenSaturation ?: 0
+                        oxygenSaturation = it.oxygenSaturation ?: 0,
+                        createdAt = it.createdAt ?: ""
                     )
                 }
             } catch (e: Exception) {
@@ -56,12 +57,15 @@ class VitalRepositoryImpl @Inject constructor(
         }
     }
 
-    override fun getVitalStream(macAddress: String): Flow<Result<Vitals?>> = channelFlow {
+    override fun getVitalStream(macAddress: String): Flow<Result<List<Vitals>>> = channelFlow {
         send(Result.Loading)
 
+        val currentVitals = mutableListOf<Vitals>()
+
         try {
-            val initialVitalsData = getAvailableVitals(macAddress)
-            send(Result.Success(initialVitalsData))
+            val initialVitalsData = getAvailableVitals(macAddress, 100)
+            currentVitals.addAll(initialVitalsData)
+            send(Result.Success(currentVitals.toList()))
         } catch (e: Exception) {
             send(Result.Error(e, "Failed initiating vitals data: ${e.message}"))
         }
@@ -81,29 +85,30 @@ class VitalRepositoryImpl @Inject constructor(
                     when (action) {
                         is PostgresAction.Insert -> {
                             val entity = action.decodeRecord<VitalsEntity>()
-                            send(
-                                Result.Success(
-                                    Vitals(
-                                        temperature = entity.temperature ?: 0.0,
-                                        heartrate = entity.heartrate ?: 0,
-                                        oxygenSaturation = entity.oxygenSaturation ?: 0
-                                    )
-                                )
+                            val newVital = Vitals(
+                                temperature = entity.temperature ?: 0.0,
+                                heartrate = entity.heartrate ?: 0,
+                                oxygenSaturation = entity.oxygenSaturation ?: 0,
+                                createdAt = entity.createdAt ?: ""
                             )
+                            currentVitals.add(0, newVital)
+                            if (currentVitals.size > 150) currentVitals.removeAt(currentVitals.lastIndex)
+
+                            send(Result.Success(currentVitals.toList()))
                         }
 
-                        is PostgresAction.Update -> {
-                            val entity = action.decodeRecord<VitalsEntity>()
-                            send(
-                                Result.Success(
-                                    Vitals(
-                                        temperature = entity.temperature ?: 0.0,
-                                        heartrate = entity.heartrate ?: 0,
-                                        oxygenSaturation = entity.oxygenSaturation ?: 0
-                                    )
-                                )
-                            )
-                        }
+//                        is PostgresAction.Update -> {
+//                            val entity = action.decodeRecord<VitalsEntity>()
+//                            send(
+//                                Result.Success(
+//                                    Vitals(
+//                                        temperature = entity.temperature ?: 0.0,
+//                                        heartrate = entity.heartrate ?: 0,
+//                                        oxygenSaturation = entity.oxygenSaturation ?: 0
+//                                    )
+//                                )
+//                            )
+//                        }
 
                         else -> {}
                     }
