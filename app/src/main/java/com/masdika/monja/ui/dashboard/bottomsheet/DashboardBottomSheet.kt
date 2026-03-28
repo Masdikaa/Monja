@@ -27,6 +27,7 @@ import androidx.compose.ui.tooling.preview.Devices.PIXEL_9
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.masdika.monja.data.model.Device
 import com.masdika.monja.data.model.HealthStatus
 import com.masdika.monja.data.model.Vitals
 import com.masdika.monja.data.utils.Result
@@ -43,10 +44,12 @@ import java.time.Instant
 @Composable
 fun DashboardBottomSheet(
     sheetState: SheetState,
+    selectedDevice: Device?,
     vitalsState: Result<Vitals?>,
     vitalsChartData: Result<List<Vitals>>,
     healthStatusState: Result<HealthStatus?>,
     isOnline: Boolean,
+    onNavigateToAnalytic: (macAddress: String, vitalType: String) -> Unit,
     onDismissSheetState: () -> Unit
 ) {
     val chartVitals = (vitalsChartData as? Result.Success)?.data ?: emptyList()
@@ -58,6 +61,13 @@ fun DashboardBottomSheet(
     }
     val spo2ChartData = chartVitals.map {
         DataPoint(it.oxygenSaturation.toDouble(), Instant.parse(it.createdAt))
+    }
+
+    val onCardClick: (String) -> Unit = { vitalType ->
+        selectedDevice?.macAddress?.let { macAddress ->
+            onDismissSheetState()
+            onNavigateToAnalytic(macAddress, vitalType)
+        }
     }
 
     ModalBottomSheet(
@@ -187,7 +197,7 @@ fun DashboardBottomSheet(
                         colorStops = VitalColors.TemperatureGradient,
                         isLoading = false,
                         isOnline = isOnline,
-                        onClick = {},
+                        onClick = { onCardClick("temperature") },
                         unit = "°C"
                     )
                     VitalCard(
@@ -198,7 +208,7 @@ fun DashboardBottomSheet(
                         colorStops = VitalColors.HeartrateGradient,
                         isLoading = false,
                         isOnline = isOnline,
-                        onClick = {},
+                        onClick = { onCardClick("heartrate") },
                         unit = " BPM",
                     )
                     VitalCard(
@@ -209,7 +219,7 @@ fun DashboardBottomSheet(
                         colorStops = VitalColors.OxygenSaturationGradient,
                         isLoading = false,
                         isOnline = isOnline,
-                        onClick = {},
+                        onClick = { onCardClick("spo2") },
                         unit = "%",
                     )
                 }
@@ -267,10 +277,17 @@ private fun DashboardBottomSheetPreview() {
 
         DashboardBottomSheet(
             sheetState = sheetState,
+            selectedDevice = Device(
+                macAddress = "",
+                isOnline = true,
+                lastSeen = "",
+                createdAt = ""
+            ),
             vitalsState = Result.Success(vital),
             healthStatusState = Result.Success(status),
             isOnline = true,
             onDismissSheetState = {},
+            onNavigateToAnalytic = { _, _ -> },
             vitalsChartData = Result.Success(emptyList()),
         )
     }

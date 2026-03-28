@@ -20,7 +20,7 @@ import com.masdika.monja.ui.theme.poppinsFont
 @Composable
 fun MainTopAppBar(
     title: String,
-    actions: @Composable RowScope.() -> Unit,
+    actions: @Composable RowScope.() -> Unit = {},
 ) {
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,

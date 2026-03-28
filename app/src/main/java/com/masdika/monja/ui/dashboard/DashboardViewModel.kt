@@ -13,7 +13,6 @@ import com.masdika.monja.data.utils.Result
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
@@ -48,10 +47,6 @@ class DashboardViewModel @Inject constructor(
 
     private fun startObservingDevices() {
         viewModelScope.launch {
-            // ========== Network Loading Simulation ==========
-            _state.update { it.copy(deviceState = Result.Loading) }
-            delay(3000)
-            // ========== Network Loading Simulation ==========
             deviceRepository.getDeviceStream()
                 .collect { result ->
                     _state.update { currentState ->
@@ -142,15 +137,6 @@ class DashboardViewModel @Inject constructor(
                     if (macAddress == null) {
                         flowOf(Result.Success(emptyList<Vitals>()))
                     } else {
-                        // ========== Network Loading Simulation ==========
-                        _state.update {
-                            it.copy(
-                                vitalsState = Result.Loading,
-                                vitalsChartState = Result.Loading
-                            )
-                        }
-                        delay(3000)
-                        // ========== Network Loading Simulation ==========
                         vitalRepository.getVitalStream(macAddress)
                     }
                 }
@@ -217,10 +203,6 @@ class DashboardViewModel @Inject constructor(
                     if (macAddress == null) {
                         flowOf(Result.Success(null))
                     } else {
-                        // ========== Network Loading Simulation ==========
-                        _state.update { it.copy(locationState = Result.Loading) }
-                        delay(4000)
-                        // ========== Network Loading Simulation ==========
                         locationRepository.getLocationStream(macAddress)
                     }
                 }
@@ -244,10 +226,6 @@ class DashboardViewModel @Inject constructor(
                     if (macAddress == null) {
                         flowOf(Result.Success(null))
                     } else {
-                        // ========== Network Loading Simulation ==========
-                        _state.update { it.copy(healthStatusState = Result.Loading) }
-                        delay(5000)
-                        // ========== Network Loading Simulation ==========
                         healthStatusRepository.getHealthStatusesStream(macAddress)
                     }
                 }

@@ -13,11 +13,14 @@ fun NavController.navigateToDashboard() {
     navigate(route = DashboardRoute)
 }
 
-fun NavGraphBuilder.dashboardScreenRoute() {
+fun NavGraphBuilder.dashboardScreenRoute(
+    onNavigateToAnalytic: (macAddress: String, vitalType: String) -> Unit
+) {
     composable<DashboardRoute> {
         val viewModel = hiltViewModel<DashboardViewModel>()
         DashboardScreen(
-            viewModel = viewModel
+            viewModel = viewModel,
+            onNavigateToAnalytic = onNavigateToAnalytic
         )
     }
 }

@@ -51,7 +51,8 @@ import com.masdika.monja.util.RequestLocationPermission
 
 @Composable
 fun DashboardScreen(
-    viewModel: DashboardViewModel
+    viewModel: DashboardViewModel,
+    onNavigateToAnalytic: (macAddress: String, vitalType: String) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -114,6 +115,7 @@ fun DashboardScreen(
             locationState = state.locationState,
             healthStatusState = state.healthStatusState,
             deviceLoading = deviceLoading,
+            onNavigateToAnalytic = onNavigateToAnalytic,
             modifier = Modifier.padding(innerPadding)
         )
     }
@@ -128,6 +130,7 @@ fun DashboardContent(
     locationState: Result<Location?>,
     healthStatusState: Result<HealthStatus?>,
     deviceLoading: Boolean,
+    onNavigateToAnalytic: (macAddress: String, vitalType: String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var showBottomSheet by remember { mutableStateOf(false) }
@@ -192,10 +195,12 @@ fun DashboardContent(
             if (showBottomSheet) {
                 DashboardBottomSheet(
                     sheetState = sheetState,
+                    selectedDevice = selectedDevice,
                     vitalsState = vitalsState,
                     vitalsChartData = vitalsChartData,
                     healthStatusState = healthStatusState,
                     isOnline = selectedDevice?.isOnline ?: false,
+                    onNavigateToAnalytic = onNavigateToAnalytic,
                     onDismissSheetState = { showBottomSheet = false }
                 )
             }
@@ -259,6 +264,7 @@ private fun DashboardContentPreview() {
                 locationState = Result.Success(location),
                 healthStatusState = Result.Success(status),
                 deviceLoading = false,
+                onNavigateToAnalytic = { _, _ -> },
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(it)
