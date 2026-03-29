@@ -2,8 +2,13 @@ package com.masdika.monja.ui.component.chart
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -20,14 +25,18 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 import kotlin.math.abs
 import kotlin.math.hypot
 
@@ -35,7 +44,8 @@ import kotlin.math.hypot
 fun LineChart(
     dataPoint: List<DataPoint>,
     modifier: Modifier = Modifier,
-    config: ChartConfig = ChartConfig()
+    config: ChartConfig = ChartConfig(),
+    viewportMinutes: Long = 0L
 ) {
     val textMeasurer = rememberTextMeasurer()
 
@@ -45,10 +55,41 @@ fun LineChart(
     val actualYMin = config.yAxisMin ?: dataPoint.minOfOrNull { it.value } ?: 0.0
     val actualYMax = config.yAxisMax ?: dataPoint.maxOfOrNull { it.value } ?: 100.0
 
+    // Count Time Range
+    val minTime = dataPoint.minOfOrNull { it.timestamp.toEpochMilli() } ?: return
+    val maxTime = dataPoint.maxOfOrNull { it.timestamp.toEpochMilli() } ?: return
+    val totalTimeRangeMs = (maxTime - minTime).coerceAtLeast(1L)
+
+    val viewportMs = if (viewportMinutes > 0) viewportMinutes * 60 * 1000L else totalTimeRangeMs
+
+    // Count Screen Width
+    val screenWidthDp = LocalConfiguration.current.screenWidthDp
+    val screenWidthPx = with(LocalDensity.current) { screenWidthDp.dp.toPx() }
+
+    // Total Ratio of total time / viewport
+    // if total time < viewport, use 1f of screen and multiply if more
+    val widthRatio = (totalTimeRangeMs.toFloat() / viewportMs.toFloat()).coerceAtLeast(1.0f)
+    val calculatedWidthPx = screenWidthPx * widthRatio
+    val calculatedWidthDp = with(LocalDensity.current) { calculatedWidthPx.toDp() }
+
+    val scrollState = rememberScrollState()
+
+    val isAtEndFrame by remember {
+        derivedStateOf {
+            scrollState.value >= (scrollState.maxValue - 20)
+        }
+    }
+
     val paddingStart = if (config.showIndicators) 50.dp else 0.dp
     val paddingEnd = if (config.showIndicators) 20.dp else 0.dp
     val paddingTop = if (config.showIndicators) 40.dp else 16.dp
     val paddingBottom = if (config.showIndicators) 40.dp else 16.dp
+
+    LaunchedEffect(dataPoint.size, calculatedWidthPx) {
+        if (calculatedWidthPx > screenWidthPx) {
+            scrollState.scrollTo(scrollState.maxValue)
+        }
+    }
 
     Canvas(
         modifier = modifier
@@ -58,6 +99,8 @@ fun LineChart(
                 end = paddingEnd,
                 bottom = paddingBottom
             )
+            .horizontalScroll(scrollState)
+            .width(calculatedWidthDp)
             .then(
                 if (config.showTooltip) {
                     Modifier.pointerInput(dataPoint, config, actualYMin, actualYMax) {
@@ -136,7 +179,9 @@ fun LineChart(
                 dataPoints = dataPoint,
                 config = config,
                 canvasWidth = canvasWidth,
-                canvasHeight = canvasHeight
+                canvasHeight = canvasHeight,
+                isAtEndFrame = isAtEndFrame,
+                viewportMinutes = viewportMinutes,
             )
         }
 
@@ -329,7 +374,9 @@ private fun drawXAxisLabel(
     dataPoints: List<DataPoint>,
     config: ChartConfig,
     canvasWidth: Float,
-    canvasHeight: Float
+    canvasHeight: Float,
+    isAtEndFrame: Boolean,
+    viewportMinutes: Long
 ) {
     if (!config.showXAxisLabels || dataPoints.isEmpty()) return
 
@@ -364,23 +411,48 @@ private fun drawXAxisLabel(
                     ((closestDataPoint.timestamp.toEpochMilli() - minTime).toFloat() / timeRange) * canvasWidth
 
                 if (actualXPx - lastDrawnXPos >= (minSpacingPx * 0.8f)) {
-                    val timeText =
+                    val timeText = if (isAtEndFrame) {
+                        if (i == maxLabelsPossible - 2) {
+                            val labelHour = viewportMinutes / 60
+                            val labelMins = viewportMinutes % 60
+                            if (labelHour > 0) "Last $labelHour hour" else "Last $labelMins min"
+                        } else ""
+                    } else {
                         closestDataPoint.labelX ?: formatter.format(closestDataPoint.timestamp)
-                    val textLayoutResult = textMeasurer.measure(
-                        text = timeText,
-                        style = labelTextStyle
-                    )
-
-                    drawText(
-                        textLayoutResult = textLayoutResult,
-                        color = config.indicatorColor,
-                        topLeft = Offset(
-                            x = actualXPx - (textLayoutResult.size.width / 2f),
-                            y = canvasHeight + 8.dp.toPx()
+                    }
+                    if (timeText.isNotEmpty()) {
+                        val textLayoutResult = textMeasurer.measure(
+                            text = timeText,
+                            style = labelTextStyle
                         )
-                    )
-                    lastDrawnXPos = actualXPx
+
+                        drawText(
+                            textLayoutResult = textLayoutResult,
+                            color = config.indicatorColor,
+                            topLeft = Offset(
+                                x = actualXPx - (textLayoutResult.size.width / 2f),
+                                y = canvasHeight + 8.dp.toPx()
+                            )
+                        )
+                        lastDrawnXPos = actualXPx
+                    }
                 }
+//                closestDataPoint.labelX ?: formatter.format(closestDataPoint.timestamp)
+//
+//                val textLayoutResult = textMeasurer.measure(
+//                    text = timeText,
+//                    style = labelTextStyle
+//                )
+//
+//                drawText(
+//                    textLayoutResult = textLayoutResult,
+//                    color = config.indicatorColor,
+//                    topLeft = Offset(
+//                        x = actualXPx - (textLayoutResult.size.width / 2f),
+//                        y = canvasHeight + 8.dp.toPx()
+//                    )
+//                )
+//                lastDrawnXPos = actualXPx
             }
         }
     }
@@ -394,8 +466,21 @@ private fun drawTooltip(
     center: Offset
 ) {
     with(scope) {
-        val text = "${dataPoint.value}"
-        val textStyle = TextStyle(color = Color.White, fontSize = 14.sp)
+        val formatter = DateTimeFormatter.ofPattern("HH:mm").withZone(ZoneId.systemDefault())
+        val timeString = formatter.format(dataPoint.timestamp)
+
+        val valueString = if (dataPoint.value % 1.0 == 0.0) {
+            dataPoint.value.toInt().toString()
+        } else {
+            String.format(Locale.getDefault(), "%.1f", dataPoint)
+        }
+
+        val text = "$valueString\n$timeString"
+        val textStyle = TextStyle(
+            color = Color.White,
+            fontSize = 14.sp,
+            textAlign = TextAlign.Center
+        )
         val textLayoutResult = textMeasurer.measure(text = text, style = textStyle)
 
         val padding = 8.dp.toPx()

@@ -2,17 +2,21 @@ package com.masdika.monja.ui.component.chart
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Devices.PIXEL_9
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.masdika.monja.ui.theme.MonjaTheme
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 
@@ -67,5 +71,53 @@ private fun LineChartPreview() {
                 .height(150.dp)
                 .background(MaterialTheme.colorScheme.background)
         )
+    }
+}
+
+@Preview(showSystemUi = true, device = PIXEL_9)
+@Composable
+private fun ScrollableLineChartPreview() {
+    val baseTime = Instant.now()
+
+    val dummyData = List(100) { index ->
+        val time = baseTime.minus((180 - (index * 5)).toLong(), ChronoUnit.MINUTES)
+        val value = 70.0 + (Math.random() * 70)
+        DataPoint(value, time)
+    }
+
+    val config = ChartConfig(
+        lineColor = Color.Red,
+        showXAxisLabels = true,
+        showIndicators = true,
+        backgroundColor = MaterialTheme.colorScheme.background,
+        indicatorColor = MaterialTheme.colorScheme.onBackground,
+        pointColor = MaterialTheme.colorScheme.onBackground,
+        tooltipBackgroundColor = Color.DarkGray,
+        tooltipTextColor = Color.White
+    )
+
+    MonjaTheme {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
+                .padding(top = 100.dp)
+        ) {
+            Text("Scrollable Chart (Viewport: 1 Hour, Total data: 3 hours")
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 16.dp)
+            ) {
+                LineChart(
+                    dataPoint = dummyData,
+                    config = config,
+                    viewportMinutes = 60L,
+                    modifier = Modifier
+                        .height(300.dp)
+                        .fillMaxWidth()
+                )
+            }
+        }
     }
 }
