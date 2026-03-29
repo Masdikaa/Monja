@@ -31,14 +31,13 @@ class VitalRepositoryImpl @Inject constructor(
 ) : VitalsRepository {
     private val cleanupMutex = Mutex()
 
-    override suspend fun getAvailableVitals(macAddress: String, limit: Int): List<Vitals> {
+    override suspend fun getAvailableVitals(macAddress: String): List<Vitals> {
         return withContext(ioDispatcher) {
             try {
                 val entity = supabase.postgrest["vitals_log"]
                     .select {
                         filter { eq("mac_address", macAddress) }
                         order("created_at", order = Order.DESCENDING)
-                        limit(limit.toLong())
                     }
                     .decodeList<VitalsEntity>()
 
@@ -63,7 +62,7 @@ class VitalRepositoryImpl @Inject constructor(
         val currentVitals = mutableListOf<Vitals>()
 
         try {
-            val initialVitalsData = getAvailableVitals(macAddress, 100)
+            val initialVitalsData = getAvailableVitals(macAddress)
             currentVitals.addAll(initialVitalsData)
             send(Result.Success(currentVitals.toList()))
         } catch (e: Exception) {
@@ -92,7 +91,6 @@ class VitalRepositoryImpl @Inject constructor(
                                 createdAt = entity.createdAt ?: ""
                             )
                             currentVitals.add(0, newVital)
-                            if (currentVitals.size > 150) currentVitals.removeAt(currentVitals.lastIndex)
 
                             send(Result.Success(currentVitals.toList()))
                         }
