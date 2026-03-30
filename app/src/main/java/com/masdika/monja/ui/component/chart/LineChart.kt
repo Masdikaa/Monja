@@ -117,7 +117,7 @@ fun LineChart(
                         .fillMaxHeight()
                         .horizontalScroll(scrollState)
                         .width(calculatedWidthDp)
-                        .padding(top = 16.dp, bottom = 40.dp, end = 16.dp)
+                        .padding(top = 16.dp, bottom = 40.dp)
                         .then(
                             if (config.showTooltip) {
                                 Modifier.pointerInput(dataPoint, config, actualYMin, actualYMax) {

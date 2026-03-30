@@ -82,8 +82,8 @@ fun VitalCard(
                     showDots = false,
                     showXAxisLabels = false,
                     showTooltip = false,
+                    showShadow = false,
                     backgroundColor = Color.Transparent,
-                    pointColor = Color.Transparent,
                     indicatorColor = Color.Transparent
                 ),
                 modifier = Modifier.fillMaxSize()

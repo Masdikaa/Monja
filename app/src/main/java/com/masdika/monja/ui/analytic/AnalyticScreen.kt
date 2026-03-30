@@ -1,11 +1,11 @@
 package com.masdika.monja.ui.analytic
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -15,6 +15,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -52,123 +53,121 @@ fun AnalyticScreen(
         },
         modifier = modifier.fillMaxSize()
     ) { innerPadding ->
-        Box(
-            contentAlignment = Alignment.Center,
+        AnalyticChartContent(
+            vitalState = vitalState,
+            vitalType = viewModel.vitalType.lowercase(),
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-        ) {
-            when (vitalState) {
-                is Result.Loading -> {
-                    CircularProgressIndicator()
-                }
-
-                is Result.Success -> {
-                    val vitals = vitalState.data
-
-                    if (vitals.isEmpty()) {
-                        Text("No data available!")
-                    } else {
-                        AnalyticChartContent(
-                            vitals = vitals,
-                            vitalType = viewModel.vitalType.lowercase(),
-                            modifier = Modifier.fillMaxSize()
-                        )
-                    }
-                }
-
-                is Result.Error -> {
-                    Text("Error")
-                }
-            }
-        }
+        )
     }
 }
 
 @Composable
 private fun AnalyticChartContent(
-    vitals: List<Vitals>,
+    vitalState: Result<List<Vitals>>,
     vitalType: String,
     modifier: Modifier = Modifier
 ) {
-    val chartData = vitals.map { vital ->
-        val value = when (vitalType) {
-            "temperature" -> vital.temperature
-            "heartrate" -> vital.heartrate.toDouble()
-            "spo2" -> vital.oxygenSaturation.toDouble()
-            else -> 0.0
-        }
-        DataPoint(value, Instant.parse(vital.createdAt))
-    }
-
-    val lineColor = when (vitalType) {
-        "temperature" -> VitalColors.TemperatureGradient.last().second
-        "heartrate" -> VitalColors.HeartrateGradient.last().second
-        "spo2" -> VitalColors.OxygenSaturationGradient.last().second
-        else -> Color.Gray
-    }
-
-    val chartMinValue = when (vitalType) {
-        "temperature" -> 20.0
-        "heartrate" -> 40.0
-        "spo2" -> 60.0
-        else -> 0.0
-    }
-
-    val chartMaxValue = when (vitalType) {
-        "temperature" -> 50.0
-        "heartrate" -> 220.0
-        "spo2" -> 100.0
-        else -> 0.0
-    }
-
-    val chartConfig = ChartConfig(
-        lineColor = lineColor,
-        yAxisMin = chartMinValue,
-        yAxisMax = chartMaxValue,
-        showIndicators = true,
-        showDots = true,
-        showXAxisLabels = true,
-        showTooltip = true,
-        pointColor = MaterialTheme.colorScheme.onBackground,
-        labelFontFamily = poppinsFont,
-        indicatorColor = MaterialTheme.colorScheme.onBackground,
-        tooltipBackgroundColor = MaterialTheme.colorScheme.onSurface,
-        tooltipTextColor = MaterialTheme.colorScheme.surface
-    )
-
     Column(
+        modifier = modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Top,
-        modifier = modifier.fillMaxSize()
+        verticalArrangement = Arrangement.Center
     ) {
-        LineChart(
-            dataPoint = chartData,
-            config = chartConfig,
-            viewportDataPoints = 60,
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(0.5f)
-        )
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 10.dp)
-                .weight(0.4f)
-        ) {
-            when (vitalType) {
-                "temperature" -> {}
+        when (vitalState) {
+            is Result.Success -> {
+                if (vitalState.data.isEmpty()) {
+                    Text("No data available!")
+                } else {
+                    val chartData = vitalState.data.map { vital ->
+                        val value = when (vitalType) {
+                            "temperature" -> vital.temperature
+                            "heartrate" -> vital.heartrate.toDouble()
+                            "spo2" -> vital.oxygenSaturation.toDouble()
+                            else -> 0.0
+                        }
+                        DataPoint(value, Instant.parse(vital.createdAt))
+                    }
 
-                "heartrate" -> {
-                    VitalStatistic(
-                        vitalTypes = vitalType,
-                        vitals = vitals,
+                    val lineColor = when (vitalType) {
+                        "temperature" -> VitalColors.TemperatureGradient.last().second
+                        "heartrate" -> VitalColors.HeartrateGradient.last().second
+                        "spo2" -> VitalColors.OxygenSaturationGradient.last().second
+                        else -> Color.Gray
+                    }
+
+                    val chartMinValue = when (vitalType) {
+                        "temperature" -> 20.0
+                        "heartrate" -> 40.0
+                        "spo2" -> 60.0
+                        else -> 0.0
+                    }
+
+                    val chartMaxValue = when (vitalType) {
+                        "temperature" -> 50.0
+                        "heartrate" -> 220.0
+                        "spo2" -> 100.0
+                        else -> 0.0
+                    }
+
+                    val chartConfig = ChartConfig(
+                        lineColor = lineColor,
+                        yAxisMin = chartMinValue,
+                        yAxisMax = chartMaxValue,
+                        showIndicators = true,
+                        showDots = false,
+                        showXAxisLabels = true,
+                        showTooltip = true,
+                        showShadow = true,
+                        pointColor = MaterialTheme.colorScheme.onBackground,
+                        labelFontFamily = poppinsFont,
+                        indicatorColor = MaterialTheme.colorScheme.onBackground,
+                        tooltipBackgroundColor = MaterialTheme.colorScheme.onSurface,
+                        tooltipTextColor = MaterialTheme.colorScheme.surface
                     )
+
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Top,
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        LineChart(
+                            dataPoint = chartData,
+                            config = chartConfig,
+                            viewportDataPoints = 60,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(0.5f)
+                                .padding(end = 16.dp)
+                        )
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 10.dp)
+                                .weight(0.5f)
+                        ) {
+                            VitalStatistic(
+                                vitalTypes = vitalType,
+                                vitals = vitalState.data,
+                            )
+                        }
+                    }
                 }
+            }
 
-                "spo2" -> {}
+            is Result.Loading -> {
+                CircularProgressIndicator(modifier = Modifier.size(42.dp))
+            }
 
-                else -> {}
+            is Result.Error -> {
+                // TODO() Implement Error State
+                Text(
+                    text = "Internal Error",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontFamily = poppinsFont,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.error
+                )
             }
         }
     }
@@ -190,6 +189,8 @@ private fun AnalyticScreenPreview() {
 
         val state = AnalyticScreenState(
             vitalState = Result.Success(vitals)
+//            vitalState = Result.Loading
+//            vitalState = Result.Error(IllegalArgumentException("Error Test"))
         )
 
         val vitalType = "heartrate"
@@ -201,18 +202,13 @@ private fun AnalyticScreenPreview() {
             },
             modifier = Modifier.fillMaxSize()
         ) { innerPadding ->
-            Box(
-                contentAlignment = Alignment.Center,
+            AnalyticChartContent(
+                vitalState = state.vitalState,
+                vitalType = vitalType,
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding)
-            ) {
-                AnalyticChartContent(
-                    vitals = vitals,
-                    vitalType = vitalType,
-                    modifier = Modifier.fillMaxSize()
-                )
-            }
+            )
         }
     }
 }
