@@ -15,10 +15,16 @@ import io.github.jan.supabase.realtime.channel
 import io.github.jan.supabase.realtime.decodeRecord
 import io.github.jan.supabase.realtime.postgresChangeFlow
 import io.github.jan.supabase.realtime.realtime
+import io.ktor.util.collections.ConcurrentMap
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -30,6 +36,9 @@ class VitalRepositoryImpl @Inject constructor(
     @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) : VitalsRepository {
     private val cleanupMutex = Mutex()
+
+    private val repositoryScope = CoroutineScope(ioDispatcher + SupervisorJob())
+    private val activeStreams = ConcurrentMap<String, SharedFlow<Result<List<Vitals>>>>()
 
     override suspend fun getAvailableVitals(macAddress: String): List<Vitals> {
         return withContext(ioDispatcher) {
@@ -56,85 +65,85 @@ class VitalRepositoryImpl @Inject constructor(
         }
     }
 
-    override fun getVitalStream(macAddress: String): Flow<Result<List<Vitals>>> = channelFlow {
-        send(Result.Loading)
-
-        val currentVitals = mutableListOf<Vitals>()
-
-        try {
-            val initialVitalsData = getAvailableVitals(macAddress)
-            currentVitals.addAll(initialVitalsData)
-            send(Result.Success(currentVitals.toList()))
-        } catch (e: Exception) {
-            send(Result.Error(e, "Failed initiating vitals data: ${e.message}"))
+    override fun getVitalStream(macAddress: String): Flow<Result<List<Vitals>>> {
+        return activeStreams.getOrPut(macAddress) {
+            createNewVitalStream(macAddress)
         }
+    }
 
-        val channel = supabase.channel("vitals_channel_$macAddress")
-        val changeFlow = channel.postgresChangeFlow<PostgresAction>(schema = "public") {
-            table = "vitals_log"
-            filter("mac_address", FilterOperator.EQ, macAddress)
-        }
+    private fun createNewVitalStream(macAddress: String): SharedFlow<Result<List<Vitals>>> {
+        return channelFlow {
+            send(Result.Loading)
 
-        val realtimeJob = launch(ioDispatcher) {
-            channel.subscribe()
-            changeFlow.collect { action ->
-                Log.i("REPOSITORY SUPABASE VITALS", "New Vitals: $macAddress - $action")
+            val currentVitals = mutableListOf<Vitals>()
 
-                try {
-                    when (action) {
-                        is PostgresAction.Insert -> {
-                            val entity = action.decodeRecord<VitalsEntity>()
-                            val newVital = Vitals(
-                                temperature = entity.temperature ?: 0.0,
-                                heartrate = entity.heartrate ?: 0,
-                                oxygenSaturation = entity.oxygenSaturation ?: 0,
-                                createdAt = entity.createdAt ?: ""
-                            )
-                            currentVitals.add(0, newVital)
+            try {
+                val initialVitalsData = getAvailableVitals(macAddress)
+                currentVitals.addAll(initialVitalsData)
+                send(Result.Success(currentVitals.toList()))
+            } catch (e: Exception) {
+                send(Result.Error(e, "Failed initiating vitals data: ${e.message}"))
+            }
 
-                            send(Result.Success(currentVitals.toList()))
+            val channel = supabase.channel("vitals_channel_$macAddress")
+            val changeFlow = channel.postgresChangeFlow<PostgresAction>(schema = "public") {
+                table = "vitals_log"
+                filter("mac_address", FilterOperator.EQ, macAddress)
+            }
+
+            val realtimeJob = launch(ioDispatcher) {
+                channel.subscribe()
+                changeFlow.collect { action ->
+                    Log.i("REPOSITORY SUPABASE VITALS", "New Vitals: $macAddress - $action")
+
+                    try {
+                        when (action) {
+                            is PostgresAction.Insert -> {
+                                val entity = action.decodeRecord<VitalsEntity>()
+                                val newVital = Vitals(
+                                    temperature = entity.temperature ?: 0.0,
+                                    heartrate = entity.heartrate ?: 0,
+                                    oxygenSaturation = entity.oxygenSaturation ?: 0,
+                                    createdAt = entity.createdAt ?: ""
+                                )
+                                currentVitals.add(0, newVital)
+
+                                send(Result.Success(currentVitals.toList()))
+                            }
+
+                            else -> {}
                         }
-
-//                        is PostgresAction.Update -> {
-//                            val entity = action.decodeRecord<VitalsEntity>()
-//                            send(
-//                                Result.Success(
-//                                    Vitals(
-//                                        temperature = entity.temperature ?: 0.0,
-//                                        heartrate = entity.heartrate ?: 0,
-//                                        oxygenSaturation = entity.oxygenSaturation ?: 0
-//                                    )
-//                                )
-//                            )
-//                        }
-
-                        else -> {}
+                    } catch (e: Exception) {
+                        send(Result.Error(e, "Failed to update vitals data: ${e.message}"))
                     }
-                } catch (e: Exception) {
-                    send(Result.Error(e, "Failed to update vitals data: ${e.message}"))
                 }
             }
-        }
 
-        cleanupMutex.lock()
+            cleanupMutex.lock()
 
-        awaitClose {
-            realtimeJob.cancel()
-            cleanupMutex.unlock()
-        }
+            awaitClose {
+                realtimeJob.cancel()
+                cleanupMutex.unlock()
+            }
 
-        launch(ioDispatcher) {
-            cleanupMutex.withLock {
-                try {
-                    supabase.realtime.removeChannel(channel)
-                    Log.i(
-                        "REPOSITORY SUPABASE VITALS",
-                        "Close realtime connection for $macAddress vitals log"
-                    )
-                } catch (e: Exception) {
-                    e.printStackTrace()
+            launch(ioDispatcher) {
+                cleanupMutex.withLock {
+                    try {
+                        supabase.realtime.removeChannel(channel)
+                        activeStreams.remove(macAddress)
+                        Log.i(
+                            "REPOSITORY SUPABASE VITALS",
+                            "Close realtime connection for $macAddress vitals log"
+                        )
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
                 }
             }
-        }
+        }.shareIn(
+            scope = repositoryScope,
+            started = SharingStarted.WhileSubscribed(10000),
+            replay = 1
+        )
     }
 }
