@@ -3,6 +3,11 @@ package com.masdika.monja.ui.component.chart
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -25,8 +30,6 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
@@ -45,7 +48,7 @@ fun LineChart(
     dataPoint: List<DataPoint>,
     modifier: Modifier = Modifier,
     config: ChartConfig = ChartConfig(),
-    viewportMinutes: Long = 0L
+    viewportDataPoints: Int = 0
 ) {
     val textMeasurer = rememberTextMeasurer()
 
@@ -55,169 +58,183 @@ fun LineChart(
     val actualYMin = config.yAxisMin ?: dataPoint.minOfOrNull { it.value } ?: 0.0
     val actualYMax = config.yAxisMax ?: dataPoint.maxOfOrNull { it.value } ?: 100.0
 
-    // Count Time Range
-    val minTime = dataPoint.minOfOrNull { it.timestamp.toEpochMilli() } ?: return
-    val maxTime = dataPoint.maxOfOrNull { it.timestamp.toEpochMilli() } ?: return
-    val totalTimeRangeMs = (maxTime - minTime).coerceAtLeast(1L)
+    BoxWithConstraints(modifier = modifier) {
+        val availableWidthDp = maxWidth
 
-    val viewportMs = if (viewportMinutes > 0) viewportMinutes * 60 * 1000L else totalTimeRangeMs
+        val yAxisWidthDp = if (config.showIndicators) 45.dp else 0.dp
 
-    // Count Screen Width
-    val screenWidthDp = LocalConfiguration.current.screenWidthDp
-    val screenWidthPx = with(LocalDensity.current) { screenWidthDp.dp.toPx() }
+        val chartViewportWidthDp = availableWidthDp - yAxisWidthDp
 
-    // Total Ratio of total time / viewport
-    // if total time < viewport, use 1f of screen and multiply if more
-    val widthRatio = (totalTimeRangeMs.toFloat() / viewportMs.toFloat()).coerceAtLeast(1.0f)
-    val calculatedWidthPx = screenWidthPx * widthRatio
-    val calculatedWidthDp = with(LocalDensity.current) { calculatedWidthPx.toDp() }
-
-    val scrollState = rememberScrollState()
-
-    val isAtEndFrame by remember {
-        derivedStateOf {
-            scrollState.value >= (scrollState.maxValue - 20)
-        }
-    }
-
-    val paddingStart = if (config.showIndicators) 50.dp else 0.dp
-    val paddingEnd = if (config.showIndicators) 20.dp else 0.dp
-    val paddingTop = if (config.showIndicators) 40.dp else 16.dp
-    val paddingBottom = if (config.showIndicators) 40.dp else 16.dp
-
-    LaunchedEffect(dataPoint.size, calculatedWidthPx) {
-        if (calculatedWidthPx > screenWidthPx) {
-            scrollState.scrollTo(scrollState.maxValue)
-        }
-    }
-
-    Canvas(
-        modifier = modifier
-            .padding(
-                start = paddingStart,
-                top = paddingTop,
-                end = paddingEnd,
-                bottom = paddingBottom
-            )
-            .horizontalScroll(scrollState)
-            .width(calculatedWidthDp)
-            .then(
-                if (config.showTooltip) {
-                    Modifier.pointerInput(dataPoint, config, actualYMin, actualYMax) {
-                        detectTapGestures { tapOffset ->
-                            if (dataPoint.isEmpty()) return@detectTapGestures
-
-                            val canvasWidth = size.width
-                            val canvasHeight = size.height
-
-                            val minTime = dataPoint.minOfOrNull {
-                                it.timestamp.toEpochMilli()
-                            } ?: return@detectTapGestures
-                            val maxTime = dataPoint.maxOfOrNull {
-                                it.timestamp.toEpochMilli()
-                            } ?: return@detectTapGestures
-
-                            val timeRange = (maxTime - minTime).coerceAtLeast(1L)
-                            val valueRange = (actualYMax - actualYMin).coerceAtLeast(1.0).toFloat()
-
-                            val touchTolerance = 24.dp.toPx()
-                            var pointFound = false
-
-                            for (point in dataPoint) {
-                                val x =
-                                    ((point.timestamp.toEpochMilli() - minTime).toFloat() / timeRange) * canvasWidth
-                                val y =
-                                    canvasHeight - (((point.value.toFloat() - actualYMin.toFloat()) / valueRange) * canvasHeight)
-                                val pointOffset = Offset(x, y)
-
-                                val distance = hypot(
-                                    (tapOffset.x - pointOffset.x).toDouble(),
-                                    (tapOffset.y - pointOffset.y).toDouble()
-                                )
-
-                                if (distance <= touchTolerance) {
-                                    selectedDataPoint = point
-                                    selectedPointOffset = pointOffset
-                                    pointFound = true
-                                    break
-                                }
-                            }
-
-                            if (!pointFound) {
-                                selectedDataPoint = null
-                                selectedPointOffset = null
-                            }
-                        }
-                    }
-                } else Modifier
-            )
-    ) {
-        val canvasWidth = size.width
-        val canvasHeight = size.height
-
-        if (config.showIndicators) {
-            drawYAxis(
-                scope = this,
-                textMeasurer = textMeasurer,
-                config = config,
-                canvasWidth = canvasWidth,
-                canvasHeight = canvasHeight,
-                actualYMin = actualYMin,
-                actualYMax = actualYMax
-            )
-
-            drawXAxisBase(
-                scope = this,
-                config = config,
-                canvasWidth = canvasWidth,
-                canvasHeight = canvasHeight
-            )
-
-            drawXAxisLabel(
-                scope = this,
-                textMeasurer = textMeasurer,
-                dataPoints = dataPoint,
-                config = config,
-                canvasWidth = canvasWidth,
-                canvasHeight = canvasHeight,
-                isAtEndFrame = isAtEndFrame,
-                viewportMinutes = viewportMinutes,
-            )
+        val widthRatio = if (viewportDataPoints > 0) {
+            (dataPoint.size.toFloat() / viewportDataPoints.toFloat()).coerceAtLeast(1.0f)
+        } else {
+            1.0f
         }
 
-        clipRect(
-            left = 0f,
-            top = 0f,
-            right = canvasWidth,
-            bottom = canvasHeight
-        ) {
-            drawLineAndPoint(
-                scope = this,
-                dataPoints = dataPoint,
-                config = config,
-                canvasWidth = canvasWidth,
-                canvasHeight = canvasHeight,
-                actualYMin = actualYMin,
-                actualYMax = actualYMax
-            )
+        val calculatedWidthDp = chartViewportWidthDp * widthRatio
 
-            if (config.showTooltip && selectedPointOffset != null) {
-                drawCircle(
-                    color = config.lineColor.copy(alpha = 0.3f),
-                    radius = 12.dp.toPx(),
-                    center = selectedPointOffset!!
-                )
+        val scrollState = rememberScrollState()
+        val isAtEndFrame by remember {
+            derivedStateOf {
+                scrollState.value >= (scrollState.maxValue - 20)
             }
         }
 
-        if (config.showTooltip && selectedDataPoint != null && selectedPointOffset != null) {
-            drawTooltip(
-                scope = this,
-                textMeasurer = textMeasurer,
-                dataPoint = selectedDataPoint!!,
-                config = config,
-                center = selectedPointOffset!!
-            )
+        LaunchedEffect(dataPoint.size, calculatedWidthDp) {
+            if (calculatedWidthDp > chartViewportWidthDp) {
+                scrollState.scrollTo(scrollState.maxValue)
+            }
+        }
+
+        Row(modifier = Modifier.fillMaxSize()) {
+
+            if (config.showIndicators) {
+                Canvas(
+                    modifier = Modifier
+                        .width(yAxisWidthDp)
+                        .fillMaxHeight()
+                        .padding(top = 16.dp, bottom = 40.dp)
+                ) {
+                    drawYAxis(
+                        scope = this,
+                        textMeasurer = textMeasurer,
+                        config = config,
+                        canvasHeight = size.height,
+                        actualYMin = actualYMin,
+                        actualYMax = actualYMax,
+                    )
+                }
+            }
+
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight()
+            ) {
+                Canvas(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .horizontalScroll(scrollState)
+                        .width(calculatedWidthDp)
+                        .padding(top = 16.dp, bottom = 40.dp)
+                        .then(
+                            if (config.showTooltip) {
+                                Modifier.pointerInput(dataPoint, config, actualYMin, actualYMax) {
+                                    detectTapGestures { tapOffset ->
+                                        if (dataPoint.isEmpty()) return@detectTapGestures
+
+                                        val canvasWidth = size.width
+                                        val canvasHeight = size.height
+
+                                        val minTime = dataPoint.minOfOrNull {
+                                            it.timestamp.toEpochMilli()
+                                        } ?: return@detectTapGestures
+                                        val maxTime = dataPoint.maxOfOrNull {
+                                            it.timestamp.toEpochMilli()
+                                        } ?: return@detectTapGestures
+
+                                        val timeRange = (maxTime - minTime).coerceAtLeast(1L)
+                                        val valueRange =
+                                            (actualYMax - actualYMin).coerceAtLeast(1.0).toFloat()
+
+                                        val touchTolerance = 24.dp.toPx()
+                                        var pointFound = false
+
+                                        for (point in dataPoint) {
+                                            val x =
+                                                ((point.timestamp.toEpochMilli() - minTime).toFloat() / timeRange) * canvasWidth
+                                            val y =
+                                                canvasHeight - (((point.value.toFloat() - actualYMin.toFloat()) / valueRange) * canvasHeight)
+                                            val pointOffset = Offset(x, y)
+
+                                            val distance = hypot(
+                                                (tapOffset.x - pointOffset.x).toDouble(),
+                                                (tapOffset.y - pointOffset.y).toDouble()
+                                            )
+
+                                            if (distance <= touchTolerance) {
+                                                selectedDataPoint = point
+                                                selectedPointOffset = pointOffset
+                                                pointFound = true
+                                                break
+                                            }
+                                        }
+
+                                        if (!pointFound) {
+                                            selectedDataPoint = null
+                                            selectedPointOffset = null
+                                        }
+                                    }
+                                }
+                            } else Modifier
+                        )
+                ) {
+                    val canvasWidth = size.width
+                    val canvasHeight = size.height
+
+                    if (config.showIndicators) {
+                        drawYAxisGridLines(
+                            scope = this,
+                            config = config,
+                            canvasWidth = canvasWidth,
+                            canvasHeight = canvasHeight
+                        )
+
+                        drawXAxisBase(
+                            scope = this,
+                            config = config,
+                            canvasWidth = canvasWidth,
+                            canvasHeight = canvasHeight
+                        )
+
+                        drawXAxisLabel(
+                            scope = this,
+                            textMeasurer = textMeasurer,
+                            dataPoints = dataPoint,
+                            config = config,
+                            canvasWidth = canvasWidth,
+                            canvasHeight = canvasHeight,
+                            isAtEndFrame = isAtEndFrame,
+                            viewportDataPoints = viewportDataPoints
+                        )
+                    }
+
+                    clipRect(
+                        left = 0f,
+                        top = 0f,
+                        right = canvasWidth,
+                        bottom = canvasHeight
+                    ) {
+                        drawLineAndPoint(
+                            scope = this,
+                            dataPoints = dataPoint,
+                            config = config,
+                            canvasWidth = canvasWidth,
+                            canvasHeight = canvasHeight,
+                            actualYMin = actualYMin,
+                            actualYMax = actualYMax
+                        )
+
+                        if (config.showTooltip && selectedPointOffset != null) {
+                            drawCircle(
+                                color = config.lineColor.copy(alpha = 0.3f),
+                                radius = 12.dp.toPx(),
+                                center = selectedPointOffset!!
+                            )
+                        }
+                    }
+
+                    if (config.showTooltip && selectedDataPoint != null && selectedPointOffset != null) {
+                        drawTooltip(
+                            scope = this,
+                            textMeasurer = textMeasurer,
+                            dataPoint = selectedDataPoint!!,
+                            config = config,
+                            center = selectedPointOffset!!
+                        )
+                    }
+                }
+            }
         }
     }
 }
@@ -226,7 +243,6 @@ private fun drawYAxis(
     scope: DrawScope,
     textMeasurer: TextMeasurer,
     config: ChartConfig,
-    canvasWidth: Float,
     canvasHeight: Float,
     actualYMin: Double,
     actualYMax: Double
@@ -273,13 +289,28 @@ private fun drawYAxis(
                 textLayoutResult = valueLabelLayoutResult,
                 color = config.indicatorColor,
                 topLeft = Offset(
-                    -(valueLabelLayoutResult.size.width.toFloat() + 8.dp.toPx()),
-                    yOffset - (valueLabelLayoutResult.size.height / 2f)
+                    x = (valueLabelLayoutResult.size.width.toFloat() + 4.dp.toPx()),
+                    y = yOffset - (valueLabelLayoutResult.size.height / 2f)
                 )
             )
+        }
+    }
+}
 
+private fun drawYAxisGridLines(
+    scope: DrawScope,
+    config: ChartConfig,
+    canvasWidth: Float,
+    canvasHeight: Float
+) {
+    val numGridLines = 5
+
+    for (i in 0..numGridLines) {
+        val yOffset = i * (canvasHeight / numGridLines)
+
+        with(scope) {
             drawLine(
-                color = config.indicatorColor,
+                color = config.indicatorColor.copy(0.5f),
                 start = Offset(0f, yOffset),
                 end = Offset(canvasWidth, yOffset),
                 strokeWidth = 1.dp.toPx()
@@ -376,7 +407,7 @@ private fun drawXAxisLabel(
     canvasWidth: Float,
     canvasHeight: Float,
     isAtEndFrame: Boolean,
-    viewportMinutes: Long
+    viewportDataPoints: Int
 ) {
     if (!config.showXAxisLabels || dataPoints.isEmpty()) return
 
@@ -413,9 +444,11 @@ private fun drawXAxisLabel(
                 if (actualXPx - lastDrawnXPos >= (minSpacingPx * 0.8f)) {
                     val timeText = if (isAtEndFrame) {
                         if (i == maxLabelsPossible - 2) {
-                            val labelHour = viewportMinutes / 60
-                            val labelMins = viewportMinutes % 60
-                            if (labelHour > 0) "Last $labelHour hour" else "Last $labelMins min"
+                            if (viewportDataPoints == 60) {
+                                "Last 1 hour"
+                            } else {
+                                "Last $viewportDataPoints data"
+                            }
                         } else ""
                     } else {
                         closestDataPoint.labelX ?: formatter.format(closestDataPoint.timestamp)
@@ -437,22 +470,6 @@ private fun drawXAxisLabel(
                         lastDrawnXPos = actualXPx
                     }
                 }
-//                closestDataPoint.labelX ?: formatter.format(closestDataPoint.timestamp)
-//
-//                val textLayoutResult = textMeasurer.measure(
-//                    text = timeText,
-//                    style = labelTextStyle
-//                )
-//
-//                drawText(
-//                    textLayoutResult = textLayoutResult,
-//                    color = config.indicatorColor,
-//                    topLeft = Offset(
-//                        x = actualXPx - (textLayoutResult.size.width / 2f),
-//                        y = canvasHeight + 8.dp.toPx()
-//                    )
-//                )
-//                lastDrawnXPos = actualXPx
             }
         }
     }

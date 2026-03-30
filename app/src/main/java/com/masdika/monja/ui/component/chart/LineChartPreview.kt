@@ -88,9 +88,10 @@ private fun ScrollableLineChartPreview() {
     val config = ChartConfig(
         lineColor = Color.Red,
         showXAxisLabels = true,
+        yAxisLabel = "Preview",
         showIndicators = true,
         backgroundColor = MaterialTheme.colorScheme.background,
-        indicatorColor = MaterialTheme.colorScheme.onBackground,
+        indicatorColor = Color.Black,
         pointColor = MaterialTheme.colorScheme.onBackground,
         tooltipBackgroundColor = Color.DarkGray,
         tooltipTextColor = Color.White
@@ -112,7 +113,7 @@ private fun ScrollableLineChartPreview() {
                 LineChart(
                     dataPoint = dummyData,
                     config = config,
-                    viewportMinutes = 60L,
+                    viewportDataPoints = 60,
                     modifier = Modifier
                         .height(300.dp)
                         .fillMaxWidth()

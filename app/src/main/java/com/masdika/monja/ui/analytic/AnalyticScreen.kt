@@ -26,6 +26,7 @@ import com.masdika.monja.ui.component.chart.DataPoint
 import com.masdika.monja.ui.component.chart.LineChart
 import com.masdika.monja.ui.dashboard.bottomsheet.VitalColors
 import com.masdika.monja.ui.theme.MonjaTheme
+import com.masdika.monja.ui.theme.poppinsFont
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 
@@ -100,15 +101,6 @@ private fun AnalyticChartContent(
         DataPoint(value, Instant.parse(vital.createdAt))
     }
 
-//    val peakVitalRecord = vitals.maxByOrNull { vital ->
-//        when (vitalType) {
-//            "temperature" -> vital.temperature
-//            "heartrate" -> vital.heartrate.toDouble()
-//            "spo2" -> vital.oxygenSaturation.toDouble()
-//            else -> 0.0
-//        }
-//    }
-
     val lineColor = when (vitalType) {
         "temperature" -> VitalColors.TemperatureGradient.last().second
         "heartrate" -> VitalColors.HeartrateGradient.last().second
@@ -135,10 +127,14 @@ private fun AnalyticChartContent(
         yAxisMin = chartMinValue,
         yAxisMax = chartMaxValue,
         showIndicators = true,
-        showDots = false,
+        showDots = true,
         showXAxisLabels = true,
         showTooltip = true,
-        pointColor = MaterialTheme.colorScheme.onBackground
+        pointColor = MaterialTheme.colorScheme.onBackground,
+        labelFontFamily = poppinsFont,
+        indicatorColor = MaterialTheme.colorScheme.onBackground,
+        tooltipBackgroundColor = MaterialTheme.colorScheme.onSurface,
+        tooltipTextColor = MaterialTheme.colorScheme.surface
     )
 
     Column(
@@ -149,15 +145,16 @@ private fun AnalyticChartContent(
         LineChart(
             dataPoint = chartData,
             config = chartConfig,
+            viewportDataPoints = 60,
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(0.4f)
+                .weight(0.5f)
         )
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 10.dp)
-                .weight(0.6f)
+                .weight(0.4f)
         ) {
             when (vitalType) {
                 "temperature" -> {}
@@ -182,7 +179,7 @@ private fun AnalyticChartContent(
 private fun AnalyticScreenPreview() {
     MonjaTheme {
         val now = Instant.now()
-        val vitals = List(100) { index ->
+        val vitals = List(400) { index ->
             Vitals(
                 temperature = 28 + (Math.random() * 8),
                 heartrate = 60 + (Math.random() * 60).toInt(),
