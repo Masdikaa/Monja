@@ -79,7 +79,7 @@ private fun LineChartPreview() {
 private fun ScrollableLineChartPreview() {
     val baseTime = Instant.now()
 
-    val dummyData = List(100) { index ->
+    val dummyData = List(30) { index ->
         val time = baseTime.minus((180 - (index * 5)).toLong(), ChronoUnit.MINUTES)
         val value = 70.0 + (Math.random() * 70)
         DataPoint(value, time)
@@ -90,6 +90,7 @@ private fun ScrollableLineChartPreview() {
         showXAxisLabels = true,
         yAxisLabel = "Preview",
         showIndicators = true,
+        showShadow = true,
         backgroundColor = MaterialTheme.colorScheme.background,
         indicatorColor = Color.Black,
         pointColor = MaterialTheme.colorScheme.onBackground,
@@ -104,21 +105,21 @@ private fun ScrollableLineChartPreview() {
                 .background(MaterialTheme.colorScheme.background)
                 .padding(top = 100.dp)
         ) {
-            Text("Scrollable Chart (Viewport: 1 Hour, Total data: 3 hours")
-            Box(
+            Text(
+                text = "Scrollable Chart (Viewport: 1 Hour, Total data: 3 hours",
+                style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 16.dp)
-            ) {
-                LineChart(
-                    dataPoint = dummyData,
-                    config = config,
-                    viewportDataPoints = 60,
-                    modifier = Modifier
-                        .height(300.dp)
-                        .fillMaxWidth()
-                )
-            }
+                    .padding(horizontal = 16.dp)
+            )
+            LineChart(
+                dataPoint = dummyData,
+                config = config,
+                viewportDataPoints = 60,
+                modifier = Modifier
+                    .height(300.dp)
+                    .fillMaxWidth()
+            )
         }
     }
 }

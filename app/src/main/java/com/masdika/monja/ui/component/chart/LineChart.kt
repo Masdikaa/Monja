@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
@@ -116,7 +117,7 @@ fun LineChart(
                         .fillMaxHeight()
                         .horizontalScroll(scrollState)
                         .width(calculatedWidthDp)
-                        .padding(top = 16.dp, bottom = 40.dp)
+                        .padding(top = 16.dp, bottom = 40.dp, end = 16.dp)
                         .then(
                             if (config.showTooltip) {
                                 Modifier.pointerInput(dataPoint, config, actualYMin, actualYMax) {
@@ -359,10 +360,16 @@ private fun drawLineAndPoint(
         Offset(x, y)
     }
 
-    val path = Path()
-    if (coordinates.isNotEmpty()) {
-        path.moveTo(coordinates.first().x, coordinates.first().y)
+    val strokePath = Path()
+    val fillPath = Path()
 
+    if (coordinates.isNotEmpty()) {
+        strokePath.moveTo(coordinates.first().x, coordinates.first().y)
+
+        fillPath.moveTo(coordinates.first().x, canvasHeight)
+        fillPath.lineTo(coordinates.first().x, coordinates.first().y)
+
+        // BEZIER CURVE
         for (i in 0 until coordinates.size - 1) {
             val current = coordinates[i]
             val next = coordinates[i + 1]
@@ -370,16 +377,41 @@ private fun drawLineAndPoint(
             val controlX1 = current.x + (next.x - current.x) / 2f
             val controlX2 = current.x + (next.x - current.x) / 2f
 
-            path.cubicTo(
+            strokePath.cubicTo(
+                x1 = controlX1, y1 = current.y,
+                x2 = controlX2, y2 = next.y,
+                x3 = next.x, y3 = next.y
+            )
+
+            fillPath.cubicTo(
                 x1 = controlX1, y1 = current.y,
                 x2 = controlX2, y2 = next.y,
                 x3 = next.x, y3 = next.y
             )
         }
 
+        fillPath.lineTo(coordinates.last().x, canvasHeight)
+        fillPath.close()
+
         with(scope) {
+            if (config.showShadow) {
+                val brush = Brush.verticalGradient(
+                    colors = listOf(
+                        config.lineColor.copy(alpha = 0.6f),
+                        Color.Transparent
+                    ),
+                    startY = coordinates.minOfOrNull { it.y } ?: 0f,
+                    endY = canvasHeight
+                )
+
+                drawPath(
+                    path = fillPath,
+                    brush = brush
+                )
+            }
+
             drawPath(
-                path = path,
+                path = strokePath,
                 color = config.lineColor,
                 style = Stroke(width = 2.dp.toPx(), cap = StrokeCap.Round)
             )

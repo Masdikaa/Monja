@@ -10,6 +10,7 @@ data class ChartConfig(
     val showIndicators: Boolean = true,
     val showDots: Boolean = true,
     val showXAxisLabels: Boolean = true,
+    val showShadow: Boolean = true,
     val xAxisLabelSpacingDp: Float = 60f,
     val labelFontFamily: FontFamily = FontFamily.Default,
     val lineColor: Color = Color.Red,
