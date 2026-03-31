@@ -1,5 +1,11 @@
 package com.masdika.monja
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -22,12 +28,21 @@ fun MainScreen() {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
-
     val isAnalyticScreen = currentDestination?.hasRoute<AnalyticRoute>() == true
 
     Scaffold(
         bottomBar = {
-            if (!isAnalyticScreen) {
+            AnimatedVisibility(
+                visible = !isAnalyticScreen,
+                enter = slideInVertically(
+                    initialOffsetY = { it },
+                    animationSpec = tween(durationMillis = 500)
+                ) + fadeIn(animationSpec = tween(durationMillis = 500)),
+                exit = slideOutVertically(
+                    targetOffsetY = { it },
+                    animationSpec = tween(durationMillis = 500)
+                ) + fadeOut(animationSpec = tween(durationMillis = 500))
+            ) {
                 MainBottomBar(navController = navController)
             }
         }
@@ -43,9 +58,7 @@ fun MainScreen() {
                 }
             )
             historyScreenRoute()
-            analyticScreenRoute(
-                onNavigateBack = { navController.popBackStack() }
-            )
+            analyticScreenRoute()
         }
     }
 }

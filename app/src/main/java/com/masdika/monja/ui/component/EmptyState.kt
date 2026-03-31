@@ -1,4 +1,4 @@
-package com.masdika.monja.ui.history
+package com.masdika.monja.ui.component
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -19,15 +19,16 @@ import androidx.compose.ui.unit.dp
 import com.masdika.monja.ui.theme.poppinsFont
 
 @Composable
-fun HistoryEmptyState(
+fun EmptyState(
     icon: ImageVector?,
     title: String,
-    message: String?
+    message: String?,
+    modifier: Modifier = Modifier
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {

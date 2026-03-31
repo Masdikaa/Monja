@@ -123,7 +123,7 @@ fun DashboardScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DashboardContent(
+private fun DashboardContent(
     selectedDevice: Device?,
     vitalsState: Result<Vitals?>,
     vitalsChartData: Result<List<Vitals>>,

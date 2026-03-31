@@ -11,14 +11,11 @@ data class AnalyticRoute(
     val vitalType: String
 )
 
-fun NavGraphBuilder.analyticScreenRoute(
-    onNavigateBack: () -> Unit
-) {
+fun NavGraphBuilder.analyticScreenRoute() {
     composable<AnalyticRoute> {
         val viewModel = hiltViewModel<AnalyticViewModel>()
         AnalyticScreen(
-            viewModel = viewModel,
-            onNavigateBack = onNavigateBack
+            viewModel = viewModel
         )
     }
 }

@@ -148,7 +148,7 @@ fun VitalCard(
     }
 }
 
-fun Modifier.shimmerEffect(): Modifier = composed {
+private fun Modifier.shimmerEffect(): Modifier = composed {
     val transition = rememberInfiniteTransition(label = "shimmer")
     val translateAnim by transition.animateFloat(
         initialValue = 0f,

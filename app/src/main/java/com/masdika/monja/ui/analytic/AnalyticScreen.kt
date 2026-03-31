@@ -6,21 +6,23 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.WarningAmber
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.masdika.monja.data.model.Vitals
 import com.masdika.monja.data.utils.Result
+import com.masdika.monja.ui.component.EmptyState
 import com.masdika.monja.ui.component.MainTopAppBar
 import com.masdika.monja.ui.component.chart.ChartConfig
 import com.masdika.monja.ui.component.chart.DataPoint
@@ -34,7 +36,6 @@ import java.time.temporal.ChronoUnit
 @Composable
 fun AnalyticScreen(
     viewModel: AnalyticViewModel,
-    onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -77,7 +78,11 @@ private fun AnalyticChartContent(
         when (vitalState) {
             is Result.Success -> {
                 if (vitalState.data.isEmpty()) {
-                    Text("No data available!")
+                    EmptyState(
+                        icon = Icons.Outlined.Info,
+                        title = "Empty Record",
+                        message = "Currently there's no data available"
+                    )
                 } else {
                     val chartData = vitalState.data.map { vital ->
                         val value = when (vitalType) {
@@ -160,13 +165,10 @@ private fun AnalyticChartContent(
             }
 
             is Result.Error -> {
-                // TODO() Implement Error State
-                Text(
-                    text = "Internal Error",
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontFamily = poppinsFont,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.error
+                EmptyState(
+                    icon = Icons.Default.WarningAmber,
+                    title = "Internal Error",
+                    message = "Couldn't connect to database\nPlease check your internet connection"
                 )
             }
         }

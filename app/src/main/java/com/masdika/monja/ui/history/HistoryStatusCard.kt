@@ -28,6 +28,7 @@ import com.masdika.monja.ui.theme.MonjaTheme
 import com.masdika.monja.ui.theme.openSansFont
 import com.masdika.monja.ui.theme.poppinsFont
 import com.masdika.monja.util.dateFormat
+import java.util.Locale
 
 @Composable
 fun HistoryStatusCard(
@@ -120,7 +121,7 @@ fun HistoryStatusCard(
                         )
                         Spacer(Modifier.width(10.dp))
                         Text(
-                            text = "${status.temperatureAtTime ?: "--"} °C",
+                            text = String.format(Locale.getDefault(), "%.1f", status.temperatureAtTime),
                             style = MaterialTheme.typography.labelLarge,
                             color = Color.Black,
                             fontFamily = poppinsFont,
@@ -136,7 +137,7 @@ fun HistoryStatusCard(
                         )
                         Spacer(Modifier.width(10.dp))
                         Text(
-                            text = "${status.spo2AtTime ?: "--"} %",
+                            text = "${status.spo2AtTime} %",
                             style = MaterialTheme.typography.labelLarge,
                             color = Color.Black,
                             fontFamily = poppinsFont,

@@ -42,11 +42,14 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
 import com.masdika.monja.data.model.MedicalAlert
 import com.masdika.monja.data.utils.Result
+import com.masdika.monja.ui.component.EmptyState
 import com.masdika.monja.ui.component.MainBottomBar
 import com.masdika.monja.ui.component.MainTopAppBar
 import com.masdika.monja.ui.theme.MonjaTheme
 import com.masdika.monja.ui.theme.poppinsFont
 import com.masdika.monja.util.openGoogleMaps
+import java.time.Instant
+import java.time.temporal.ChronoUnit
 
 @Composable
 fun HistoryScreen(
@@ -111,7 +114,7 @@ fun HistoryScreen(
 }
 
 @Composable
-fun HistoryContent(
+private fun HistoryContent(
     macAddress: String,
     statusState: Result<List<MedicalAlert>>,
     onOpenGoogleMaps: (latitude: String, longitude: String) -> Unit,
@@ -134,7 +137,7 @@ fun HistoryContent(
                 Spacer(Modifier.height(4.dp))
                 when {
                     macAddress.isEmpty() -> {
-                        HistoryEmptyState(
+                        EmptyState(
                             icon = Icons.Outlined.Info,
                             title = "Device MAC Address not Found",
                             message = "Please select a device to show history"
@@ -142,7 +145,7 @@ fun HistoryContent(
                     }
 
                     statusState.data.isEmpty() -> {
-                        HistoryEmptyState(
+                        EmptyState(
                             icon = Icons.Outlined.MonitorHeart,
                             title = "Empty Histories",
                             message = "No medical alerts found in this device",
@@ -171,7 +174,7 @@ fun HistoryContent(
             }
 
             is Result.Error -> {
-                HistoryEmptyState(
+                EmptyState(
                     icon = Icons.Default.WarningAmber,
                     title = "Internal Error",
                     message = statusState.message ?: "Unknown error"
@@ -182,7 +185,7 @@ fun HistoryContent(
 }
 
 @Composable
-fun DeleteConfirmationDialog(
+private fun DeleteConfirmationDialog(
     onConfirm: () -> Unit,
     onDismiss: () -> Unit,
 ) {
@@ -245,46 +248,30 @@ fun DeleteConfirmationDialog(
 @Composable
 private fun HistoryContentPreview() {
     MonjaTheme {
+        val now = Instant.now()
         val navController = rememberNavController()
-        val medicalAlerts = listOf(
-            MedicalAlert(
-                id = 0,
-                macAddress = "01:01:01",
-                oldStatus = "Severe",
-                newStatus = "Normal",
-                temperatureAtTime = 34.2,
-                spo2AtTime = 98,
-                latitude = "0.000000",
-                longitude = "0.000000",
-                createdAt = "2026-03-25T10:00:00+7:00"
-            ),
-            MedicalAlert(
-                id = 0,
-                macAddress = "01:01:01",
-                oldStatus = "Normal",
-                newStatus = "Moderate",
-                temperatureAtTime = 34.2,
-                spo2AtTime = 98,
-                latitude = "0.000000",
-                longitude = "0.000000",
-                createdAt = "2026-03-25T10:10:00+7:00"
-            ),
-            MedicalAlert(
-                id = 0,
-                macAddress = "01:01:01",
-                oldStatus = "Moderate",
-                newStatus = "Severe",
-                temperatureAtTime = 34.2,
-                spo2AtTime = 98,
-                latitude = "0.000000",
-                longitude = "0.000000",
-                createdAt = "2026-03-25T10:20:00+7:00"
-            )
+        val statuses = listOf(
+            "Severe",
+            "Moderate",
+            "Normal"
         )
+        val medicalAlerts = List(10) { index ->
+            MedicalAlert(
+                id = index,
+                macAddress = "MA:CA:DD:R$index",
+                oldStatus = statuses[(0..2).random()],
+                newStatus = statuses[(0..2).random()],
+                temperatureAtTime = 28 + (Math.random() * 8),
+                spo2AtTime = 95 + (Math.random() * 5).toInt(),
+                latitude = "0.000000",
+                longitude = "0.000000",
+                createdAt = now.minus(index.toLong(), ChronoUnit.MINUTES).toString()
+            )
+        }
         Scaffold(
             topBar = {
                 MainTopAppBar(
-                    title = "Dashboard"
+                    title = "History"
                 ) {
                     IconButton(
                         onClick = {}
