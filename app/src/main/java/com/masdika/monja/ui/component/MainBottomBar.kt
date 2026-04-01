@@ -40,7 +40,9 @@ fun MainBottomBar(
         containerColor = MaterialTheme.colorScheme.background,
         indicatorStyle = IndicatorStyle.WORM,
         indicatorDirection = IndicatorDirection.TOP,
-        bottomBarHeight = 56.dp
+        bottomBarHeight = 56.dp,
+        contentColor = MaterialTheme.colorScheme.primary,
+        indicatorColor = MaterialTheme.colorScheme.primary
     ) {
         navigationItems.forEachIndexed { index, item ->
             BottomBarItem(

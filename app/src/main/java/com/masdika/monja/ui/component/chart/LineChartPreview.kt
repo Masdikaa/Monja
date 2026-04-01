@@ -46,7 +46,7 @@ private fun LineChartPreview() {
     )
 
     val config = ChartConfig(
-        lineColor = Color(0xFF00E676),
+        lineColor = Color.Blue,
         showXAxisLabels = true,
         showIndicators = false,
         backgroundColor = MaterialTheme.colorScheme.background,

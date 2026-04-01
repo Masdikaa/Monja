@@ -27,8 +27,10 @@ import com.masdika.monja.ui.component.MainTopAppBar
 import com.masdika.monja.ui.component.chart.ChartConfig
 import com.masdika.monja.ui.component.chart.DataPoint
 import com.masdika.monja.ui.component.chart.LineChart
-import com.masdika.monja.ui.dashboard.bottomsheet.VitalColors
+import com.masdika.monja.ui.theme.ElectricRed
 import com.masdika.monja.ui.theme.MonjaTheme
+import com.masdika.monja.ui.theme.NatureBlue
+import com.masdika.monja.ui.theme.TuttiFruitti
 import com.masdika.monja.ui.theme.poppinsFont
 import java.time.Instant
 import java.time.temporal.ChronoUnit
@@ -95,9 +97,9 @@ private fun AnalyticChartContent(
                     }
 
                     val lineColor = when (vitalType) {
-                        "temperature" -> VitalColors.TemperatureGradient.last().second
-                        "heartrate" -> VitalColors.HeartrateGradient.last().second
-                        "spo2" -> VitalColors.OxygenSaturationGradient.last().second
+                        "temperature" -> ElectricRed
+                        "heartrate" -> TuttiFruitti
+                        "spo2" -> NatureBlue
                         else -> Color.Gray
                     }
 

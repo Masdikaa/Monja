@@ -24,7 +24,10 @@ import androidx.compose.ui.unit.dp
 import com.masdika.monja.data.model.MedicalAlert
 import com.masdika.monja.ui.icon.StatusSpO2Icon
 import com.masdika.monja.ui.icon.StatusTemperatureIcon
+import com.masdika.monja.ui.theme.MatteLime
 import com.masdika.monja.ui.theme.MonjaTheme
+import com.masdika.monja.ui.theme.RedShimmer
+import com.masdika.monja.ui.theme.YellowSea
 import com.masdika.monja.ui.theme.openSansFont
 import com.masdika.monja.ui.theme.poppinsFont
 import com.masdika.monja.util.dateFormat
@@ -37,15 +40,15 @@ fun HistoryStatusCard(
 ) {
     val cardColor = when (status.newStatus) {
         "Severe" -> {
-            Color(0xFFFF5A5A)
+            RedShimmer
         }
 
         "Moderate" -> {
-            Color(0xFFFFAA00)
+            YellowSea
         }
 
         else -> {
-            Color(0xFF6CA651)
+            MatteLime
         }
     }
 
@@ -121,7 +124,11 @@ fun HistoryStatusCard(
                         )
                         Spacer(Modifier.width(10.dp))
                         Text(
-                            text = String.format(Locale.getDefault(), "%.1f", status.temperatureAtTime),
+                            text = String.format(
+                                Locale.getDefault(),
+                                "%.1f",
+                                status.temperatureAtTime
+                            ),
                             style = MaterialTheme.typography.labelLarge,
                             color = Color.Black,
                             fontFamily = poppinsFont,

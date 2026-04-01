@@ -21,10 +21,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.masdika.monja.data.model.Device
+import com.masdika.monja.ui.theme.MatteLime
+import com.masdika.monja.ui.theme.RedShimmer
 import com.masdika.monja.ui.theme.poppinsFont
 
 @Composable
@@ -40,7 +41,7 @@ fun DashboardTopAppBarAction(
         Modifier
             .size(15.dp)
             .clip(shape = CircleShape)
-            .background(if (isOnline) Color(0xFF6CA651) else Color.Red)
+            .background(if (isOnline) MatteLime else RedShimmer)
     )
     Spacer(Modifier.width(5.dp))
     IconButton(
@@ -71,7 +72,7 @@ fun DashboardTopAppBarAction(
                             fontWeight = if (device.macAddress == selectedDevice?.macAddress)
                                 FontWeight.Bold else FontWeight.Normal,
                             fontFamily = poppinsFont,
-                            color = if (device.isOnline) Color(0xFF6CA651) else MaterialTheme.colorScheme.onBackground
+                            color = if (device.isOnline) MatteLime else MaterialTheme.colorScheme.onBackground
                         )
                     },
                     onClick = {
