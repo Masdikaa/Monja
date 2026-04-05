@@ -5,12 +5,14 @@ import com.masdika.monja.data.repository.DeviceRepositoryImpl
 import com.masdika.monja.data.repository.HealthStatusRepositoryImpl
 import com.masdika.monja.data.repository.LocationRepositoryImpl
 import com.masdika.monja.data.repository.MedicalAlertsRepositoryImpl
+import com.masdika.monja.data.repository.SevereMonitorRepositoryImpl
 import com.masdika.monja.data.repository.VitalRepositoryImpl
 import com.masdika.monja.data.repository.interfaces.ActiveDeviceRepository
 import com.masdika.monja.data.repository.interfaces.DeviceRepository
 import com.masdika.monja.data.repository.interfaces.HealthStatusRepository
 import com.masdika.monja.data.repository.interfaces.LocationRepository
 import com.masdika.monja.data.repository.interfaces.MedicalAlertsRepository
+import com.masdika.monja.data.repository.interfaces.SevereMonitorRepository
 import com.masdika.monja.data.repository.interfaces.VitalsRepository
 import dagger.Binds
 import dagger.Module
@@ -56,4 +58,10 @@ abstract class RepositoryModule {
     abstract fun bindActiveDeviceRepository(
         activeDeviceRepositoryImpl: ActiveDeviceRepositoryImpl
     ): ActiveDeviceRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindSevereMonitorRepository(
+        severeMonitorRepositoryImpl: SevereMonitorRepositoryImpl
+    ): SevereMonitorRepository
 }
