@@ -2,6 +2,7 @@ package com.masdika.monja.util
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
@@ -16,11 +17,11 @@ import androidx.core.content.ContextCompat.checkSelfPermission
 @Composable
 fun RequestLocationPermission(
     onPermissionGranted: @Composable () -> Unit,
-    onPermissionDenied: @Composable () -> Unit,
+    onPermissionDenied: @Composable () -> Unit
 ) {
     val context = LocalContext.current
 
-    var isGranted by remember {
+    var isLocationGranted by remember {
         mutableStateOf(
             checkSelfPermission(
                 context,
@@ -33,22 +34,35 @@ fun RequestLocationPermission(
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
-        isGranted =
+        isLocationGranted =
             permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true || permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
     }
 
     LaunchedEffect(Unit) {
-        if (!isGranted) {
-            permissionLauncher.launch(
-                arrayOf(
-                    Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.ACCESS_COARSE_LOCATION,
-                )
-            )
+        val permissionToRequest = mutableListOf(
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        )
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val isNotificationGranted = checkSelfPermission(
+                context,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+
+            if (!isNotificationGranted) {
+                permissionToRequest.add(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
+
+        val needsLocationPermission = !isLocationGranted
+
+        if (needsLocationPermission || permissionToRequest.contains(Manifest.permission.POST_NOTIFICATIONS)) {
+            permissionLauncher.launch(permissionToRequest.toTypedArray())
         }
     }
 
-    if (isGranted) {
+    if (isLocationGranted) {
         onPermissionGranted()
     } else {
         onPermissionDenied()

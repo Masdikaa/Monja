@@ -31,6 +31,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Devices.PIXEL_9
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -47,6 +48,7 @@ import com.masdika.monja.ui.dashboard.bottomsheet.DashboardBottomSheet
 import com.masdika.monja.ui.dashboard.map.DashboardMap
 import com.masdika.monja.ui.icon.ArrowUpIcon
 import com.masdika.monja.ui.theme.MonjaTheme
+import com.masdika.monja.util.NotificationHelper
 import com.masdika.monja.util.RequestLocationPermission
 
 @Composable
@@ -56,6 +58,8 @@ fun DashboardScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
+    val notificationHelper = remember { NotificationHelper(context) }
     val devices = (state.deviceState as? Result.Success)?.data ?: emptyList()
     val deviceLoading = state.deviceState is Result.Loading
 
@@ -74,6 +78,10 @@ fun DashboardScreen(
                         message = "${event.macAddress} is ${if (event.isOnline) "Online" else "Offline"}",
                         duration = SnackbarDuration.Short
                     )
+                }
+
+                is DashboardScreenEvent.ShowEvacuationAlert -> {
+                    notificationHelper.showEvacuationAlert(event.macAddress)
                 }
             }
         }

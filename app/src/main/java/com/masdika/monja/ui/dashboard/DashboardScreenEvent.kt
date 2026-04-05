@@ -6,4 +6,6 @@ sealed interface DashboardScreenEvent {
         val macAddress: String,
         val isOnline: Boolean
     ) : DashboardScreenEvent
+
+    data class ShowEvacuationAlert(val macAddress: String) : DashboardScreenEvent
 }

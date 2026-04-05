@@ -8,6 +8,7 @@ import com.masdika.monja.data.repository.interfaces.ActiveDeviceRepository
 import com.masdika.monja.data.repository.interfaces.DeviceRepository
 import com.masdika.monja.data.repository.interfaces.HealthStatusRepository
 import com.masdika.monja.data.repository.interfaces.LocationRepository
+import com.masdika.monja.data.repository.interfaces.SevereMonitorRepository
 import com.masdika.monja.data.repository.interfaces.VitalsRepository
 import com.masdika.monja.data.utils.Result
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -31,18 +32,21 @@ class DashboardViewModel @Inject constructor(
     private val vitalRepository: VitalsRepository,
     private val locationRepository: LocationRepository,
     private val healthStatusRepository: HealthStatusRepository,
-    private val activeDeviceRepository: ActiveDeviceRepository
+    private val activeDeviceRepository: ActiveDeviceRepository,
+    private val severeMonitorRepository: SevereMonitorRepository
 ) : ViewModel() {
     private val _state = MutableStateFlow(DashboardScreenState())
     val state = _state.asStateFlow()
     private val _event = Channel<DashboardScreenEvent>()
     val event = _event.receiveAsFlow()
+    private var lastSevereStatus = false
 
     init {
         startObservingDevices()
         startObservingVitals()
         startObservingLocation()
         startObservingHealthStatus()
+        startObservingSevereMonitor()
     }
 
     private fun startObservingDevices() {
@@ -237,6 +241,32 @@ class DashboardViewModel @Inject constructor(
                                 message = healthStatusData.message ?: "Failed to load status"
                             )
                         )
+                    }
+                }
+        }
+    }
+
+    private fun startObservingSevereMonitor() {
+        viewModelScope.launch {
+            activeDeviceRepository.activeMacAddress
+                .flatMapLatest { macAddress ->
+                    if (macAddress == null) {
+                        flowOf(Result.Success(null))
+                    } else {
+                        severeMonitorRepository.getSevereMonitorStream(macAddress)
+                    }
+                }
+                .collect { severeMonitorData ->
+                    if (severeMonitorData is Result.Success && severeMonitorData.data != null) {
+                        val isCurrentlySevere = severeMonitorData.data!!.isSevere
+
+                        if (isCurrentlySevere && !lastSevereStatus) {
+                            _event.trySend(
+                                DashboardScreenEvent.ShowEvacuationAlert(severeMonitorData.data!!.macAddress)
+                            )
+                        }
+
+                        lastSevereStatus = isCurrentlySevere
                     }
                 }
         }

@@ -18,6 +18,8 @@
         </intent>
     </queries>
 
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
     <application
         android:name=".MonjaApp"
         android:allowBackup="true"
