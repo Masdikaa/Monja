@@ -10,6 +10,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -27,6 +28,7 @@ class HistoryViewModel @Inject constructor(
     val state = _state.asStateFlow()
     private val _event = Channel<HistoryScreenEvent>()
     val event = _event.receiveAsFlow()
+    private val refreshTrigger = MutableStateFlow(0)
 
     init {
         startObservingHistory()
@@ -34,39 +36,40 @@ class HistoryViewModel @Inject constructor(
 
     private fun startObservingHistory() {
         viewModelScope.launch {
-            activeDeviceRepository.activeMacAddress
-                .flatMapLatest { macAddress ->
-                    if (macAddress == null) {
-                        _state.update { it.copy(macAddress = "") }
-                        flowOf(Result.Success(emptyList()))
-                    } else {
-                        _state.update { it.copy(macAddress = macAddress) }
-                        medicalAlertsRepository.getMedicalAlertsStream(macAddress)
-                    }
+            combine(
+                activeDeviceRepository.activeMacAddress,
+                refreshTrigger
+            ) { macAddress, _ ->
+                macAddress
+            }.flatMapLatest { macAddress ->
+                if (macAddress == null) {
+                    _state.update { it.copy(macAddress = "") }
+                    flowOf(Result.Success(emptyList()))
+                } else {
+                    _state.update { it.copy(macAddress = macAddress) }
+                    medicalAlertsRepository.getMedicalAlertsStream(macAddress)
                 }
-                .collect { result ->
-                    _state.update { it.copy(statusState = result) }
-                }
+            }.collect { result ->
+                _state.update { it.copy(statusState = result) }
+            }
         }
     }
 
     fun deleteAllMedicalAlerts() {
         viewModelScope.launch {
             try {
-                _state.value.macAddress.let { macAddress ->
-                    if (macAddress.isNotEmpty()) {
-                        medicalAlertsRepository.deleteMedicalAlerts(macAddress)
-                        val refreshData = medicalAlertsRepository.getMedicalAlerts(macAddress)
-                        _state.update {
-                            it.copy(
-                                showDeleteDialog = false,
-                                statusState = Result.Success(refreshData)
-                            )
-                        }
-                        _event.trySend(
-                            HistoryScreenEvent.ShowSnackbar("Success delete history for mac address $macAddress")
-                        )
+                val macAddress = _state.value.macAddress
+                if (macAddress.isNotEmpty()) {
+                    medicalAlertsRepository.deleteMedicalAlerts(macAddress)
+                    refreshTrigger.update { it + 1 }
+
+                    _state.update {
+                        it.copy(showDeleteDialog = false)
                     }
+
+                    _event.trySend(
+                        HistoryScreenEvent.ShowSnackbar("Success delete history for mac address $macAddress")
+                    )
                 }
             } catch (e: Exception) {
                 _state.update { it.copy(showDeleteDialog = false) }

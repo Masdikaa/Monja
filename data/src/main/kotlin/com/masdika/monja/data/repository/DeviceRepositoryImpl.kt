@@ -13,14 +13,15 @@ import io.github.jan.supabase.realtime.channel
 import io.github.jan.supabase.realtime.postgresChangeFlow
 import io.github.jan.supabase.realtime.realtime
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
@@ -28,26 +29,19 @@ class DeviceRepositoryImpl @Inject constructor(
     private val supabase: SupabaseClient,
     @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) : DeviceRepository {
-    private val cleanupMutex = Mutex()
-
     override suspend fun getAvailableDevices(): List<Device> {
         return withContext(ioDispatcher) {
-            try {
-                val entities = supabase.postgrest["device_connectivity"]
-                    .select()
-                    .decodeList<DeviceConnectivityEntity>()
+            val entities = supabase.postgrest["device_connectivity"]
+                .select()
+                .decodeList<DeviceConnectivityEntity>()
 
-                entities.map { entity ->
-                    Device(
-                        macAddress = entity.macAddress,
-                        isOnline = entity.connectionStatus.equals("Online", ignoreCase = true),
-                        lastSeen = entity.lastSeen ?: "Unknown",
-                        createdAt = entity.createdAt ?: ""
-                    )
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-                throw e
+            entities.map { entity ->
+                Device(
+                    macAddress = entity.macAddress,
+                    isOnline = entity.connectionStatus.equals("Online", ignoreCase = true),
+                    lastSeen = entity.lastSeen ?: "Unknown",
+                    createdAt = entity.createdAt ?: ""
+                )
             }
         }
     }
@@ -56,69 +50,53 @@ class DeviceRepositoryImpl @Inject constructor(
         send(Result.Loading)
 
         try {
-            val initialDeviceData = getAvailableDevices()
-            send(Result.Success(initialDeviceData))
+            send(Result.Success(getAvailableDevices()))
         } catch (e: Exception) {
             send(Result.Error(e, "Failed initiating device data: ${e.message}"))
+            return@channelFlow
         }
 
-        val channel = supabase.channel("device_connectivity")
+        val channel = supabase.realtime.channel("device_connectivity_channel")
         val changeFlow = channel.postgresChangeFlow<PostgresAction>(schema = "public") {
             table = "devices"
         }
 
-        val realtimeJob = launch(ioDispatcher) {
-            channel.subscribe()
-            changeFlow.collect { action ->
-                Log.i("REPOSITORY SUPABASE DEVICE", "DEVICE: $action")
-                try {
-                    val newDeviceData = getAvailableDevices()
-                    send(Result.Success(newDeviceData))
-                } catch (e: Exception) {
-                    send(
-                        Result.Error(
-                            e,
-                            "Failed to update device data: ${e.message} - Realtime Job"
-                        )
-                    )
+        channel.subscribe()
+
+        val realtimeJob = launch {
+            try {
+                changeFlow.collect { action ->
+                    if (action is PostgresAction.Insert || action is PostgresAction.Update || action is PostgresAction.Delete) {
+                        send(Result.Success(getAvailableDevices()))
+                    }
                 }
+            } catch (e: Exception) {
+                send(Result.Error(e, "Realtime error: ${e.message}"))
             }
         }
 
-        val pollingJob = launch(ioDispatcher) {
+        val pollingJob = launch {
             while (isActive) {
                 delay(3000)
                 try {
-                    val newDeviceData = getAvailableDevices()
-                    send(Result.Success(newDeviceData))
+                    send(Result.Success(getAvailableDevices()))
                 } catch (e: Exception) {
-                    send(
-                        Result.Error(
-                            e,
-                            "Failed to update device status: ${e.message} - Pooling Job"
-                        )
-                    )
+                    send(Result.Error(e, "Polling error: ${e.message}"))
                 }
             }
         }
-
-        cleanupMutex.lock()
 
         awaitClose {
             realtimeJob.cancel()
             pollingJob.cancel()
-            cleanupMutex.unlock()
-        }
 
-        launch(ioDispatcher) {
-            cleanupMutex.withLock {
+            CoroutineScope(ioDispatcher + NonCancellable).launch {
                 try {
                     supabase.realtime.removeChannel(channel)
-                    Log.i("REPOSITORY SUPABASE DEVICE", "Close realtime device realtime connection")
                 } catch (e: Exception) {
-                    e.printStackTrace()
+                    Log.e("Device Repository", "Error remove channel: ${e.message}")
                 }
             }
         }
-    }
+    }.flowOn(ioDispatcher)
 }

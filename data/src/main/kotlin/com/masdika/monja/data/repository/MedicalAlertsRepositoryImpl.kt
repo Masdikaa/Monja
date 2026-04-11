@@ -1,6 +1,5 @@
 package com.masdika.monja.data.repository
 
-import android.util.Log
 import com.masdika.monja.data.di.IoDispatcher
 import com.masdika.monja.data.entity.MedicalAlertEntity
 import com.masdika.monja.data.model.MedicalAlert
@@ -12,178 +11,102 @@ import io.github.jan.supabase.postgrest.query.Order
 import io.github.jan.supabase.postgrest.query.filter.FilterOperator
 import io.github.jan.supabase.realtime.PostgresAction
 import io.github.jan.supabase.realtime.channel
-import io.github.jan.supabase.realtime.decodeOldRecord
 import io.github.jan.supabase.realtime.decodeRecord
 import io.github.jan.supabase.realtime.postgresChangeFlow
 import io.github.jan.supabase.realtime.realtime
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.channelFlow
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.intOrNull
+import kotlinx.serialization.json.jsonPrimitive
 import javax.inject.Inject
 
 class MedicalAlertsRepositoryImpl @Inject constructor(
     private val supabase: SupabaseClient,
     @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) : MedicalAlertsRepository {
-    private val cleanupMutex = Mutex()
-
-    override suspend fun getMedicalAlerts(macAddress: String): List<MedicalAlert> {
-        return withContext(ioDispatcher) {
-            try {
-                val entities = supabase.postgrest["medical_alerts"]
-                    .select {
-                        filter { eq("mac_address", macAddress) }
-                        order("created_at", order = Order.DESCENDING)
-                    }
-                    .decodeList<MedicalAlertEntity>()
-
-                entities.map { entity ->
-                    MedicalAlert(
-                        id = entity.id ?: 0,
-                        macAddress = entity.macAddress ?: "Unknown MAC",
-                        oldStatus = entity.oldStatus ?: "Unknown",
-                        newStatus = entity.newStatus ?: "Unknown",
-                        temperatureAtTime = entity.temperatureAtTime,
-                        spo2AtTime = entity.spo2AtTime,
-                        latitude = entity.latitude,
-                        longitude = entity.longitude,
-                        createdAt = entity.createdAt ?: ""
-                    )
+    override fun getMedicalAlertsStream(macAddress: String): Flow<Result<List<MedicalAlert>>> =
+        flow<Result<List<MedicalAlert>>> {
+            val initialEntities = supabase.postgrest["medical_alerts"]
+                .select {
+                    filter { eq("mac_address", macAddress) }
+                    order("created_at", order = Order.DESCENDING)
                 }
-            } catch (e: Exception) {
-                e.printStackTrace()
-                throw e
+                .decodeList<MedicalAlertEntity>()
+
+            val currentMedicalAlertList = initialEntities.map { entity ->
+                MedicalAlert(
+                    id = entity.id ?: 0,
+                    macAddress = entity.macAddress ?: "Unknown MAC",
+                    oldStatus = entity.oldStatus ?: "Unknown",
+                    newStatus = entity.newStatus ?: "Unknown",
+                    temperatureAtTime = entity.temperatureAtTime,
+                    spo2AtTime = entity.spo2AtTime,
+                    latitude = entity.latitude,
+                    longitude = entity.longitude,
+                    createdAt = entity.createdAt ?: ""
+                )
+            }.toMutableList()
+
+            emit(Result.Success(currentMedicalAlertList.toList()))
+
+            val channel = supabase.channel("medical_alert_channel_$macAddress")
+            val changeFlow = channel.postgresChangeFlow<PostgresAction>(schema = "public") {
+                table = "medical_alerts"
+                filter("mac_address", FilterOperator.EQ, macAddress)
             }
-        }
-    }
 
-    override fun getMedicalAlertsStream(
-        macAddress: String
-    ): Flow<Result<List<MedicalAlert>>> = channelFlow {
-        send(Result.Loading)
-
-        val currentMedicalAlerts = mutableListOf<MedicalAlert>()
-
-        try {
-            val initialMedicalAlertsData = getMedicalAlerts(macAddress)
-            currentMedicalAlerts.addAll(initialMedicalAlertsData)
-            send(Result.Success(currentMedicalAlerts.toList()))
-        } catch (e: Exception) {
-            send(Result.Error(e, "Failed initiating medical alerts data: ${e.message}"))
-        }
-
-        val channel = supabase.channel("medical_alert_channel_$macAddress")
-        val changeFlow = channel.postgresChangeFlow<PostgresAction>(schema = "public") {
-            table = "medical_alerts"
-            filter("mac_address", FilterOperator.EQ, macAddress)
-        }
-
-        val realtimeJob = launch(ioDispatcher) {
             channel.subscribe()
-            changeFlow.collect { action ->
-                Log.i("REPO_MEDICAL_ALERT", "New Alert: $macAddress")
-                try {
-                    var isListUpdated = false
+
+            try {
+                changeFlow.collect { action ->
                     when (action) {
                         is PostgresAction.Insert -> {
-                            val entity = action.decodeRecord<MedicalAlertEntity>()
-
-                            val newMedicalAlerts = MedicalAlert(
-                                id = entity.id ?: 0,
-                                macAddress = entity.macAddress ?: "Unknown MAC",
-                                oldStatus = entity.oldStatus ?: "Unknown",
-                                newStatus = entity.newStatus ?: "Unknown",
-                                temperatureAtTime = entity.temperatureAtTime,
-                                spo2AtTime = entity.spo2AtTime,
-                                latitude = entity.latitude,
-                                longitude = entity.longitude,
-                                createdAt = entity.createdAt ?: ""
+                            val newEntity = action.decodeRecord<MedicalAlertEntity>()
+                            val newMedicalAlert = MedicalAlert(
+                                id = newEntity.id ?: 0,
+                                macAddress = newEntity.macAddress ?: "Unknown MAC",
+                                oldStatus = newEntity.oldStatus ?: "Unknown",
+                                newStatus = newEntity.newStatus ?: "Unknown",
+                                temperatureAtTime = newEntity.temperatureAtTime,
+                                spo2AtTime = newEntity.spo2AtTime,
+                                latitude = newEntity.latitude,
+                                longitude = newEntity.longitude,
+                                createdAt = newEntity.createdAt ?: ""
                             )
-
-                            currentMedicalAlerts.add(0, newMedicalAlerts)
-                            isListUpdated = true
-                        }
-
-                        is PostgresAction.Update -> {
-                            val entity = action.decodeRecord<MedicalAlertEntity>()
-                            val updatedAlert = MedicalAlert(
-                                id = entity.id ?: 0,
-                                macAddress = entity.macAddress ?: "Unknown MAC",
-                                oldStatus = entity.oldStatus ?: "Unknown",
-                                newStatus = entity.newStatus ?: "Unknown",
-                                temperatureAtTime = entity.temperatureAtTime,
-                                spo2AtTime = entity.spo2AtTime,
-                                latitude = entity.latitude,
-                                longitude = entity.longitude,
-                                createdAt = entity.createdAt ?: ""
-                            )
-
-                            val index =
-                                currentMedicalAlerts.indexOfFirst { it.id == updatedAlert.id }
-                            if (index != -1) {
-                                currentMedicalAlerts[index] = updatedAlert
-                            }
-                            isListUpdated = true
+                            currentMedicalAlertList.add(0, newMedicalAlert)
                         }
 
                         is PostgresAction.Delete -> {
-                            val entity = action.decodeOldRecord<MedicalAlertEntity>()
-                            val deleteId = entity.id
-                            currentMedicalAlerts.removeAll { it.id == deleteId }
-                            isListUpdated = true
+                            val deletedId = action.oldRecord["id"]?.jsonPrimitive?.intOrNull
+                            if (deletedId != null) {
+                                currentMedicalAlertList.removeAll { it.id == deletedId }
+                            }
                         }
 
                         else -> {}
                     }
-                    if (isListUpdated) {
-                        send(Result.Success(currentMedicalAlerts.toList()))
-                    }
-                } catch (e: Exception) {
-                    send(Result.Error(e, "Failed to update medical alerts data: ${e.message}"))
+                    emit(Result.Success(currentMedicalAlertList.toList()))
                 }
+            } finally {
+                supabase.realtime.removeChannel(channel)
             }
         }
-
-        cleanupMutex.lock()
-
-        awaitClose {
-            realtimeJob.cancel()
-            cleanupMutex.unlock()
-        }
-
-        launch(ioDispatcher) {
-            cleanupMutex.withLock {
-                try {
-                    supabase.realtime.removeChannel(channel)
-                    Log.i(
-                        "REPO_MEDICAL_ALERT",
-                        "Close realtime connection for $macAddress medical alerts"
-                    )
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
-            }
-        }
-    }
+            .onStart { emit(Result.Loading) }
+            .catch { e -> emit(Result.Error(e, "Connection Lost: ${e.localizedMessage}")) }
+            .flowOn(ioDispatcher)
 
     override suspend fun deleteMedicalAlerts(macAddress: String) {
-        return withContext(ioDispatcher) {
-            Log.i("MEDICAL_ALERT_DELETE", "Attempting to delete for mac address: $macAddress")
-            try {
-                supabase.postgrest["medical_alerts"]
-                    .delete {
-                        filter { eq("mac_address", macAddress) }
-                    }
-                Log.i("MEDICAL_ALERT_DELETE", "Delete Successful")
-            } catch (e: Exception) {
-                Log.i("MEDICAL_ALERT_DELETE", "Delete failed: ${e.message}")
-                throw e
-            }
+        withContext(ioDispatcher) {
+            supabase.postgrest["medical_alerts"]
+                .delete {
+                    filter { eq("mac_address", macAddress) }
+                }
         }
     }
+
 }

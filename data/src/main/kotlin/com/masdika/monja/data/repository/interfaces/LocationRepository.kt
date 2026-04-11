@@ -5,6 +5,5 @@ import com.masdika.monja.data.utils.Result
 import kotlinx.coroutines.flow.Flow
 
 interface LocationRepository {
-    suspend fun getAvailableLocation(macAddress: String): Location?
     fun getLocationStream(macAddress: String): Flow<Result<Location?>>
 }

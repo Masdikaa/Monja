@@ -5,6 +5,5 @@ import com.masdika.monja.data.utils.Result
 import kotlinx.coroutines.flow.Flow
 
 interface HealthStatusRepository {
-    suspend fun getAvailableHealthStatuses(macAddress: String): HealthStatus?
     fun getHealthStatusesStream(macAddress: String): Flow<Result<HealthStatus?>>
 }
