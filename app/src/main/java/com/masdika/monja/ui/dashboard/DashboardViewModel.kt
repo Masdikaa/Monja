@@ -37,7 +37,7 @@ class DashboardViewModel @Inject constructor(
 ) : ViewModel() {
     private val _state = MutableStateFlow(DashboardScreenState())
     val state = _state.asStateFlow()
-    private val _event = Channel<DashboardScreenEvent>()
+    private val _event = Channel<DashboardScreenEvent>(Channel.BUFFERED)
     val event = _event.receiveAsFlow()
     private var lastSevereStatus = false
 
@@ -164,6 +164,7 @@ class DashboardViewModel @Inject constructor(
                                 try {
                                     Instant.parse(it.createdAt).isAfter(threeMinuteAgo)
                                 } catch (e: Exception) {
+                                    e.printStackTrace()
                                     false
                                 }
                             }.reversed()
