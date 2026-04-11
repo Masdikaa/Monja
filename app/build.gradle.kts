@@ -57,6 +57,12 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
+    testOptions {
+        unitTests.all {
+            it.useJUnitPlatform()
+        }
+    }
+
     kotlin {
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_17)
@@ -111,12 +117,24 @@ dependencies {
     // ======================= TESTING =======================
     // Unit Test (Local)
     testImplementation(libs.junit)
+    testImplementation(libs.junit.jupiter)
+    testImplementation(libs.junit.jupiter.api)
+    testRuntimeOnly(libs.junit.jupiter.engine)
+    testRuntimeOnly(libs.junit.platform.launcher)
+    testImplementation(libs.androidx.lifecycle.viewmodel.testing)
+    testImplementation(libs.androidx.lifecycle.runtime.testing)
+    testImplementation(libs.androidx.hilt.testing)
     // Instrumented Test (Run in Emulator/Device)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     // Jetpack Compose Testing
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+    // Testing Utilities
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.mockk)
+    testImplementation(libs.turbine)
+    testImplementation(libs.ktor.client.mock)
 
     // =================== DEBUGGING TOOLS ===================
     debugImplementation(libs.androidx.compose.ui.tooling)
