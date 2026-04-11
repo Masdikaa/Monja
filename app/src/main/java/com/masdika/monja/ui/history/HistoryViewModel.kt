@@ -26,7 +26,7 @@ class HistoryViewModel @Inject constructor(
 ) : ViewModel() {
     private val _state = MutableStateFlow(HistoryScreenState())
     val state = _state.asStateFlow()
-    private val _event = Channel<HistoryScreenEvent>()
+    private val _event = Channel<HistoryScreenEvent>(Channel.BUFFERED)
     val event = _event.receiveAsFlow()
     private val refreshTrigger = MutableStateFlow(0)
 
