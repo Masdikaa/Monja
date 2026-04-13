@@ -2,9 +2,11 @@ package com.masdika.monja.ui.history
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.masdika.monja.R
 import com.masdika.monja.data.repository.interfaces.ActiveDeviceRepository
 import com.masdika.monja.data.repository.interfaces.MedicalAlertsRepository
 import com.masdika.monja.data.utils.Result
+import com.masdika.monja.util.UiText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
@@ -68,13 +70,20 @@ class HistoryViewModel @Inject constructor(
                     }
 
                     _event.trySend(
-                        HistoryScreenEvent.ShowSnackbar("Success delete history for mac address $macAddress")
+                        HistoryScreenEvent.ShowSnackbar(
+                            message = UiText.StringResource(
+                                R.string.success_delete_history,
+                                macAddress
+                            )
+                        )
                     )
                 }
             } catch (e: Exception) {
                 _state.update { it.copy(showDeleteDialog = false) }
                 _event.trySend(
-                    HistoryScreenEvent.ShowSnackbar("Failed delete history")
+                    HistoryScreenEvent.ShowSnackbar(
+                        message = UiText.StringResource(R.string.error_delete_history)
+                    )
                 )
                 e.printStackTrace()
             }

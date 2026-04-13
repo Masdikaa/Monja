@@ -34,12 +34,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Devices.PIXEL_9
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
+import com.masdika.monja.R
 import com.masdika.monja.data.model.MedicalAlert
 import com.masdika.monja.data.utils.Result
 import com.masdika.monja.ui.component.EmptyState
@@ -63,7 +65,7 @@ fun HistoryScreen(
         viewModel.event.collect { event ->
             when (event) {
                 is HistoryScreenEvent.ShowSnackbar -> {
-                    snackbarHostState.showSnackbar(event.message)
+                    snackbarHostState.showSnackbar(event.message.asString(context))
                 }
             }
         }
@@ -72,7 +74,7 @@ fun HistoryScreen(
     Scaffold(
         topBar = {
             MainTopAppBar(
-                title = "History",
+                title = stringResource(R.string.label_nav_history),
             ) {
                 HistoryTopAppBar(
                     onDeleteClick = { viewModel.showDeleteConfirmation() }
@@ -139,16 +141,16 @@ private fun HistoryContent(
                     macAddress.isEmpty() -> {
                         EmptyState(
                             icon = Icons.Outlined.Info,
-                            title = "Device MAC Address not Found",
-                            message = "Please select a device to show history"
+                            title = stringResource(R.string.title_history_mac_not_found),
+                            message = stringResource(R.string.message_history_mac_not_found)
                         )
                     }
 
                     statusState.data.isEmpty() -> {
                         EmptyState(
                             icon = Icons.Outlined.MonitorHeart,
-                            title = "Empty Histories",
-                            message = "No medical alerts found in this device",
+                            title = stringResource(R.string.title_history_empty),
+                            message = stringResource(R.string.message_history_empty),
                         )
                     }
 
@@ -176,8 +178,8 @@ private fun HistoryContent(
             is Result.Error -> {
                 EmptyState(
                     icon = Icons.Default.WarningAmber,
-                    title = "Internal Error",
-                    message = statusState.message ?: "Unknown error"
+                    title = stringResource(R.string.error_title_history),
+                    message = stringResource(R.string.error_message_history)
                 )
             }
         }
@@ -193,7 +195,7 @@ private fun DeleteConfirmationDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
-                text = "Delete all History ?",
+                text = stringResource(R.string.title_dialog_delete_history),
                 fontFamily = poppinsFont,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth()
@@ -201,7 +203,7 @@ private fun DeleteConfirmationDialog(
         },
         text = {
             Text(
-                text = "This action can't be undone. All history status for this device will be permanently deleted.",
+                text = stringResource(R.string.message_dialog_delete_history_warning),
                 fontFamily = poppinsFont,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth()
@@ -219,7 +221,7 @@ private fun DeleteConfirmationDialog(
                 shape = RoundedCornerShape(12.dp)
             ) {
                 Text(
-                    text = "Delete",
+                    text = stringResource(R.string.button_history_delete),
                     fontFamily = poppinsFont
                 )
             }
@@ -236,7 +238,7 @@ private fun DeleteConfirmationDialog(
                 shape = RoundedCornerShape(12.dp)
             ) {
                 Text(
-                    text = "Cancel",
+                    text = stringResource(R.string.button_history_cancel),
                     fontFamily = poppinsFont
                 )
             }

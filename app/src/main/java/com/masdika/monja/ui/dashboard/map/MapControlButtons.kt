@@ -51,7 +51,7 @@ fun MapControlButtons(
         ) {
             Icon(
                 imageVector = if (isMapDarkMode) Icons.Default.LightMode else Icons.Default.DarkMode,
-                contentDescription = "Toggle Map Theme",
+                contentDescription = null,
                 modifier = Modifier
                     .size(55.dp)
                     .padding(8.dp)
@@ -68,7 +68,7 @@ fun MapControlButtons(
         ) {
             Icon(
                 imageVector = Icons.Default.Layers,
-                contentDescription = "Toggle Satellite",
+                contentDescription = null,
                 modifier = Modifier
                     .size(55.dp)
                     .padding(8.dp)
@@ -88,7 +88,7 @@ fun MapControlButtons(
         ) {
             Icon(
                 imageVector = GPSCenterIcon,
-                contentDescription = "Center to User",
+                contentDescription = null,
                 modifier = Modifier
                     .size(55.dp)
                     .padding(8.dp)
@@ -108,7 +108,7 @@ fun MapControlButtons(
         ) {
             Icon(
                 imageVector = HikerIcon,
-                contentDescription = "Center to Device",
+                contentDescription = null,
                 modifier = Modifier
                     .size(55.dp)
                     .padding(8.dp)

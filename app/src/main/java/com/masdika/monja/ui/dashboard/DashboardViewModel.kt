@@ -2,6 +2,7 @@ package com.masdika.monja.ui.dashboard
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.masdika.monja.R
 import com.masdika.monja.data.model.Device
 import com.masdika.monja.data.model.Vitals
 import com.masdika.monja.data.repository.interfaces.ActiveDeviceRepository
@@ -11,6 +12,7 @@ import com.masdika.monja.data.repository.interfaces.LocationRepository
 import com.masdika.monja.data.repository.interfaces.SevereMonitorRepository
 import com.masdika.monja.data.repository.interfaces.VitalsRepository
 import com.masdika.monja.data.utils.Result
+import com.masdika.monja.util.UiText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
@@ -85,15 +87,24 @@ class DashboardViewModel @Inject constructor(
 
                                 if (shouldShowEmptyDeviceSnackbar) {
                                     _event.trySend(
-                                        DashboardScreenEvent.ShowEmptyDevicesSnackbar("No available devices found!")
+                                        DashboardScreenEvent.ShowEmptyDevicesSnackbar(
+                                            message = UiText.StringResource(R.string.error_no_device)
+                                        )
                                     )
                                 }
 
                                 if (shouldShowDeviceConnectionSnackbar) {
+                                    val stringResId = if (selectedDevice.isOnline) {
+                                        R.string.format_device_online
+                                    } else {
+                                        R.string.format_device_offline
+                                    }
                                     _event.trySend(
                                         DashboardScreenEvent.ShowDeviceConnectionSnackbar(
-                                            macAddress = selectedDevice.macAddress,
-                                            isOnline = selectedDevice.isOnline
+                                            message = UiText.StringResource(
+                                                stringResId,
+                                                selectedDevice.macAddress
+                                            )
                                         )
                                     )
                                 }
@@ -126,7 +137,7 @@ class DashboardViewModel @Inject constructor(
                     if (result is Result.Error) {
                         _event.trySend(
                             DashboardScreenEvent.ShowEmptyDevicesSnackbar(
-                                message = result.message ?: "Failed to load devices"
+                                message = UiText.StringResource(R.string.error_device)
                             )
                         )
                     }
@@ -192,7 +203,7 @@ class DashboardViewModel @Inject constructor(
                             }
                             _event.trySend(
                                 DashboardScreenEvent.ShowEmptyDevicesSnackbar(
-                                    message = vitalData.message ?: "Failed to load vitals data"
+                                    message = UiText.StringResource(R.string.error_vitals)
                                 )
                             )
                         }
@@ -216,7 +227,7 @@ class DashboardViewModel @Inject constructor(
                     if (locationData is Result.Error) {
                         _event.trySend(
                             DashboardScreenEvent.ShowEmptyDevicesSnackbar(
-                                message = locationData.message ?: "Failed to load location"
+                                message = UiText.StringResource(R.string.error_location)
                             )
                         )
                     }
@@ -239,7 +250,7 @@ class DashboardViewModel @Inject constructor(
                     if (healthStatusData is Result.Error) {
                         _event.trySend(
                             DashboardScreenEvent.ShowEmptyDevicesSnackbar(
-                                message = healthStatusData.message ?: "Failed to load status"
+                                message = UiText.StringResource(R.string.error_health_status)
                             )
                         )
                     }

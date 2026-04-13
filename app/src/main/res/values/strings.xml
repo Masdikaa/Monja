@@ -1,3 +1,103 @@
 <resources>
     <string name="app_name">Monja</string>
+
+    <!-- ======================================== -->
+    <!-- COMMON / REUSABLE STRINGS -->
+    <!-- ======================================== -->
+    <string name="label_nav_dashboard">Dashboard</string>
+    <string name="label_nav_history">History</string>
+    <string name="common_error_internal">Internal Error</string>
+    <string name="common_label_cancel">Cancel</string>
+    <string name="common_label_delete">Delete</string>
+
+    <!-- ======================================== -->
+    <!-- ANALYTIC SCREEN -->
+    <!-- ======================================== -->
+    <string name="title_analytic_body_temperature">Body Temperature</string>
+    <string name="title_analytic_heart_rate">Heart Rate</string>
+    <string name="title_analytic_oxygen_saturation">Oxygen Saturation (SpO2)</string>
+    <string name="title_analytic_default">Analytics</string>
+    <string name="title_analytic_empty">Empty Data</string>
+    <string name="message_analytic_empty">Currently there\'s no data available</string>
+    <string name="error_title_analytic">Server Error</string>
+    <string name="error_message_analytic">Couldn\'t connect to database\nPlease check your internet connection</string>
+
+    <!-- ======================================== -->
+    <!-- VITAL STATISTIC -->
+    <!-- ======================================== -->
+    <string name="label_stat_temperature">Average Temperature</string>
+    <string name="label_stat_heart_rate">Average Heart Rate</string>
+    <string name="label_stat_oxygen_saturation">Average SpO2</string>
+    <string name="label_stat_max">Max</string>
+    <string name="label_stat_min">Min</string>
+    <string name="label_stat_peak">Peak</string>
+    <string name="label_stat_rest">Rest</string>
+    <string name="format_stat_prefix">Statistics of </string>
+    <string name="format_stat_suffix"> data entries recorded</string>
+
+    <!-- ======================================== -->
+    <!-- HISTORY SCREEN -->
+    <!-- ======================================== -->
+    <string name="title_history_mac_not_found">Device MAC Address not Found!</string>
+    <string name="message_history_mac_not_found">Please select a device to show history!</string>
+    <string name="title_history_empty">Empty Histories!</string>
+    <string name="message_history_empty">No medical alerts history found in this device!</string>
+    <string name="error_title_history">Internal Error</string>
+    <string name="error_message_history">Error loading status data\nPlease try again later or restart the app!</string>
+    <string name="button_history_delete">Delete</string>
+    <string name="button_history_cancel">Cancel</string>
+
+    <!-- ======================================== -->
+    <!-- HISTORY DIALOG -->
+    <!-- ======================================== -->
+    <string name="title_dialog_delete_history">Delete all History ?</string>
+    <string name="message_dialog_delete_history_warning">This action can\'t be undone. All history status for this device will be permanently deleted.</string>
+
+    <!-- ======================================== -->
+    <!-- HISTORY STATUS CARD -->
+    <!-- ======================================== -->
+    <string name="label_history_card_status_changed">Status Changed</string>
+    <string name="label_history_card_location_not_recorded">Location not recorded</string>
+    <string name="format_location">Location: %1$s, %2$s</string>
+
+    <!-- ======================================== -->
+    <!-- HISTORY TOP APP BAR ACTION -->
+    <!-- ======================================== -->
+    <string name="action_history_delete">Delete history</string>
+
+    <!-- ======================================== -->
+    <!-- DASHBOARD TOP APP BAR ACTION -->
+    <!-- ======================================== -->
+    <string name="label_dashboard_empty_device">No devices available</string>
+
+    <!-- ======================================== -->
+    <!-- DASHBOARD BOTTOM SHEET -->
+    <!-- ======================================== -->
+    <string name="label_dashboard_card_status">Status</string>
+    <string name="label_dashboard_card_error">Internal Error</string>
+    <string name="title_dashboard_vitals">Vitals Data</string>
+    <string name="label_dashboard_body_temperature">Body Temperature</string>
+    <string name="label_dashboard_heart_rate">Heart Rate</string>
+    <string name="label_dashboard_oxygen_saturation">SpO2</string>
+    <string name="unit_celsius">°C</string>
+    <string name="unit_bpm"> BPM</string>
+    <string name="unit_percent">%</string>
+
+    <!-- ======================================== -->
+    <!-- DASHBOARD VIEWMODEL -->
+    <!-- ======================================== -->
+    <string name="error_no_device">No available devices found!</string>
+    <string name="error_device">Failed to load devices!</string>
+    <string name="format_device_online">%1$s is Online</string>
+    <string name="format_device_offline">%1$s is Offline</string>
+    <string name="error_vitals">Failed to load vitals data!</string>
+    <string name="error_location">Failed to load device location!</string>
+    <string name="error_health_status">Failed to load status data!</string>
+
+    <!-- ======================================== -->
+    <!-- HISTORY VIEWMODEL -->
+    <!-- ======================================== -->
+    <string name="success_delete_history">Success delete history for mac address %1$s</string>
+    <string name="error_delete_history">Failed to delete history!</string>
+
 </resources>

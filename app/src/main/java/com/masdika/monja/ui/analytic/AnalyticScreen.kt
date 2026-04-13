@@ -17,9 +17,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.masdika.monja.R
 import com.masdika.monja.data.model.Vitals
 import com.masdika.monja.data.utils.Result
 import com.masdika.monja.ui.component.EmptyState
@@ -44,10 +46,10 @@ fun AnalyticScreen(
     val vitalState = state.vitalState
 
     val title = when (viewModel.vitalType.lowercase()) {
-        "temperature" -> "Body Temperature"
-        "heartrate" -> "Heart Rate"
-        "spo2" -> "Oxygen Saturation (SpO2)"
-        else -> "Analytics"
+        "temperature" -> stringResource(R.string.title_analytic_body_temperature)
+        "heartrate" -> stringResource(R.string.title_analytic_heart_rate)
+        "spo2" -> stringResource(R.string.title_analytic_oxygen_saturation)
+        else -> stringResource(R.string.title_analytic_default)
     }
 
     Scaffold(
@@ -82,8 +84,8 @@ private fun AnalyticChartContent(
                 if (vitalState.data.isEmpty()) {
                     EmptyState(
                         icon = Icons.Outlined.Info,
-                        title = "Empty Record",
-                        message = "Currently there's no data available"
+                        title = stringResource(R.string.title_analytic_empty),
+                        message = stringResource(R.string.message_analytic_empty)
                     )
                 } else {
                     val chartData = vitalState.data.map { vital ->
@@ -169,8 +171,8 @@ private fun AnalyticChartContent(
             is Result.Error -> {
                 EmptyState(
                     icon = Icons.Default.WarningAmber,
-                    title = "Internal Error",
-                    message = "Couldn't connect to database\nPlease check your internet connection"
+                    title = stringResource(R.string.error_title_analytic),
+                    message = stringResource(R.string.error_message_analytic)
                 )
             }
         }

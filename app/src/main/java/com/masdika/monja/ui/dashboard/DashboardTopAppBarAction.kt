@@ -21,8 +21,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.masdika.monja.R
 import com.masdika.monja.data.model.Device
 import com.masdika.monja.ui.theme.MatteLime
 import com.masdika.monja.ui.theme.RedShimmer
@@ -47,7 +49,10 @@ fun DashboardTopAppBarAction(
     IconButton(
         onClick = { expanded = true }
     ) {
-        Icon(imageVector = Icons.Default.Person2, contentDescription = "Select Device")
+        Icon(
+            imageVector = Icons.Default.Person2,
+            contentDescription = null
+        )
     }
     DropdownMenu(
         expanded = expanded,
@@ -57,7 +62,7 @@ fun DashboardTopAppBarAction(
             DropdownMenuItem(
                 text = {
                     Text(
-                        text = "No devices available",
+                        text = stringResource(R.string.label_dashboard_empty_device),
                         fontFamily = poppinsFont
                     )
                 },

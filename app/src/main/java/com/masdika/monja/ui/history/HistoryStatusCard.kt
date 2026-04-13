@@ -18,9 +18,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.masdika.monja.R
 import com.masdika.monja.data.model.MedicalAlert
 import com.masdika.monja.ui.icon.StatusSpO2Icon
 import com.masdika.monja.ui.icon.StatusTemperatureIcon
@@ -96,7 +98,7 @@ fun HistoryStatusCard(
             ) {
                 Column(modifier = Modifier.weight(0.75f)) {
                     Text(
-                        text = "Status Changed",
+                        text = stringResource(R.string.label_history_card_status_changed),
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.Bold,
                         color = Color.Black,
@@ -155,7 +157,11 @@ fun HistoryStatusCard(
             }
             if (status.latitude != null && status.longitude != null) {
                 Text(
-                    text = "Location: ${status.latitude}, ${status.longitude}",
+                    text = stringResource(
+                        R.string.format_location,
+                        status.latitude!!,
+                        status.longitude!!
+                    ),
                     style = MaterialTheme.typography.labelLarge,
                     color = Color.Black,
                     fontFamily = openSansFont,
@@ -163,7 +169,7 @@ fun HistoryStatusCard(
                 )
             } else {
                 Text(
-                    text = "Location not recorded",
+                    text = stringResource(R.string.label_history_card_location_not_recorded),
                     style = MaterialTheme.typography.labelLarge,
                     color = Color.Black,
                     fontFamily = poppinsFont,

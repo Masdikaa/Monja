@@ -21,12 +21,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Devices.PIXEL_9
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.masdika.monja.R
 import com.masdika.monja.data.model.Device
 import com.masdika.monja.data.model.HealthStatus
 import com.masdika.monja.data.model.Vitals
@@ -77,7 +79,7 @@ fun DashboardBottomSheet(
         when (healthStatusState) {
             is Result.Loading -> {
                 VitalCard(
-                    title = "Status",
+                    title = stringResource(R.string.label_dashboard_card_status),
                     value = null,
                     imageIcon = HealthStatusIcon,
                     colorStops = VitalColors.StatusGradient,
@@ -90,7 +92,7 @@ fun DashboardBottomSheet(
 
             is Result.Success -> {
                 VitalCard(
-                    title = "Status",
+                    title = stringResource(R.string.label_dashboard_card_status),
                     value = healthStatusState.data?.status,
                     imageIcon = HealthStatusIcon,
                     colorStops = VitalColors.StatusGradient,
@@ -103,7 +105,7 @@ fun DashboardBottomSheet(
 
             is Result.Error -> {
                 VitalCard(
-                    title = "Internal Error",
+                    title = stringResource(R.string.label_dashboard_card_error),
                     value = healthStatusState.message,
                     imageIcon = Icons.Default.Warning,
                     colorStops = VitalColors.StatusGradient,
@@ -130,7 +132,7 @@ fun DashboardBottomSheet(
                     .weight(0.3f)
             )
             Text(
-                text = "Vitals Data".uppercase(),
+                text = stringResource(R.string.title_dashboard_vitals).uppercase(),
                 style = MaterialTheme.typography.titleMedium,
                 textAlign = TextAlign.Center,
                 fontWeight = FontWeight.Bold,
@@ -157,40 +159,40 @@ fun DashboardBottomSheet(
             when (vitalsState) {
                 is Result.Loading -> {
                     VitalCard(
-                        title = "Body Temperature",
+                        title = stringResource(R.string.label_dashboard_body_temperature),
                         value = null,
                         imageIcon = BodyTemperatureIcon,
                         colorStops = VitalColors.TemperatureGradient,
                         isLoading = true,
                         isOnline = isOnline,
                         onClick = {},
-                        unit = "°C"
+                        unit = stringResource(R.string.unit_celsius)
                     )
                     VitalCard(
-                        title = "Heart Rate",
+                        title = stringResource(R.string.label_dashboard_heart_rate),
                         value = null,
                         imageIcon = HeartrateIcon,
                         colorStops = VitalColors.HeartrateGradient,
                         isLoading = true,
                         isOnline = isOnline,
                         onClick = {},
-                        unit = " BPM",
+                        unit = stringResource(R.string.unit_bpm)
                     )
                     VitalCard(
-                        title = "Sp02",
+                        title = stringResource(R.string.label_dashboard_oxygen_saturation),
                         value = null,
                         imageIcon = SpO2Icon,
                         colorStops = VitalColors.OxygenSaturationGradient,
                         isLoading = true,
                         isOnline = isOnline,
                         onClick = {},
-                        unit = "%",
+                        unit = stringResource(R.string.unit_percent)
                     )
                 }
 
                 is Result.Success -> {
                     VitalCard(
-                        title = "Body Temperature",
+                        title = stringResource(R.string.label_dashboard_body_temperature),
                         value = vitalsState.data?.temperature,
                         chartData = temperatureChartData,
                         imageIcon = BodyTemperatureIcon,
@@ -198,10 +200,10 @@ fun DashboardBottomSheet(
                         isLoading = false,
                         isOnline = isOnline,
                         onClick = { onCardClick("temperature") },
-                        unit = "°C"
+                        unit = stringResource(R.string.unit_celsius)
                     )
                     VitalCard(
-                        title = "Heart Rate",
+                        title = stringResource(R.string.label_dashboard_heart_rate),
                         value = vitalsState.data?.heartrate,
                         chartData = heartrateChartData,
                         imageIcon = HeartrateIcon,
@@ -209,10 +211,10 @@ fun DashboardBottomSheet(
                         isLoading = false,
                         isOnline = isOnline,
                         onClick = { onCardClick("heartrate") },
-                        unit = " BPM",
+                        unit = stringResource(R.string.unit_bpm),
                     )
                     VitalCard(
-                        title = "Sp02",
+                        title = stringResource(R.string.label_dashboard_oxygen_saturation),
                         value = vitalsState.data?.oxygenSaturation,
                         chartData = spo2ChartData,
                         imageIcon = SpO2Icon,
@@ -220,13 +222,13 @@ fun DashboardBottomSheet(
                         isLoading = false,
                         isOnline = isOnline,
                         onClick = { onCardClick("spo2") },
-                        unit = "%",
+                        unit = stringResource(R.string.unit_percent),
                     )
                 }
 
                 is Result.Error -> {
                     VitalCard(
-                        title = "Internal Error",
+                        title = stringResource(R.string.label_dashboard_card_error),
                         value = vitalsState.message,
                         imageIcon = Icons.Default.Warning,
                         colorStops = VitalColors.TemperatureGradient,
@@ -236,7 +238,7 @@ fun DashboardBottomSheet(
                         valueTextSize = 12.sp
                     )
                     VitalCard(
-                        title = "Internal Error",
+                        title = stringResource(R.string.label_dashboard_card_error),
                         value = vitalsState.message,
                         imageIcon = Icons.Default.Warning,
                         colorStops = VitalColors.HeartrateGradient,
@@ -246,7 +248,7 @@ fun DashboardBottomSheet(
                         valueTextSize = 12.sp
                     )
                     VitalCard(
-                        title = "Internal Error",
+                        title = stringResource(R.string.label_dashboard_card_error),
                         value = vitalsState.message,
                         imageIcon = Icons.Default.Warning,
                         colorStops = VitalColors.OxygenSaturationGradient,

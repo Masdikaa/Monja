@@ -49,7 +49,7 @@ fun ShowDeviceAnnotation(
             ) {
                 Icon(
                     imageVector = PinDropIcon,
-                    contentDescription = "Pin Drop Icon",
+                    contentDescription = null,
                     tint = Color.Red,
                     modifier = Modifier.size(40.dp)
                 )

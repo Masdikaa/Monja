@@ -14,6 +14,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -22,6 +23,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.masdika.monja.R
 import com.masdika.monja.data.model.Vitals
 import com.masdika.monja.ui.theme.MonjaTheme
 import com.masdika.monja.ui.theme.poppinsFont
@@ -56,9 +58,9 @@ fun VitalStatistic(
                     totalData = totalData,
                     maxAt = dateFormat(maxTemperatureRecord?.createdAt.toString()),
                     minAt = dateFormat(minTemperatureRecord?.createdAt.toString()),
-                    primaryText = "Average Temperature",
-                    secondaryTextLeft = "Max",
-                    secondaryTextRight = "Min"
+                    primaryText = stringResource(R.string.label_stat_temperature),
+                    secondaryTextLeft = stringResource(R.string.label_stat_max),
+                    secondaryTextRight = stringResource(R.string.label_stat_min)
                 )
             }
 
@@ -81,9 +83,9 @@ fun VitalStatistic(
                     totalData = totalData,
                     maxAt = dateFormat(peakHeartRateRecord?.createdAt.toString()),
                     minAt = dateFormat(restingHeartRateRecord?.createdAt.toString()),
-                    primaryText = "Average Heart Rate",
-                    secondaryTextLeft = "Peak",
-                    secondaryTextRight = "Rest"
+                    primaryText = stringResource(R.string.label_stat_heart_rate),
+                    secondaryTextLeft = stringResource(R.string.label_stat_peak),
+                    secondaryTextRight = stringResource(R.string.label_stat_rest)
                 )
             }
 
@@ -106,9 +108,9 @@ fun VitalStatistic(
                     totalData = totalData,
                     maxAt = dateFormat(maxSpO2Record?.createdAt.toString()),
                     minAt = dateFormat(minSpO2Record?.createdAt.toString()),
-                    primaryText = "Average SpO2",
-                    secondaryTextLeft = "Max",
-                    secondaryTextRight = "Min"
+                    primaryText = stringResource(R.string.label_stat_oxygen_saturation),
+                    secondaryTextLeft = stringResource(R.string.label_stat_max),
+                    secondaryTextRight = stringResource(R.string.label_stat_min)
                 )
             }
 
@@ -219,11 +221,11 @@ private fun VitalStatisticContent(
         Spacer(Modifier.height(16.dp))
         Text(
             text = buildAnnotatedString {
-                append("Statistics of ")
+                append(stringResource(R.string.format_stat_prefix))
                 withStyle(
                     style = SpanStyle(fontWeight = FontWeight.Bold)
                 ) { append("$totalData") }
-                append(" data entries recorded")
+                append(stringResource(R.string.format_stat_suffix))
             },
             textDecoration = TextDecoration.Underline,
             style = MaterialTheme.typography.bodySmall,

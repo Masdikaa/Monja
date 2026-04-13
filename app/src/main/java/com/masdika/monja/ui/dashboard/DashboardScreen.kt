@@ -32,11 +32,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Devices.PIXEL_9
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
+import com.masdika.monja.R
 import com.masdika.monja.data.model.Device
 import com.masdika.monja.data.model.HealthStatus
 import com.masdika.monja.data.model.Location
@@ -68,14 +70,14 @@ fun DashboardScreen(
             when (event) {
                 is DashboardScreenEvent.ShowEmptyDevicesSnackbar -> {
                     snackbarHostState.showSnackbar(
-                        message = event.message,
+                        message = event.message.asString(context),
                         duration = SnackbarDuration.Long
                     )
                 }
 
                 is DashboardScreenEvent.ShowDeviceConnectionSnackbar -> {
                     snackbarHostState.showSnackbar(
-                        message = "${event.macAddress} is ${if (event.isOnline) "Online" else "Offline"}",
+                        message = event.message.asString(context),
                         duration = SnackbarDuration.Short
                     )
                 }
@@ -90,7 +92,7 @@ fun DashboardScreen(
     Scaffold(
         topBar = {
             MainTopAppBar(
-                title = "Dashboard"
+                title = stringResource(R.string.label_nav_dashboard)
             ) {
                 DashboardTopAppBarAction(
                     devices = devices,
@@ -182,6 +184,7 @@ private fun DashboardContent(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
                     .size(width = 120.dp, height = 25.dp)
+                    .clickable(onClick = { showBottomSheet = true })
                     .background(
                         shape = RoundedCornerShape(
                             topStart = CornerSize(16.dp),
@@ -191,11 +194,10 @@ private fun DashboardContent(
                         ),
                         color = MaterialTheme.colorScheme.background
                     )
-                    .clickable(onClick = { showBottomSheet = true })
             ) {
                 Icon(
                     imageVector = ArrowUpIcon,
-                    contentDescription = "Arrow Up Icon",
+                    contentDescription = null,
                     modifier = Modifier.size(20.dp)
                 )
             }

@@ -12,6 +12,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.res.stringResource
+import com.masdika.monja.R
 import com.masdika.monja.ui.theme.poppinsFont
 
 @Composable
@@ -32,7 +34,7 @@ fun HistoryTopAppBar(onDeleteClick: () -> Unit) {
         DropdownMenuItem(
             text = {
                 Text(
-                    text = "Delete history",
+                    text = stringResource(R.string.action_history_delete),
                     fontFamily = poppinsFont
                 )
             },
