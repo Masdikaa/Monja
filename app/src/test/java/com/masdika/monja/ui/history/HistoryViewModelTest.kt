@@ -1,10 +1,12 @@
 package com.masdika.monja.ui.history
 
 import app.cash.turbine.test
+import com.masdika.monja.R
 import com.masdika.monja.data.model.MedicalAlert
 import com.masdika.monja.data.repository.interfaces.ActiveDeviceRepository
 import com.masdika.monja.data.repository.interfaces.MedicalAlertsRepository
 import com.masdika.monja.data.utils.Result
+import com.masdika.monja.util.UiText
 import io.mockk.MockKAnnotations
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -126,10 +128,11 @@ class HistoryViewModelTest {
             viewModel.event.test {
                 val event = awaitItem()
                 assertTrue(event is HistoryScreenEvent.ShowSnackbar)
-                assertEquals(
-                    "Success delete history for mac address $macAddress",
-                    (event as HistoryScreenEvent.ShowSnackbar).message
-                )
+
+                val uiText =
+                    (event as HistoryScreenEvent.ShowSnackbar).message as UiText.StringResource
+                assertEquals(R.string.success_delete_history, uiText.resId)
+                assertEquals(macAddress, uiText.args[0])
             }
 
             coVerify(exactly = 1) { medicalAlertsRepository.deleteMedicalAlerts(macAddress) }
@@ -182,10 +185,10 @@ class HistoryViewModelTest {
             viewModel.event.test {
                 val event = awaitItem()
                 assertTrue(event is HistoryScreenEvent.ShowSnackbar)
-                assertEquals(
-                    "Failed delete history",
-                    (event as HistoryScreenEvent.ShowSnackbar).message
-                )
+
+                val uiText =
+                    (event as HistoryScreenEvent.ShowSnackbar).message as UiText.StringResource
+                assertEquals(R.string.error_delete_history, uiText.resId)
             }
         }
 }
