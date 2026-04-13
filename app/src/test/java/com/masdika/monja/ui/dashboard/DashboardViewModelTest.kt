@@ -1,6 +1,7 @@
 package com.masdika.monja.ui.dashboard
 
 import app.cash.turbine.test
+import com.masdika.monja.R
 import com.masdika.monja.data.model.Device
 import com.masdika.monja.data.model.HealthStatus
 import com.masdika.monja.data.model.Location
@@ -13,6 +14,7 @@ import com.masdika.monja.data.repository.interfaces.LocationRepository
 import com.masdika.monja.data.repository.interfaces.SevereMonitorRepository
 import com.masdika.monja.data.repository.interfaces.VitalsRepository
 import com.masdika.monja.data.utils.Result
+import com.masdika.monja.util.UiText
 import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
@@ -135,10 +137,9 @@ class DashboardViewModelTest {
         viewModel.event.test {
             val event = awaitItem()
             assertTrue(event is DashboardScreenEvent.ShowEmptyDevicesSnackbar)
-            assertEquals(
-                "No available devices found!",
-                (event as DashboardScreenEvent.ShowEmptyDevicesSnackbar).message
-            )
+
+            val uiText = (event as DashboardScreenEvent.ShowEmptyDevicesSnackbar).message as UiText.StringResource
+            assertEquals(R.string.error_no_device, uiText.resId)
         }
     }
 
@@ -190,10 +191,9 @@ class DashboardViewModelTest {
         viewModel.event.test {
             val event = awaitItem()
             assertTrue(event is DashboardScreenEvent.ShowEmptyDevicesSnackbar)
-            assertEquals(
-                errorMessage,
-                (event as DashboardScreenEvent.ShowEmptyDevicesSnackbar).message
-            )
+
+            val uiText = (event as DashboardScreenEvent.ShowEmptyDevicesSnackbar).message as UiText.StringResource
+            assertEquals(R.string.error_location, uiText.resId)
         }
     }
 
@@ -245,10 +245,8 @@ class DashboardViewModelTest {
         viewModel.event.test {
             val event = awaitItem()
             assertTrue(event is DashboardScreenEvent.ShowEmptyDevicesSnackbar)
-            assertEquals(
-                errorMessage,
-                (event as DashboardScreenEvent.ShowEmptyDevicesSnackbar).message
-            )
+            val uiText = (event as DashboardScreenEvent.ShowEmptyDevicesSnackbar).message as UiText.StringResource
+            assertEquals(R.string.error_health_status, uiText.resId)
         }
     }
 
