@@ -22,18 +22,21 @@ import com.masdika.monja.ui.component.MainBottomBar
 import com.masdika.monja.ui.dashboard.DashboardRoute
 import com.masdika.monja.ui.dashboard.dashboardScreenRoute
 import com.masdika.monja.ui.history.historyScreenRoute
+import com.masdika.monja.ui.splash.SplashRoute
+import com.masdika.monja.ui.splash.splashScreenRoute
 
 @Composable
 fun MainScreen() {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
-    val isAnalyticScreen = currentDestination?.hasRoute<AnalyticRoute>() == true
+    val isHiddenScreen =
+        currentDestination?.hasRoute<SplashRoute>() == true || currentDestination?.hasRoute<AnalyticRoute>() == true
 
     Scaffold(
         bottomBar = {
             AnimatedVisibility(
-                visible = !isAnalyticScreen,
+                visible = !isHiddenScreen,
                 enter = slideInVertically(
                     initialOffsetY = { it },
                     animationSpec = tween(durationMillis = 500)
@@ -49,9 +52,16 @@ fun MainScreen() {
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = DashboardRoute,
-            modifier = Modifier.padding(bottom = if (!isAnalyticScreen) innerPadding.calculateBottomPadding() else 0.dp)
+            startDestination = SplashRoute,
+            modifier = Modifier.padding(bottom = if (!isHiddenScreen) innerPadding.calculateBottomPadding() else 0.dp)
         ) {
+            splashScreenRoute(
+                onNavigateToDashboard = {
+                    navController.navigate(DashboardRoute) {
+                        popUpTo<SplashRoute> { inclusive = true }
+                    }
+                }
+            )
             dashboardScreenRoute(
                 onNavigateToAnalytic = { macAddress, vitalType ->
                     navController.navigate(AnalyticRoute(macAddress, vitalType))

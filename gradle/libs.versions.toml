@@ -45,6 +45,9 @@ lifecycleRuntimeTesting = "2.8.7"
 lifecycleViewmodelTesting = "2.8.7"
 hiltTesting = "2.57.2"
 
+#Splash Screen
+splashScreen = "1.0.1"
+
 [libraries]
 # AndroidX Core
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -105,6 +108,9 @@ ktor-client-mock = { group = "io.ktor", name = "ktor-client-mock", version.ref =
 androidx-lifecycle-runtime-testing = { group = "androidx.lifecycle", name = "lifecycle-runtime-testing", version.ref = "lifecycleRuntimeTesting" }
 androidx-lifecycle-viewmodel-testing = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-testing", version.ref = "lifecycleViewmodelTesting" }
 androidx-hilt-testing = { group = "com.google.dagger", name = "hilt-android-testing", version.ref = "hiltTesting" }
+
+#Splash Screen
+androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "splashScreen" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

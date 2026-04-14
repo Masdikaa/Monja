@@ -100,4 +100,10 @@
     <string name="success_delete_history">Success delete history for mac address %1$s</string>
     <string name="error_delete_history">Failed to delete history!</string>
 
+    <!-- ======================================== -->
+    <!-- SPLASH SCREEN VIEWMODEL -->
+    <!-- ======================================== -->
+    <string name="splash_initializing">Initializing…</string>
+    <string name="splash_retrying">Retry %1$s/%2$s</string>
+    <string name="splash_error_connection">Failed to connect. Please check your internet!</string>
 </resources>

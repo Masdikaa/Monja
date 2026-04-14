@@ -82,6 +82,9 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
 
+    // ================== CORE & LIFECYCLE ===================
+    implementation(libs.androidx.core.splashscreen)
+
     // =================== JETPACK COMPOSE ===================
     implementation(libs.androidx.activity.compose)
     // Compose BOM (Bill of Materials)
