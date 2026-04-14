@@ -521,7 +521,7 @@ private fun drawTooltip(
         val valueString = if (dataPoint.value % 1.0 == 0.0) {
             dataPoint.value.toInt().toString()
         } else {
-            String.format(Locale.getDefault(), "%.1f", dataPoint)
+            String.format(Locale.getDefault(), "%.1f", dataPoint.value)
         }
 
         val text = "$valueString\n$timeString"
