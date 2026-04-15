@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonPrimitive
+import timber.log.Timber
 import javax.inject.Inject
 
 class MedicalAlertsRepositoryImpl @Inject constructor(
@@ -31,6 +32,7 @@ class MedicalAlertsRepositoryImpl @Inject constructor(
 ) : MedicalAlertsRepository {
     override fun getMedicalAlertsStream(macAddress: String): Flow<Result<List<MedicalAlert>>> =
         flow<Result<List<MedicalAlert>>> {
+            Timber.d("Fetching initial medical alerts for $macAddress...")
             val initialEntities = supabase.postgrest["medical_alerts"]
                 .select {
                     filter { eq("mac_address", macAddress) }
@@ -38,6 +40,7 @@ class MedicalAlertsRepositoryImpl @Inject constructor(
                 }
                 .decodeList<MedicalAlertEntity>()
 
+            Timber.d("Fetched ${initialEntities.size} initial alerts.")
             val currentMedicalAlertList = initialEntities.map { entity ->
                 MedicalAlert(
                     id = entity.id ?: 0,
@@ -54,6 +57,7 @@ class MedicalAlertsRepositoryImpl @Inject constructor(
 
             emit(Result.Success(currentMedicalAlertList.toList()))
 
+            Timber.d("Setting up Realtime subscription for medical_alert_channel_$macAddress")
             val channel = supabase.channel("medical_alert_channel_$macAddress")
             val changeFlow = channel.postgresChangeFlow<PostgresAction>(schema = "public") {
                 table = "medical_alerts"
@@ -64,6 +68,7 @@ class MedicalAlertsRepositoryImpl @Inject constructor(
 
             try {
                 changeFlow.collect { action ->
+                    Timber.d("Received Realtime action: ${action::class.simpleName}")
                     when (action) {
                         is PostgresAction.Insert -> {
                             val newEntity = action.decodeRecord<MedicalAlertEntity>()
@@ -79,33 +84,48 @@ class MedicalAlertsRepositoryImpl @Inject constructor(
                                 createdAt = newEntity.createdAt ?: ""
                             )
                             currentMedicalAlertList.add(0, newMedicalAlert)
+                            emit(Result.Success(currentMedicalAlertList.toList()))
                         }
 
                         is PostgresAction.Delete -> {
                             val deletedId = action.oldRecord["id"]?.jsonPrimitive?.intOrNull
                             if (deletedId != null) {
                                 currentMedicalAlertList.removeAll { it.id == deletedId }
+                                emit(Result.Success(currentMedicalAlertList.toList()))
                             }
                         }
 
                         else -> {}
                     }
-                    emit(Result.Success(currentMedicalAlertList.toList()))
                 }
             } finally {
+                Timber.d("Closing stream. Removing Realtime channel for $macAddress...")
                 supabase.realtime.removeChannel(channel)
             }
         }
-            .onStart { emit(Result.Loading) }
-            .catch { e -> emit(Result.Error(e, "Connection Lost: ${e.localizedMessage}")) }
+            .onStart {
+                Timber.d("Starting medical alerts stream...")
+                emit(Result.Loading)
+            }
+            .catch { e ->
+                Timber.e(e, "Error observing medical alerts stream for $macAddress.")
+                emit(Result.Error(e, "Connection Lost: ${e.localizedMessage}"))
+            }
             .flowOn(ioDispatcher)
 
     override suspend fun deleteMedicalAlerts(macAddress: String) {
         withContext(ioDispatcher) {
-            supabase.postgrest["medical_alerts"]
-                .delete {
-                    filter { eq("mac_address", macAddress) }
-                }
+            Timber.d("Attempting to delete medical alerts for $macAddress...")
+            try {
+                supabase.postgrest["medical_alerts"]
+                    .delete {
+                        filter { eq("mac_address", macAddress) }
+                    }
+                Timber.d("Successfully deleted medical alerts for $macAddress.")
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to delete medical alerts for $macAddress.")
+                throw e
+            }
         }
     }
 

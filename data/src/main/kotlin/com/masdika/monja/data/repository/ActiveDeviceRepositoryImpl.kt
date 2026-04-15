@@ -4,6 +4,7 @@ import com.masdika.monja.data.repository.interfaces.ActiveDeviceRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -14,6 +15,7 @@ class ActiveDeviceRepositoryImpl @Inject constructor() : ActiveDeviceRepository 
     override val activeMacAddress: StateFlow<String?> = _activeMacAddress.asStateFlow()
 
     override fun setActiveDevice(macAddress: String) {
+        Timber.d("Active device MAC updated: $macAddress")
         _activeMacAddress.value = macAddress
     }
 }

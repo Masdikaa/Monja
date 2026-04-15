@@ -77,6 +77,9 @@ dependencies {
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
 
+    // Logging
+    implementation(libs.timber)
+
     // Unit Test
     testImplementation(libs.junit)
     testImplementation(libs.junit.jupiter)

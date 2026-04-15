@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.onStart
+import timber.log.Timber
 import javax.inject.Inject
 
 class HealthStatusRepositoryImpl @Inject constructor(
@@ -28,6 +29,7 @@ class HealthStatusRepositoryImpl @Inject constructor(
 ) : HealthStatusRepository {
     override fun getHealthStatusesStream(macAddress: String): Flow<Result<HealthStatus?>> =
         flow<Result<HealthStatus?>> {
+            Timber.d("Fetching initial health status for $macAddress...")
             val initialEntity = supabase.postgrest["device_health_status"]
                 .select {
                     filter { eq("mac_address", macAddress) }
@@ -37,15 +39,18 @@ class HealthStatusRepositoryImpl @Inject constructor(
                 .decodeSingleOrNull<HealthStatusEntity>()
 
             var currentHealthStatus: HealthStatus? = if (initialEntity != null) {
+                Timber.d("Initial health status found: ${initialEntity.status}")
                 HealthStatus(
                     status = initialEntity.status
                 )
             } else {
+                Timber.d("No initial health status found.")
                 null
             }
 
             emit(Result.Success(currentHealthStatus))
 
+            Timber.d("Setting up channel subscription: health_status_channel_$macAddress")
             val channel = supabase.channel("health_status_channel_$macAddress")
             val changeFlow = channel.postgresChangeFlow<PostgresAction>(schema = "public") {
                 table = "device_health_status"
@@ -56,6 +61,7 @@ class HealthStatusRepositoryImpl @Inject constructor(
 
             try {
                 changeFlow.collect { action ->
+                    Timber.d("Received Realtime action: ${action::class.simpleName}")
                     when (action) {
                         is PostgresAction.Insert -> {
                             val newEntity = action.decodeRecord<HealthStatusEntity>()
@@ -77,10 +83,17 @@ class HealthStatusRepositoryImpl @Inject constructor(
                     }
                 }
             } finally {
+                Timber.d("Closing stream. Removing Realtime channel for $macAddress...")
                 supabase.realtime.removeChannel(channel)
             }
         }
-            .onStart { emit(Result.Loading) }
-            .catch { e -> emit(Result.Error(e, "Connection Lost: ${e.localizedMessage}")) }
+            .onStart {
+                Timber.d("Starting health status stream...")
+                emit(Result.Loading)
+            }
+            .catch { e ->
+                Timber.e(e, "Error observing health status stream for $macAddress.")
+                emit(Result.Error(e, "Connection Lost: ${e.localizedMessage}"))
+            }
             .flowOn(ioDispatcher)
 }

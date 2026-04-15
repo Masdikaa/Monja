@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.onStart
+import timber.log.Timber
 import javax.inject.Inject
 
 class SevereMonitorRepositoryImpl @Inject constructor(
@@ -28,6 +29,7 @@ class SevereMonitorRepositoryImpl @Inject constructor(
 ) : SevereMonitorRepository {
     override fun getSevereMonitorStream(macAddress: String): Flow<Result<SevereMonitor?>> =
         flow<Result<SevereMonitor?>> {
+            Timber.d("Fetching initial severe monitor status for $macAddress...")
             val initialEntity = supabase.postgrest["severe_monitor"]
                 .select {
                     filter { eq("mac_address", macAddress) }
@@ -37,17 +39,20 @@ class SevereMonitorRepositoryImpl @Inject constructor(
                 .decodeSingleOrNull<SevereMonitorEntity>()
 
             var currentSevereMonitor: SevereMonitor? = if (initialEntity != null) {
+                Timber.d("Initial severe status found: ${initialEntity.isSevere}")
                 SevereMonitor(
                     macAddress = initialEntity.macAddress ?: "",
                     isSevere = initialEntity.isSevere ?: false,
                     severeStartTime = initialEntity.severeStartTime ?: ""
                 )
             } else {
+                Timber.d("No initial severe monitor status found.")
                 null
             }
 
             emit(Result.Success(currentSevereMonitor))
 
+            Timber.d("Setting up Realtime subscription for severe_monitor_channel_$macAddress")
             val channel = supabase.channel("severe_monitor_channel_$macAddress")
             val changeFlow = channel.postgresChangeFlow<PostgresAction>(schema = "public") {
                 table = "severe_monitor"
@@ -58,6 +63,7 @@ class SevereMonitorRepositoryImpl @Inject constructor(
 
             try {
                 changeFlow.collect { action ->
+                    Timber.d("Received Realtime action: ${action::class.simpleName}")
                     when (action) {
                         is PostgresAction.Insert -> {
                             val newEntity = action.decodeRecord<SevereMonitorEntity>()
@@ -83,10 +89,17 @@ class SevereMonitorRepositoryImpl @Inject constructor(
                     }
                 }
             } finally {
+                Timber.d("Closing stream. Removing Realtime channel for $macAddress...")
                 supabase.realtime.removeChannel(channel)
             }
         }
-            .onStart { emit(Result.Loading) }
-            .catch { e -> emit(Result.Error(e, "Connection Lost: ${e.localizedMessage}")) }
+            .onStart {
+                Timber.d("Starting severe monitor stream...")
+                emit(Result.Loading)
+            }
+            .catch { e ->
+                Timber.e(e, "Error observing severe monitor stream for $macAddress.")
+                emit(Result.Error(e, "Connection Lost: ${e.localizedMessage}"))
+            }
             .flowOn(ioDispatcher)
 }

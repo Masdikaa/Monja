@@ -71,6 +71,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -112,6 +113,9 @@ dependencies {
 
     // ===================== BOTTOM BAR ======================
     implementation(libs.compose.animated.navigationbar)
+
+    // ===================== TIMBER ======================
+    implementation(libs.timber)
 
     // ====================== MAP BOX ========================
     implementation(libs.mapbox.android)

@@ -25,6 +25,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.shareIn
+import timber.log.Timber
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 
@@ -36,7 +37,9 @@ class VitalRepositoryImpl @Inject constructor(
     private val activeStreams = ConcurrentHashMap<String, SharedFlow<Result<List<Vitals>>>>()
 
     override fun getVitalStream(macAddress: String): Flow<Result<List<Vitals>>> {
+        Timber.d("Requesting vital stream for $macAddress")
         return activeStreams.getOrPut(macAddress) {
+            Timber.d("Creating new shared stream for $macAddress")
             createStream(macAddress).shareIn(
                 scope = repositoryScope,
                 started = SharingStarted.WhileSubscribed(10000),
@@ -47,6 +50,7 @@ class VitalRepositoryImpl @Inject constructor(
 
     private fun createStream(macAddress: String): Flow<Result<List<Vitals>>> =
         flow<Result<List<Vitals>>> {
+            Timber.d("Fetching initial vitals for $macAddress...")
             val initialEntities = supabase.postgrest["vitals_log"]
                 .select {
                     filter { eq("mac_address", macAddress) }
@@ -54,6 +58,7 @@ class VitalRepositoryImpl @Inject constructor(
                 }
                 .decodeList<VitalsEntity>()
 
+            Timber.d("Fetched ${initialEntities.size} initial vitals.")
             val currentList = initialEntities.map {
                 Vitals(
                     temperature = it.temperature ?: 0.0,
@@ -65,6 +70,7 @@ class VitalRepositoryImpl @Inject constructor(
 
             emit(Result.Success(currentList.toList()))
 
+            Timber.d("Setting up Realtime subscription for vitals_channel_$macAddress")
             val channel = supabase.realtime.channel("vitals_channel_$macAddress")
             val changeFlow = channel.postgresChangeFlow<PostgresAction>(schema = "public") {
                 table = "vitals_log"
@@ -75,6 +81,7 @@ class VitalRepositoryImpl @Inject constructor(
 
             try {
                 changeFlow.collect { action ->
+                    Timber.d("Received Realtime action: ${action::class.simpleName}")
                     when (action) {
                         is PostgresAction.Insert -> {
                             val newEntity = action.decodeRecord<VitalsEntity>()
@@ -85,17 +92,24 @@ class VitalRepositoryImpl @Inject constructor(
                                 createdAt = newEntity.createdAt ?: ""
                             )
                             currentList.add(0, newVitals)
+                            emit(Result.Success(currentList.toList()))
                         }
 
                         else -> {}
                     }
-                    emit(Result.Success(currentList.toList()))
                 }
             } finally {
+                Timber.d("Closing stream. Removing Realtime channel for $macAddress...")
                 supabase.realtime.removeChannel(channel)
             }
         }
-            .onStart { emit(Result.Loading) }
-            .catch { e -> emit(Result.Error(e, "Connection Lost: ${e.localizedMessage}")) }
+            .onStart {
+                Timber.d("Starting vitals stream...")
+                emit(Result.Loading)
+            }
+            .catch { e ->
+                Timber.e(e, "Error observing vitals stream for $macAddress.")
+                emit(Result.Error(e, "Connection Lost: ${e.localizedMessage}"))
+            }
             .flowOn(ioDispatcher)
 }

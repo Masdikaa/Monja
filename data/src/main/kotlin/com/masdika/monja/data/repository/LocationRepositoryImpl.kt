@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.onStart
+import timber.log.Timber
 import javax.inject.Inject
 
 class LocationRepositoryImpl @Inject constructor(
@@ -28,6 +29,7 @@ class LocationRepositoryImpl @Inject constructor(
 ) : LocationRepository {
     override fun getLocationStream(macAddress: String): Flow<Result<Location?>> =
         flow<Result<Location?>> {
+            Timber.d("Fetching initial location for $macAddress...")
             val initialEntity = supabase.postgrest["location_log"]
                 .select {
                     filter { eq("mac_address", macAddress) }
@@ -36,16 +38,19 @@ class LocationRepositoryImpl @Inject constructor(
                 }.decodeSingleOrNull<LocationEntity>()
 
             var currentLocation: Location? = if (initialEntity != null) {
+                Timber.d("Initial location found: ${initialEntity.latitude}, ${initialEntity.longitude}")
                 Location(
                     latitude = initialEntity.latitude ?: "",
                     longitude = initialEntity.longitude ?: ""
                 )
             } else {
+                Timber.d("No initial location found.")
                 null
             }
 
             emit(Result.Success(currentLocation))
 
+            Timber.d("Setting up Realtime subscription for location_channel_$macAddress")
             val channel = supabase.realtime.channel("location_channel_$macAddress")
             val changeFlow = channel.postgresChangeFlow<PostgresAction>(schema = "public") {
                 table = "location_log"
@@ -56,6 +61,7 @@ class LocationRepositoryImpl @Inject constructor(
 
             try {
                 changeFlow.collect { action ->
+                    Timber.d("Received Realtime action: ${action::class.simpleName}")
                     when (action) {
                         is PostgresAction.Insert -> {
                             val newEntity = action.decodeRecord<LocationEntity>()
@@ -70,10 +76,17 @@ class LocationRepositoryImpl @Inject constructor(
                     }
                 }
             } finally {
+                Timber.d("Closing stream. Removing Realtime channel for $macAddress...")
                 supabase.realtime.removeChannel(channel)
             }
         }
-            .onStart { emit(Result.Loading) }
-            .catch { e -> emit(Result.Error(e, "Connection Lost: ${e.localizedMessage}")) }
+            .onStart {
+                Timber.d("Starting location stream...")
+                emit(Result.Loading)
+            }
+            .catch { e ->
+                Timber.e(e, "Error observing location stream for $macAddress.")
+                emit(Result.Error(e, "Connection Lost: ${e.localizedMessage}"))
+            }
             .flowOn(ioDispatcher)
 }
