@@ -123,7 +123,6 @@ dependencies {
 
     // ======================= TESTING =======================
     // Unit Test (Local)
-    testImplementation(libs.junit)
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.junit.jupiter.api)
     testRuntimeOnly(libs.junit.jupiter.engine)
@@ -141,7 +140,6 @@ dependencies {
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.mockk)
     testImplementation(libs.turbine)
-    testImplementation(libs.ktor.client.mock)
 
     // =================== DEBUGGING TOOLS ===================
     debugImplementation(libs.androidx.compose.ui.tooling)

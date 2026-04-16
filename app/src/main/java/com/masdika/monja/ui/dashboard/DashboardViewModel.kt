@@ -11,7 +11,7 @@ import com.masdika.monja.data.repository.interfaces.HealthStatusRepository
 import com.masdika.monja.data.repository.interfaces.LocationRepository
 import com.masdika.monja.data.repository.interfaces.SevereMonitorRepository
 import com.masdika.monja.data.repository.interfaces.VitalsRepository
-import com.masdika.monja.data.utils.Result
+import com.masdika.monja.data.Result
 import com.masdika.monja.util.UiText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import javax.inject.Inject
@@ -44,6 +45,7 @@ class DashboardViewModel @Inject constructor(
     private var lastSevereStatus = false
 
     init {
+        Timber.d("Initializing DashboardViewModel and starting observers...")
         startObservingDevices()
         startObservingVitals()
         startObservingLocation()
@@ -53,12 +55,14 @@ class DashboardViewModel @Inject constructor(
 
     private fun startObservingDevices() {
         viewModelScope.launch {
+            Timber.d("Starting to observe devices...")
             deviceRepository.getDeviceStream()
                 .collect { result ->
                     _state.update { currentState ->
                         when (result) {
                             is Result.Success -> {
                                 val devices = result.data
+                                Timber.d("Device stream success. Fetched ${devices.size} devices.")
 
                                 val shouldShowEmptyDeviceSnackbar =
                                     devices.isEmpty() && !currentState.hasShownEmptyDeviceSnackbar
@@ -86,6 +90,7 @@ class DashboardViewModel @Inject constructor(
                                 }
 
                                 if (shouldShowEmptyDeviceSnackbar) {
+                                    Timber.d("Triggering ShowEmptyDevicesSnackbar event.")
                                     _event.trySend(
                                         DashboardScreenEvent.ShowEmptyDevicesSnackbar(
                                             message = UiText.StringResource(R.string.error_no_device)
@@ -94,6 +99,7 @@ class DashboardViewModel @Inject constructor(
                                 }
 
                                 if (shouldShowDeviceConnectionSnackbar) {
+                                    Timber.d("Device ${selectedDevice.macAddress} connection state changed to: ${selectedDevice.isOnline}")
                                     val stringResId = if (selectedDevice.isOnline) {
                                         R.string.format_device_online
                                     } else {
@@ -118,6 +124,7 @@ class DashboardViewModel @Inject constructor(
                             }
 
                             is Result.Loading -> {
+                                Timber.v("Device stream is loading...")
                                 currentState.copy(
                                     deviceState = Result.Loading,
                                     previousDeviceOnlineState = currentState.previousDeviceOnlineState,
@@ -126,6 +133,7 @@ class DashboardViewModel @Inject constructor(
                             }
 
                             is Result.Error -> {
+                                Timber.e(result.exception, "Device stream error: ${result.message}")
                                 currentState.copy(
                                     deviceState = Result.Error(result.exception, result.message),
                                     previousDeviceOnlineState = currentState.previousDeviceOnlineState,
@@ -150,8 +158,10 @@ class DashboardViewModel @Inject constructor(
             activeDeviceRepository.activeMacAddress
                 .flatMapLatest { macAddress ->
                     if (macAddress == null) {
+                        Timber.d("Active MAC is null. Emitting empty vitals list.")
                         flowOf(Result.Success(emptyList<Vitals>()))
                     } else {
+                        Timber.d("Active MAC changed to $macAddress. Observing vitals...")
                         vitalRepository.getVitalStream(macAddress)
                     }
                 }
@@ -168,6 +178,7 @@ class DashboardViewModel @Inject constructor(
 
                         is Result.Success -> {
                             val allVitals = vitalData.data
+                            Timber.d("Vitals updated. Count: ${allVitals.size}")
                             val latestVital = allVitals.firstOrNull()
 
                             val threeMinuteAgo = Instant.now().minus(3, ChronoUnit.MINUTES)
@@ -175,7 +186,7 @@ class DashboardViewModel @Inject constructor(
                                 try {
                                     Instant.parse(it.createdAt).isAfter(threeMinuteAgo)
                                 } catch (e: Exception) {
-                                    e.printStackTrace()
+                                    Timber.w(e, "Failed to parse vital timestamp: ${it.createdAt}")
                                     false
                                 }
                             }.reversed()
@@ -189,6 +200,10 @@ class DashboardViewModel @Inject constructor(
                         }
 
                         is Result.Error -> {
+                            Timber.e(
+                                vitalData.exception,
+                                "Vitals stream error: ${vitalData.message}"
+                            )
                             _state.update {
                                 it.copy(
                                     vitalsState = Result.Error(
@@ -219,12 +234,18 @@ class DashboardViewModel @Inject constructor(
                     if (macAddress == null) {
                         flowOf(Result.Success(null))
                     } else {
+                        Timber.d("Observing location for MAC: $macAddress")
                         locationRepository.getLocationStream(macAddress)
                     }
                 }
                 .collect { locationData ->
+                    if (locationData is Result.Success && locationData.data != null) {
+                        Timber.v("Location updated for active device.")
+                    }
                     _state.update { it.copy(locationState = locationData) }
+
                     if (locationData is Result.Error) {
+                        Timber.e(locationData.exception, "Location stream error.")
                         _event.trySend(
                             DashboardScreenEvent.ShowEmptyDevicesSnackbar(
                                 message = UiText.StringResource(R.string.error_location)
@@ -242,12 +263,17 @@ class DashboardViewModel @Inject constructor(
                     if (macAddress == null) {
                         flowOf(Result.Success(null))
                     } else {
+                        Timber.d("Observing health status for MAC: $macAddress")
                         healthStatusRepository.getHealthStatusesStream(macAddress)
                     }
                 }
                 .collect { healthStatusData ->
+                    if (healthStatusData is Result.Success && healthStatusData.data != null) {
+                        Timber.v("Health status updated: ${healthStatusData.data!!.status}")
+                    }
                     _state.update { it.copy(healthStatusState = healthStatusData) }
                     if (healthStatusData is Result.Error) {
+                        Timber.e(healthStatusData.exception, "Health status stream error.")
                         _event.trySend(
                             DashboardScreenEvent.ShowEmptyDevicesSnackbar(
                                 message = UiText.StringResource(R.string.error_health_status)
@@ -265,26 +291,32 @@ class DashboardViewModel @Inject constructor(
                     if (macAddress == null) {
                         flowOf(Result.Success(null))
                     } else {
+                        Timber.d("Observing severe monitor for MAC: $macAddress")
                         severeMonitorRepository.getSevereMonitorStream(macAddress)
                     }
                 }
                 .collect { severeMonitorData ->
                     if (severeMonitorData is Result.Success && severeMonitorData.data != null) {
                         val isCurrentlySevere = severeMonitorData.data!!.isSevere
+                        Timber.v("Severe monitor updated. isSevere: $isCurrentlySevere")
 
                         if (isCurrentlySevere && !lastSevereStatus) {
+                            Timber.w("Severe status changed to TRUE. Triggering Evacuation Alert for ${severeMonitorData.data!!.macAddress}")
                             _event.trySend(
                                 DashboardScreenEvent.ShowEvacuationAlert(severeMonitorData.data!!.macAddress)
                             )
                         }
 
                         lastSevereStatus = isCurrentlySevere
+                    } else if (severeMonitorData is Result.Error) {
+                        Timber.e(severeMonitorData.exception, "Severe monitor stream error.")
                     }
                 }
         }
     }
 
     fun selectDevice(device: Device) {
+        Timber.d("User manually selected device: ${device.macAddress}")
         activeDeviceRepository.setActiveDevice(device.macAddress)
         _state.update { it.copy(selectedDevice = device) }
     }

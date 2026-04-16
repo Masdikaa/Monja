@@ -1,7 +1,7 @@
 package com.masdika.monja.ui.history
 
 import com.masdika.monja.data.model.MedicalAlert
-import com.masdika.monja.data.utils.Result
+import com.masdika.monja.data.Result
 
 data class HistoryScreenState(
     val macAddress: String = "",

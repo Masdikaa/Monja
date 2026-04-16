@@ -4,7 +4,7 @@ import com.masdika.monja.data.di.IoDispatcher
 import com.masdika.monja.data.entity.LocationEntity
 import com.masdika.monja.data.model.Location
 import com.masdika.monja.data.repository.interfaces.LocationRepository
-import com.masdika.monja.data.utils.Result
+import com.masdika.monja.data.Result
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.query.Order

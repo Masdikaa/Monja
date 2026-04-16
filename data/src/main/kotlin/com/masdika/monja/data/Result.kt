@@ -1,4 +1,4 @@
-package com.masdika.monja.data.utils
+package com.masdika.monja.data
 
 sealed interface Result<out T> {
     data class Success<T>(val data: T) : Result<T>

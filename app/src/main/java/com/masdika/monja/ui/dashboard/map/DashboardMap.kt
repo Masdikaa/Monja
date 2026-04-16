@@ -32,8 +32,8 @@ import com.mapbox.maps.extension.compose.style.MapStyle
 import com.mapbox.maps.plugin.animation.MapAnimationOptions
 import com.mapbox.maps.plugin.locationcomponent.OnIndicatorPositionChangedListener
 import com.mapbox.maps.plugin.locationcomponent.location
+import com.masdika.monja.data.Result
 import com.masdika.monja.data.model.Location
-import com.masdika.monja.data.utils.Result
 import com.masdika.monja.ui.theme.MonjaTheme
 
 @OptIn(MapboxExperimental::class)
@@ -60,7 +60,8 @@ fun DashboardMap(
 
     var userLat by rememberSaveable { mutableStateOf<Double?>(null) }
     var userLng by rememberSaveable { mutableStateOf<Double?>(null) }
-    val userLocation = if (userLat != null && userLng != null) Point.fromLngLat(userLng!!, userLat!!) else null
+    val userLocation =
+        if (userLat != null && userLng != null) Point.fromLngLat(userLng!!, userLat!!) else null
 
     var isInitialCameraSet by rememberSaveable(macAddress) { mutableStateOf(false) }
 
@@ -133,8 +134,8 @@ fun DashboardMap(
                         mapView.location.addOnIndicatorPositionChangedListener(object :
                             OnIndicatorPositionChangedListener {
                             override fun onIndicatorPositionChanged(point: Point) {
-                                userLat = point.latitude()
-                                userLng = point.longitude()
+                                point.latitude()
+                                point.longitude()
                                 mapView.location.removeOnIndicatorPositionChangedListener(this)
                             }
                         })

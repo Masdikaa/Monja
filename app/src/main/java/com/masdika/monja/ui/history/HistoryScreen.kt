@@ -43,7 +43,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
 import com.masdika.monja.R
 import com.masdika.monja.data.model.MedicalAlert
-import com.masdika.monja.data.utils.Result
+import com.masdika.monja.data.Result
 import com.masdika.monja.ui.component.EmptyState
 import com.masdika.monja.ui.component.MainBottomBar
 import com.masdika.monja.ui.component.MainTopAppBar

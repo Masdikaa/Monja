@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.masdika.monja.R
 import com.masdika.monja.data.repository.interfaces.ActiveDeviceRepository
 import com.masdika.monja.data.repository.interfaces.MedicalAlertsRepository
-import com.masdika.monja.data.utils.Result
+import com.masdika.monja.data.Result
 import com.masdika.monja.util.UiText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -33,6 +34,7 @@ class HistoryViewModel @Inject constructor(
     private val refreshTrigger = MutableStateFlow(0)
 
     init {
+        Timber.d("Initializing HistoryViewModel...")
         startObservingHistory()
     }
 
@@ -45,13 +47,18 @@ class HistoryViewModel @Inject constructor(
                 macAddress
             }.flatMapLatest { macAddress ->
                 if (macAddress == null) {
+                    Timber.d("Active MAC is null. Emitting empty history.")
                     _state.update { it.copy(macAddress = "") }
                     flowOf(Result.Success(emptyList()))
                 } else {
+                    Timber.d("Observing history for MAC: $macAddress")
                     _state.update { it.copy(macAddress = macAddress) }
                     medicalAlertsRepository.getMedicalAlertsStream(macAddress)
                 }
             }.collect { result ->
+                if (result is Result.Error) {
+                    Timber.e(result.exception, "History stream error: ${result.message}")
+                }
                 _state.update { it.copy(statusState = result) }
             }
         }
@@ -59,10 +66,13 @@ class HistoryViewModel @Inject constructor(
 
     fun deleteAllMedicalAlerts() {
         viewModelScope.launch {
+            Timber.d("Attempting to delete all medical alerts...")
             try {
                 val macAddress = _state.value.macAddress
                 if (macAddress.isNotEmpty()) {
                     medicalAlertsRepository.deleteMedicalAlerts(macAddress)
+                    Timber.d("Successfully deleted medical alerts for $macAddress.")
+
                     refreshTrigger.update { it + 1 }
 
                     _state.update {
@@ -77,8 +87,11 @@ class HistoryViewModel @Inject constructor(
                             )
                         )
                     )
+                } else {
+                    Timber.w("Can't delete alerts: MAC Address is empty.")
                 }
             } catch (e: Exception) {
+                Timber.e(e, "Failed to delete medical alerts.")
                 _state.update { it.copy(showDeleteDialog = false) }
                 _event.trySend(
                     HistoryScreenEvent.ShowSnackbar(
@@ -91,10 +104,12 @@ class HistoryViewModel @Inject constructor(
     }
 
     fun showDeleteConfirmation() {
+        Timber.d("Showing delete confirmation dialog.")
         _state.update { it.copy(showDeleteDialog = true) }
     }
 
     fun dismissDeleteConfirmation() {
+        Timber.d("Dismissing delete confirmation dialog.")
         _state.update { it.copy(showDeleteDialog = false) }
     }
 }

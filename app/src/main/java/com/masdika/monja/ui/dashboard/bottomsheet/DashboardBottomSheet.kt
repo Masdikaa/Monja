@@ -32,7 +32,7 @@ import com.masdika.monja.R
 import com.masdika.monja.data.model.Device
 import com.masdika.monja.data.model.HealthStatus
 import com.masdika.monja.data.model.Vitals
-import com.masdika.monja.data.utils.Result
+import com.masdika.monja.data.Result
 import com.masdika.monja.ui.component.chart.DataPoint
 import com.masdika.monja.ui.icon.BodyTemperatureIcon
 import com.masdika.monja.ui.icon.HealthStatusIcon

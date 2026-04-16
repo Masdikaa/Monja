@@ -43,7 +43,7 @@ import com.masdika.monja.data.model.Device
 import com.masdika.monja.data.model.HealthStatus
 import com.masdika.monja.data.model.Location
 import com.masdika.monja.data.model.Vitals
-import com.masdika.monja.data.utils.Result
+import com.masdika.monja.data.Result
 import com.masdika.monja.ui.component.MainBottomBar
 import com.masdika.monja.ui.component.MainTopAppBar
 import com.masdika.monja.ui.dashboard.bottomsheet.DashboardBottomSheet

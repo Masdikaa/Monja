@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.masdika.monja.R
 import com.masdika.monja.data.model.Vitals
-import com.masdika.monja.data.utils.Result
+import com.masdika.monja.data.Result
 import com.masdika.monja.ui.component.EmptyState
 import com.masdika.monja.ui.component.MainTopAppBar
 import com.masdika.monja.ui.component.chart.ChartConfig

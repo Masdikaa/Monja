@@ -447,7 +447,7 @@ private fun drawXAxisLabel(
     val maxTime = dataPoints.maxOfOrNull { it.timestamp.toEpochMilli() } ?: return
     val timeRange = (maxTime - minTime).coerceAtLeast(1L)
 
-    val formatter = DateTimeFormatter.ofPattern("HH:mm").withZone(ZoneId.systemDefault())
+    val formatter = DateTimeFormatter.ofPattern("HH:mm").withZone(ZoneId.of("Asia/Jakarta"))
 
     val labelTextStyle = TextStyle(
         color = config.indicatorColor,
@@ -515,7 +515,7 @@ private fun drawTooltip(
     center: Offset
 ) {
     with(scope) {
-        val formatter = DateTimeFormatter.ofPattern("HH:mm").withZone(ZoneId.systemDefault())
+        val formatter = DateTimeFormatter.ofPattern("HH:mm").withZone(ZoneId.of("Asia/Jakarta"))
         val timeString = formatter.format(dataPoint.timestamp)
 
         val valueString = if (dataPoint.value % 1.0 == 0.0) {

@@ -4,7 +4,7 @@ import com.masdika.monja.data.model.Device
 import com.masdika.monja.data.model.HealthStatus
 import com.masdika.monja.data.model.Location
 import com.masdika.monja.data.model.Vitals
-import com.masdika.monja.data.utils.Result
+import com.masdika.monja.data.Result
 
 data class DashboardScreenState(
     // DEVICE

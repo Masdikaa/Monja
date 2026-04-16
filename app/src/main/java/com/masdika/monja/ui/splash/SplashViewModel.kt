@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -31,10 +32,12 @@ class SplashViewModel @Inject constructor(
     }
 
     init {
+        Timber.d("SplashViewModel initialized.")
         initializeApp()
     }
 
     private fun initializeApp() {
+        Timber.d("Starting app initialization sequence...")
         viewModelScope.launch {
             _state.update {
                 it.copy(
@@ -46,13 +49,15 @@ class SplashViewModel @Inject constructor(
             var delay = INITIAL_DELAY_MS
             repeat(MAX_RETRIES) { attempt ->
                 try {
+                    Timber.d("Attempt ${attempt + 1}/$MAX_RETRIES: Fetching available devices...")
                     deviceRepository.getAvailableDevices()
 
+                    Timber.d("Initialization successful. Triggering navigation to Dashboard.")
                     _state.update { it.copy(initializationState = InitializationState.Success) }
                     _event.send(SplashEvent.NavigateToDashboard)
                     return@launch
                 } catch (e: Exception) {
-                    e.printStackTrace()
+                    Timber.e(e, "Initialization attempt ${attempt + 1} failed.")
                     _state.update {
                         it.copy(
                             statusMessage = UiText.StringResource(
@@ -66,6 +71,7 @@ class SplashViewModel @Inject constructor(
                     delay *= 2 // Exponential Backoff
                 }
             }
+            Timber.e("Max retries reached. Initialization failed.")
             _state.update {
                 it.copy(
                     initializationState = InitializationState.Error(UiText.StringResource(R.string.splash_error_connection)),
@@ -76,6 +82,7 @@ class SplashViewModel @Inject constructor(
     }
 
     fun retry() {
+        Timber.d("Manual retry triggered by user.")
         initializeApp()
     }
 }
