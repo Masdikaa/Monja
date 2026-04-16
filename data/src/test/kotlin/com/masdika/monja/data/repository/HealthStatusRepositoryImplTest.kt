@@ -1,7 +1,7 @@
 package com.masdika.monja.data.repository
 
 import app.cash.turbine.test
-import com.masdika.monja.data.utils.Result
+import com.masdika.monja.data.Result
 import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.postgrest.Postgrest
 import io.github.jan.supabase.realtime.Realtime
