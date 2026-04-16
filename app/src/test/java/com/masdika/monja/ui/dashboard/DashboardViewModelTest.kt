@@ -13,7 +13,7 @@ import com.masdika.monja.data.repository.interfaces.HealthStatusRepository
 import com.masdika.monja.data.repository.interfaces.LocationRepository
 import com.masdika.monja.data.repository.interfaces.SevereMonitorRepository
 import com.masdika.monja.data.repository.interfaces.VitalsRepository
-import com.masdika.monja.data.utils.Result
+import com.masdika.monja.data.Result
 import com.masdika.monja.util.UiText
 import io.mockk.MockKAnnotations
 import io.mockk.every

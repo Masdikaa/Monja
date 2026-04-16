@@ -1,7 +1,7 @@
 package com.masdika.monja.data.repository
 
 import app.cash.turbine.test
-import com.masdika.monja.data.utils.Result
+import com.masdika.monja.data.Result
 import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.postgrest.Postgrest
 import io.github.jan.supabase.realtime.Realtime
@@ -76,8 +76,8 @@ class LocationRepositoryImplTest {
 
                 val location = (successItem as Result.Success).data
                 assertNotNull(location, "Location must be not null")
-                assertEquals("-6.200000", location?.latitude)
-                assertEquals("106.816666", location?.longitude)
+                assertEquals("-6.200000", location.latitude)
+                assertEquals("106.816666", location.longitude)
 
                 cancelAndIgnoreRemainingEvents()
             }

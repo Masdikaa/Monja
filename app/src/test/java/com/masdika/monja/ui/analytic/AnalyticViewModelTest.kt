@@ -5,7 +5,7 @@ import androidx.navigation.toRoute
 import app.cash.turbine.test
 import com.masdika.monja.data.model.Vitals
 import com.masdika.monja.data.repository.interfaces.VitalsRepository
-import com.masdika.monja.data.utils.Result
+import com.masdika.monja.data.Result
 import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.MockK

@@ -5,7 +5,7 @@ import com.masdika.monja.R
 import com.masdika.monja.data.model.MedicalAlert
 import com.masdika.monja.data.repository.interfaces.ActiveDeviceRepository
 import com.masdika.monja.data.repository.interfaces.MedicalAlertsRepository
-import com.masdika.monja.data.utils.Result
+import com.masdika.monja.data.Result
 import com.masdika.monja.util.UiText
 import io.mockk.MockKAnnotations
 import io.mockk.coEvery
