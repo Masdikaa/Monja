@@ -113,3 +113,28 @@ Application stability is guaranteed through a comprehensive test suite covering 
 * **Flow Testing:** Utilizes **Turbine** to validate data emissions on real-time asynchronous streams perfectly.
 * **Mocking:** Leverages **MockK** for dependency isolation and to simulate precise Repository behaviors within ViewModels.
 * **Network Simulation:** Employs **Ktor MockEngine** to mock various Supabase server responses locally, enabling fast and deterministic tests without relying on actual internet connections. 
+
+## 📚 Architectural Guidelines & References
+
+The design, structure, and development of Monja were strictly guided by official documentation and industry-standard architectural patterns. Below are the primary resources that shaped this codebase:
+
+**Android Architecture & Jetpack Compose**
+* [Official Guide to App Architecture](https://developer.android.com/topic/architecture)
+* [Data Layer Architecture](https://developer.android.com/topic/architecture/data-layer)
+* [UI Layer & Compose Architecture](https://developer.android.com/develop/ui/compose/architecture)
+* [Graphics in Jetpack Compose (Canvas API)](https://developer.android.com/develop/ui/compose/graphics) — *Utilized for the custom Time-Based Line Chart.*
+* [The Clean Architecture (Robert C. Martin)](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
+
+**Asynchrony & Dependency Injection**
+* [Kotlin Coroutines & Flows on Android](https://developer.android.com/kotlin/coroutines)
+* [Dependency Injection in Android with Hilt](https://developer.android.com/training/dependency-injection)
+* [Migrating to Kotlin Symbol Processing (KSP)](https://developer.android.com/build/migrate-to-ksp)
+
+**Third-Party Integrations**
+* [Supabase Kotlin Quickstart](https://supabase.com/docs/guides/getting-started/quickstarts/kotlin)
+* [Mapbox Maps SDK for Android Guides](https://docs.mapbox.com/android/maps/guides)
+
+**Quality Assurance & Testing**
+* [Building Local Unit Tests](https://developer.android.com/training/testing/local-tests)
+* [Testing Kotlin Flows with Turbine](https://github.com/cashapp/turbine)
+* [Mocking with MockK](https://mockk.io/)
