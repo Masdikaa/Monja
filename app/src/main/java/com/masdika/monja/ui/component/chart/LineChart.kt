@@ -49,7 +49,7 @@ fun LineChart(
     dataPoint: List<DataPoint>,
     modifier: Modifier = Modifier,
     config: ChartConfig = ChartConfig(),
-    viewportDataPoints: Int = 0
+    viewportDurationMinutes: Long = 60L
 ) {
     val textMeasurer = rememberTextMeasurer()
 
@@ -66,8 +66,13 @@ fun LineChart(
 
         val chartViewportWidthDp = availableWidthDp - yAxisWidthDp
 
-        val widthRatio = if (viewportDataPoints > 0) {
-            (dataPoint.size.toFloat() / viewportDataPoints.toFloat()).coerceAtLeast(1.0f)
+        val minTime = dataPoint.minOfOrNull { it.timestamp.toEpochMilli() } ?: 0L
+        val maxTime = dataPoint.maxOfOrNull { it.timestamp.toEpochMilli() } ?: 0L
+        val totalTimeRangeMillis = (maxTime - minTime).coerceAtLeast(1L)
+        val viewportDurationMillis = viewportDurationMinutes * 60 * 1000L
+
+        val widthRatio = if (viewportDurationMillis > 0) {
+            (totalTimeRangeMillis.toFloat() / viewportDurationMillis.toFloat()).coerceAtLeast(1.0f)
         } else {
             1.0f
         }
@@ -196,7 +201,7 @@ fun LineChart(
                             canvasWidth = canvasWidth,
                             canvasHeight = canvasHeight,
                             isAtEndFrame = isAtEndFrame,
-                            viewportDataPoints = viewportDataPoints
+                            viewportDurationMinutes = viewportDurationMinutes
                         )
                     }
 
@@ -363,34 +368,47 @@ private fun drawLineAndPoint(
     val strokePath = Path()
     val fillPath = Path()
 
+    val gapThresholdMillis = 30 * 60 * 1000L
+    var isPathActive = false
+
     if (coordinates.isNotEmpty()) {
-        strokePath.moveTo(coordinates.first().x, coordinates.first().y)
-
-        fillPath.moveTo(coordinates.first().x, canvasHeight)
-        fillPath.lineTo(coordinates.first().x, coordinates.first().y)
-
         // BEZIER CURVE
         for (i in 0 until coordinates.size - 1) {
             val current = coordinates[i]
             val next = coordinates[i + 1]
+            val timeDiff = dataPoints[i + 1].timestamp.toEpochMilli() - dataPoints[i].timestamp.toEpochMilli()
 
-            val controlX1 = current.x + (next.x - current.x) / 2f
-            val controlX2 = current.x + (next.x - current.x) / 2f
+            if (!isPathActive) {
+                strokePath.moveTo(current.x, current.y)
+                fillPath.moveTo(current.x, canvasHeight)
+                fillPath.lineTo(current.x, current.y)
+                isPathActive = true
+            }
 
-            strokePath.cubicTo(
-                x1 = controlX1, y1 = current.y,
-                x2 = controlX2, y2 = next.y,
-                x3 = next.x, y3 = next.y
-            )
+            if (timeDiff <= gapThresholdMillis) {
+                val controlX1 = current.x + (next.x - current.x) / 2f
+                val controlX2 = current.x + (next.x - current.x) / 2f
 
-            fillPath.cubicTo(
-                x1 = controlX1, y1 = current.y,
-                x2 = controlX2, y2 = next.y,
-                x3 = next.x, y3 = next.y
-            )
+                strokePath.cubicTo(
+                    x1 = controlX1, y1 = current.y,
+                    x2 = controlX2, y2 = next.y,
+                    x3 = next.x, y3 = next.y
+                )
+
+                fillPath.cubicTo(
+                    x1 = controlX1, y1 = current.y,
+                    x2 = controlX2, y2 = next.y,
+                    x3 = next.x, y3 = next.y
+                )
+            } else {
+                fillPath.lineTo(current.x, canvasHeight)
+                isPathActive = false
+            }
         }
 
-        fillPath.lineTo(coordinates.last().x, canvasHeight)
+        if (isPathActive && coordinates.isNotEmpty()) {
+            fillPath.lineTo(coordinates.last().x, canvasHeight)
+        }
         fillPath.close()
 
         with(scope) {
@@ -439,7 +457,7 @@ private fun drawXAxisLabel(
     canvasWidth: Float,
     canvasHeight: Float,
     isAtEndFrame: Boolean,
-    viewportDataPoints: Int
+    viewportDurationMinutes: Long
 ) {
     if (!config.showXAxisLabels || dataPoints.isEmpty()) return
 
@@ -469,17 +487,23 @@ private fun drawXAxisLabel(
                 abs(it.timestamp.toEpochMilli() - targetTimeMilli)
             }
 
-            if (closestDataPoint != null) {
+            val timeDiff = if (closestDataPoint != null) {
+                abs(closestDataPoint.timestamp.toEpochMilli() - targetTimeMilli)
+            } else {
+                Long.MAX_VALUE
+            }
+
+            if (closestDataPoint != null && timeDiff < (15 * 60 * 1000L)) {
                 val actualXPx =
                     ((closestDataPoint.timestamp.toEpochMilli() - minTime).toFloat() / timeRange) * canvasWidth
 
                 if (actualXPx - lastDrawnXPos >= (minSpacingPx * 0.8f)) {
                     val timeText = if (isAtEndFrame) {
                         if (i == maxLabelsPossible - 2) {
-                            if (viewportDataPoints == 60) {
+                            if (viewportDurationMinutes == 60L) {
                                 "Last 1 hour"
                             } else {
-                                "Last $viewportDataPoints data"
+                                "Last $viewportDurationMinutes mins"
                             }
                         } else ""
                     } else {

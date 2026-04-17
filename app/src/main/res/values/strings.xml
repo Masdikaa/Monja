@@ -32,8 +32,8 @@
     <string name="label_stat_min">Min</string>
     <string name="label_stat_peak">Peak</string>
     <string name="label_stat_rest">Rest</string>
-    <string name="format_stat_prefix">Statistics of </string>
-    <string name="format_stat_suffix"> data entries recorded</string>
+    <string name="format_stat_prefix">Statistics of\ </string>
+    <string name="format_stat_suffix">\ data entries recorded</string>
 
     <!-- ======================================== -->
     <!-- HISTORY SCREEN -->

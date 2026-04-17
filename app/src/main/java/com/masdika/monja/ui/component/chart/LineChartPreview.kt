@@ -115,7 +115,6 @@ private fun ScrollableLineChartPreview() {
             LineChart(
                 dataPoint = dummyData,
                 config = config,
-                viewportDataPoints = 60,
                 modifier = Modifier
                     .height(300.dp)
                     .fillMaxWidth()
@@ -123,3 +122,34 @@ private fun ScrollableLineChartPreview() {
         }
     }
 }
+
+// DUMMY DATA FUNCTION FOR PREVIEW
+
+/*
+fun generateDummyData(): List<DataPoint> {
+    val now = Instant.now()
+
+    fun generateSeries(baseTime: Instant): List<DataPoint> {
+        return List(40) { index ->
+            val time = baseTime.minus((180 - (index * 5)).toLong(), ChronoUnit.MINUTES)
+
+            DataPoint(
+                value = Random.nextDouble(10.0, 100.0),
+                timestamp = time
+            )
+        }
+    }
+
+    val recentBase = now.plus(1, ChronoUnit.HOURS)
+
+    val oldBase = now
+        .minus(3, ChronoUnit.DAYS)
+        .plus(1, ChronoUnit.HOURS)
+
+    val recentData = generateSeries(recentBase)
+    val oldData = generateSeries(oldBase)
+
+    return (oldData + recentData)
+        .sortedBy { it.timestamp }
+}
+*/

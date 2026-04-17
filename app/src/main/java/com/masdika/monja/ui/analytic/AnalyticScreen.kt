@@ -143,7 +143,6 @@ private fun AnalyticChartContent(
                         LineChart(
                             dataPoint = chartData,
                             config = chartConfig,
-                            viewportDataPoints = 60,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .weight(0.5f)
