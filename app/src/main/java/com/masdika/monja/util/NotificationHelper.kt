@@ -4,6 +4,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import androidx.core.app.NotificationCompat
+import com.masdika.monja.R
 
 class NotificationHelper(private val context: Context) {
     private val notificationManager =
@@ -30,10 +31,16 @@ class NotificationHelper(private val context: Context) {
     }
 
     fun showEvacuationAlert(macAddress: String) {
+        val titleText = UiText.StringResource(R.string.notification_content_title)
+        val contentText = UiText.StringResource(
+            R.string.notification_content_text,
+            macAddress
+        )
+
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(android.R.drawable.ic_dialog_alert)
-            .setContentTitle("EVACUATION ALERT!")
-            .setContentText("Severe condition detected on device $macAddress. immediate action required!")
+            .setSmallIcon(R.drawable.monja_icon)
+            .setContentTitle(titleText.asString(context))
+            .setContentText(contentText.asString(context))
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setAutoCancel(true)
             .build()

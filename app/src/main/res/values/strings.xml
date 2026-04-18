@@ -106,4 +106,10 @@
     <string name="splash_initializing">Initializing…</string>
     <string name="splash_retrying">Retry %1$s/%2$s</string>
     <string name="splash_error_connection">Failed to connect. Please check your internet!</string>
+
+    <!-- ======================================== -->
+    <!-- NOTIFICATION HELPER -->
+    <!-- ======================================== -->
+    <string name="notification_content_title">EVACUATION ALERT!</string>
+    <string name="notification_content_text">Severe condition detected on device %1$s. Immediate action required!</string>
 </resources>

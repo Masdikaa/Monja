@@ -134,8 +134,8 @@ fun DashboardMap(
                         mapView.location.addOnIndicatorPositionChangedListener(object :
                             OnIndicatorPositionChangedListener {
                             override fun onIndicatorPositionChanged(point: Point) {
-                                point.latitude()
-                                point.longitude()
+                                userLat = point.latitude()
+                                userLng = point.longitude()
                                 mapView.location.removeOnIndicatorPositionChangedListener(this)
                             }
                         })
