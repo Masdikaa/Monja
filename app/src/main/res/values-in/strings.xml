@@ -1,0 +1,115 @@
+<resources>
+    <string name="app_name">Monja</string>
+
+    <!-- ======================================== -->
+    <!-- COMMON / REUSABLE STRINGS -->
+    <!-- ======================================== -->
+    <string name="label_nav_dashboard">Dashboard</string>
+    <string name="label_nav_history">Riwayat</string>
+    <string name="common_error_internal">Kesalahan Internal</string>
+    <string name="common_label_cancel">Batal</string>
+    <string name="common_label_delete">Hapus</string>
+
+    <!-- ======================================== -->
+    <!-- ANALYTIC SCREEN -->
+    <!-- ======================================== -->
+    <string name="title_analytic_body_temperature">Suhu Tubuh</string>
+    <string name="title_analytic_heart_rate">Detak Jantung</string>
+    <string name="title_analytic_oxygen_saturation">Saturasi Oksigen (SpO2)</string>
+    <string name="title_analytic_default">Analitik</string>
+    <string name="title_analytic_empty">Data Kosong</string>
+    <string name="message_analytic_empty">Saat ini tidak ada data yang tersedia</string>
+    <string name="error_title_analytic">Kesalahan Server</string>
+    <string name="error_message_analytic">Tidak dapat terhubung ke database\nSilakan periksa koneksi internet Anda</string>
+
+    <!-- ======================================== -->
+    <!-- VITAL STATISTIC -->
+    <!-- ======================================== -->
+    <string name="label_stat_temperature">Suhu Rata-rata</string>
+    <string name="label_stat_heart_rate">Detak Jantung Rata-rata</string>
+    <string name="label_stat_oxygen_saturation">SpO2 Rata-rata</string>
+    <string name="label_stat_max">Maks</string>
+    <string name="label_stat_min">Min</string>
+    <string name="label_stat_peak">Puncak</string>
+    <string name="label_stat_rest">Istirahat</string>
+    <string name="format_stat_prefix">Statistik dari\ </string>
+    <string name="format_stat_suffix">\ entri data yang tercatat</string>
+
+    <!-- ======================================== -->
+    <!-- HISTORY SCREEN -->
+    <!-- ======================================== -->
+    <string name="title_history_mac_not_found">MAC Address Perangkat Tidak Ditemukan!</string>
+    <string name="message_history_mac_not_found">Silakan pilih perangkat untuk menampilkan riwayat!</string>
+    <string name="title_history_empty">Riwayat Kosong!</string>
+    <string name="message_history_empty">Tidak ada riwayat peringatan medis yang ditemukan pada perangkat ini!</string>
+    <string name="error_title_history">Kesalahan Internal</string>
+    <string name="error_message_history">Kesalahan memuat data status\nSilakan coba lagi nanti atau mulai ulang aplikasi!</string>
+    <string name="button_history_delete">Hapus</string>
+    <string name="button_history_cancel">Batal</string>
+
+    <!-- ======================================== -->
+    <!-- HISTORY DIALOG -->
+    <!-- ======================================== -->
+    <string name="title_dialog_delete_history">Hapus semua Riwayat?</string>
+    <string name="message_dialog_delete_history_warning">Tindakan ini tidak dapat dibatalkan. Semua riwayat status untuk perangkat ini akan dihapus secara permanen.</string>
+
+    <!-- ======================================== -->
+    <!-- HISTORY STATUS CARD -->
+    <!-- ======================================== -->
+    <string name="label_history_card_status_changed">Status Berubah</string>
+    <string name="label_history_card_location_not_recorded">Lokasi tidak tercatat</string>
+    <string name="format_location">Lokasi: %1$s, %2$s</string>
+
+    <!-- ======================================== -->
+    <!-- HISTORY TOP APP BAR ACTION -->
+    <!-- ======================================== -->
+    <string name="action_history_delete">Hapus riwayat</string>
+
+    <!-- ======================================== -->
+    <!-- DASHBOARD TOP APP BAR ACTION -->
+    <!-- ======================================== -->
+    <string name="label_dashboard_empty_device">Tidak ada perangkat yang tersedia</string>
+
+    <!-- ======================================== -->
+    <!-- DASHBOARD BOTTOM SHEET -->
+    <!-- ======================================== -->
+    <string name="label_dashboard_card_status">Status</string>
+    <string name="label_dashboard_card_error">Kesalahan Internal</string>
+    <string name="title_dashboard_vitals">Data Vital</string>
+    <string name="label_dashboard_body_temperature">Suhu Tubuh</string>
+    <string name="label_dashboard_heart_rate">Detak Jantung</string>
+    <string name="label_dashboard_oxygen_saturation">SpO2</string>
+    <string name="unit_celsius">°C</string>
+    <string name="unit_bpm"> BPM</string>
+    <string name="unit_percent">%</string>
+
+    <!-- ======================================== -->
+    <!-- DASHBOARD VIEWMODEL -->
+    <!-- ======================================== -->
+    <string name="error_no_device">Tidak ada perangkat yang tersedia!</string>
+    <string name="error_device">Gagal memuat perangkat!</string>
+    <string name="format_device_online">%1$s sedang Online</string>
+    <string name="format_device_offline">%1$s sedang Offline</string>
+    <string name="error_vitals">Gagal memuat data vital!</string>
+    <string name="error_location">Gagal memuat lokasi perangkat!</string>
+    <string name="error_health_status">Gagal memuat data status!</string>
+
+    <!-- ======================================== -->
+    <!-- HISTORY VIEWMODEL -->
+    <!-- ======================================== -->
+    <string name="success_delete_history">Berhasil menghapus riwayat untuk mac address %1$s</string>
+    <string name="error_delete_history">Gagal menghapus riwayat!</string>
+
+    <!-- ======================================== -->
+    <!-- SPLASH SCREEN VIEWMODEL -->
+    <!-- ======================================== -->
+    <string name="splash_initializing">Inisialisasi…</string>
+    <string name="splash_retrying">Mencoba ulang %1$s/%2$s</string>
+    <string name="splash_error_connection">Gagal terhubung. Silakan periksa internet Anda!</string>
+
+    <!-- ======================================== -->
+    <!-- NOTIFICATION HELPER -->
+    <!-- ======================================== -->
+    <string name="notification_content_title">PERINGATAN EVAKUASI!</string>
+    <string name="notification_content_text">Kondisi parah terdeteksi pada perangkat %1$s. Tindakan segera diperlukan!</string>
+</resources>
