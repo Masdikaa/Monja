@@ -56,10 +56,8 @@ fun MainBottomBar(
                         }
 
                         navController.navigate(targetRoute) {
-                            navController.graph.startDestinationRoute?.let { route ->
-                                popUpTo(route) {
-                                    saveState = true
-                                }
+                            popUpTo<DashboardRoute> {
+                                saveState = true
                             }
                             launchSingleTop = true
                             restoreState = true

@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -31,6 +30,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Devices.PIXEL_9
@@ -39,11 +39,11 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
 import com.masdika.monja.R
+import com.masdika.monja.data.Result
 import com.masdika.monja.data.model.Device
 import com.masdika.monja.data.model.HealthStatus
 import com.masdika.monja.data.model.Location
 import com.masdika.monja.data.model.Vitals
-import com.masdika.monja.data.Result
 import com.masdika.monja.ui.component.MainBottomBar
 import com.masdika.monja.ui.component.MainTopAppBar
 import com.masdika.monja.ui.dashboard.bottomsheet.DashboardBottomSheet
@@ -184,16 +184,16 @@ private fun DashboardContent(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
                     .size(width = 120.dp, height = 25.dp)
-                    .clickable(onClick = { showBottomSheet = true })
-                    .background(
-                        shape = RoundedCornerShape(
-                            topStart = CornerSize(16.dp),
-                            topEnd = CornerSize(16.dp),
-                            bottomEnd = CornerSize(0),
-                            bottomStart = CornerSize(0)
-                        ),
-                        color = MaterialTheme.colorScheme.background
+                    .clip(
+                        RoundedCornerShape(
+                            topStart = 16.dp,
+                            topEnd = 16.dp,
+                            bottomEnd = 0.dp,
+                            bottomStart = 0.dp
+                        )
                     )
+                    .background(color = MaterialTheme.colorScheme.background)
+                    .clickable(onClick = { showBottomSheet = true })
             ) {
                 Icon(
                     imageVector = ArrowUpIcon,
