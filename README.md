@@ -6,7 +6,7 @@
 
 **Empowering rescue teams with real-time IoT vital tracking for early hypothermia detection.**
 
-  <br />
+  <br/>
 
   <a href="https://kotlinlang.org/">
     <img src="https://img.shields.io/badge/Kotlin-2.2.20-7F52FF?style=flat-square&logo=kotlin" alt="Kotlin">
@@ -23,6 +23,18 @@
   <a href="https://github.com/Masdikaa/Monja/blob/main/LICENSE">
     <img src="https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square" alt="License">
   </a>
+
+<br/>
+
+<p align="center">
+  <img src="assets/demo.gif" alt="App Demo" width="300" />
+</p>
+
+<br/>
+
+<a href="https://github.com/Masdikaa/Monja/releases/download/v1.0/Monja.apk">
+  <img src="https://img.shields.io/badge/Download_APK-Android-3DDC84?style=for-the-badge&logo=android&logoColor=white" alt="Download APK" />
+</a>
 
 </div>
 
